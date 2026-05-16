@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment / secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Editor / OS
+.DS_Store
+*.swp
+*~
+
+# Local build/cache
+*.log
+.cache/
+
+# Backup files
+*.bak
+*.bak.*
+
+# Source spreadsheets re-derivable from corpus/ciqual_2025.json
+corpus/*.xlsx
+
+# Internal coordination — édition source, à garder en tête mais pas pour partage public au-delà des co-mainteneurs
+# (laissés DANS le repo pour l'instant car repo privé, voir README §Travail interne)
+# SCRATCH.md
+# RESUME.md

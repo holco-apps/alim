@@ -1,0 +1,133 @@
+{
+  "_meta": {
+    "demo_id": "demo2_grossesse_dg",
+    "title_fr": "Salade végétarienne d'été pour grossesse + diabète gestationnel",
+    "purpose": "Rubrique pass/fail déterministe. La grossesse impose un cadre sanitaire strict (toxoplasmose, listériose) qui s'ajoute aux contraintes glucidiques du DG.",
+    "updated": "2026-05-16"
+  },
+
+  "input_brief": {
+    "pathologies": ["diabete_gestationnel", "grossesse"],
+    "contraindications": [],
+    "diet_type": "vegetarien",
+    "season": "ete",
+    "budget_per_meal_eur": null,
+    "equipment": ["plaque"],
+    "portions": 1,
+    "meal_slot": "dejeuner",
+    "notes_fr": "Femme enceinte 2e/3e trimestre, statut sérologique toxo non précisé → on applique les règles sanitaires par défaut (lavage soigneux, pas de produits crus à risque)."
+  },
+
+  "forbidden_ingredients": [
+    { "category": "fromage_lait_cru", "reason_fr": "Listériose. Camembert lait cru, brie lait cru, roquefort, reblochon, morbier, munster, chèvre lait cru.", "rule_id": "grossesse_no_raw_cheese" },
+    { "category": "poisson_cru", "reason_fr": "Listériose + anisakis. Sushi, sashimi, gravlax, tarama non pasteurisé.", "rule_id": "grossesse_no_raw_fish" },
+    { "category": "viande_crue_ou_saignante", "reason_fr": "Toxoplasmose + listériose. Tartare, carpaccio, viande saignante.", "rule_id": "grossesse_no_raw_meat" },
+    { "category": "oeufs_crus", "reason_fr": "Salmonelle + listériose. Mayonnaise maison, tiramisu, mousse au chocolat aux œufs crus.", "rule_id": "grossesse_no_raw_eggs" },
+    { "category": "charcuterie_artisanale_ou_crue", "reason_fr": "Listériose. Rillettes, pâté, foie gras, jambon cru, saucisson sec.", "rule_id": "grossesse_no_charcuterie_cuite_courte" },
+    { "category": "alcool", "reason_fr": "Aucune consommation pendant la grossesse (SAF).", "rule_id": "grossesse_no_alcohol" },
+    { "examples_fr": ["graines germées crues", "tarama non pasteurisé"], "reason_fr": "Listéria – ANSES.", "rule_id": null }
+  ],
+
+  "mandatory_warnings_fr": [
+    "Tous les légumes et fruits crus doivent être soigneusement lavés (toxoplasmose).",
+    "Les œufs doivent être bien cuits (jaune ferme).",
+    "Si statut sérologique toxoplasmose connu et immunité confirmée, certaines restrictions cuisson viande peuvent être assouplies — à confirmer avec le praticien.",
+    "Glucides du repas répartis avec les collations de la journée (ne pas dépasser 175-200 g/jour, à valider avec le suivi DG)."
+  ],
+
+  "numeric_thresholds": {
+    "carb_g_per_meal_max": { "value": 45, "rule_id": "dg_carb_per_meal_max", "direction": "max", "_field": "carb_g (Ciqual)" },
+    "carb_g_per_meal_min": { "value": 20, "rule_id": null, "direction": "min", "_field": "carb_g (Ciqual)", "evidence_level_note": "Plancher dérivé pour éviter hypoglycémie chez DG sous insuline." },
+    "added_sugar_g_per_meal_max": { "value": 0, "rule_id": "dg_added_sugar_per_meal_max", "direction": "max", "_field": "added_sugar_g (prompt-derived, pas Ciqual)" },
+    "total_sugar_g_per_meal_warning": { "value": 15, "rule_id": "dg_total_sugar_per_meal_warning", "direction": "warning", "_field": "sugar_g_total (Ciqual sugar_g)" },
+    "fiber_g_per_meal_min": { "value": 7, "rule_id": "dg_fiber_per_meal_min", "direction": "min", "_field": "fiber_g (Ciqual)" },
+    "vit_b9_dfe_ug_per_meal_min": { "value": 130, "rule_id": null, "direction": "min", "_field": "vit_b9_dfe_ug (Ciqual)", "evidence_level_note": "Dérivé de 400 µg/j ÷ 3 repas ≈ 130 µg/repas (orientation, supplémentation systématique en plus)." },
+    "alcohol_g_per_meal_max": { "value": 0, "rule_id": "grossesse_no_alcohol", "direction": "equal", "_field": "alcohol_g (Ciqual)" }
+  },
+
+  "required_sources_in_output": [
+    "Anses Ciqual 2025 (valeurs nutritionnelles)",
+    "ANSES – Grossesse et alimentation (règles sanitaires)",
+    "CNGOF – Diabète gestationnel / HAS – Suivi de grossesse",
+    "HAS – Folates / Apports vitaminiques de la grossesse"
+  ],
+
+  "preferred_ingredient_classes_fr": [
+    "Légumineuses cuites bien lavées (IG bas, fibres) — pois chiches, lentilles, haricots rouges, fèves",
+    "Céréales complètes IG bas — quinoa, sarrasin, orge perlé",
+    "Légumes feuilles riches en folates — épinards, salade verte (bien lavés), mâche, roquette",
+    "Légumes crus bien lavés — tomate, concombre, poivron, carotte râpée",
+    "Avocat (folates + bons gras)",
+    "Œuf bien cuit (jaune ferme) — source de B9, fer héminique, B12",
+    "Tofu ferme (pasteurisé)",
+    "Fromages pasteurisés autorisés — mozzarella de bufflonne pasteurisée, feta pasteurisée (lire l'étiquette)",
+    "Herbes fraîches lavées (folates) — persil, ciboulette, menthe, basilic",
+    "Huile de colza ou d'olive vierge extra"
+  ],
+
+  "acceptable_substitutions": [
+    { "from": "feta", "to": "feta pasteurisée (étiquette lait pasteurisé)", "reason_fr": "Sécurité listériose" },
+    { "from": "fromage frais artisanal", "to": "fromage frais pasteurisé industriel", "reason_fr": "Sécurité listériose" },
+    { "from": "couscous semoule blanche", "to": "quinoa ou couscous complet", "reason_fr": "IG bas + fibres + folates (quinoa)" },
+    { "from": "sauce vinaigrette industrielle", "to": "vinaigrette maison huile colza + vinaigre balsamique + herbes fraîches", "reason_fr": "Sel maîtrisé + folates herbes" }
+  ],
+
+  "refusal_conditions": [
+    "Toute mention d'un ingrédient catégorisé `fromage_lait_cru`, `poisson_cru`, `viande_crue_ou_saignante`, `oeufs_crus`, `charcuterie_artisanale_ou_crue` ou `alcool` dans la recette générée — refus net.",
+    "Glucides du repas > 45 g — refus (au-dessus du plafond DG par repas).",
+    "Sucres ajoutés > 0 g (sucre blanc, miel, sirop, confiture, etc. mentionnés dans les étapes de la recette) — refus net.",
+    "Fibres < 7 g — regenerate-once avec demande explicite d'augmenter les légumes/légumineuses.",
+    "Couverture CIQUAL < 80 % — refus.",
+    "Aucun aliment riche en folates (>50 µg vit_b9_dfe_ug per portion) dans la recette — regenerate-once.",
+    "Brief inclut 'CKD' ou 'insuffisance rénale' — refus (hors scope v0 publique)."
+  ],
+
+  "expected_output_shape": "Identique à demo1_t2_hta.json : top-level keys `recipe`, `nutrients_per_portion` (per-field-source, valeurs totaux du repas), `coverage_summary`, `rules_applied`, `sources`, `warnings`. Voir demo1 pour le schéma détaillé.",
+
+  "smoke_tests": [
+    {
+      "name": "no_alcohol",
+      "assertion": "nutrients_per_portion.alcohol_g.value == 0 AND no ingredient has alcohol_g_per_100g > 0"
+    },
+    {
+      "name": "no_forbidden_category",
+      "assertion": "recipe.ingredients have no item matching forbidden categories (fromage_lait_cru, poisson_cru, viande_crue_ou_saignante, oeufs_crus, charcuterie_artisanale_ou_crue)"
+    },
+    {
+      "name": "carb_within_dg_band",
+      "assertion": "20 <= nutrients_per_portion.carb_g.value <= 45"
+    },
+    {
+      "name": "no_added_sugar_in_recipe",
+      "assertion": "nutrients_per_portion.added_sugar_g.value == 0 AND recipe.steps_fr does not mention 'sucre', 'miel', 'sirop', 'confiture', 'cassonade'"
+    },
+    {
+      "name": "total_sugar_warning_threshold",
+      "assertion": "IF nutrients_per_portion.sugar_g_total.value > 15 THEN warnings contains a note about 'sucres totaux' or 'sucres naturels'"
+    },
+    {
+      "name": "fiber_floor",
+      "assertion": "nutrients_per_portion.fiber_g.value >= 7"
+    },
+    {
+      "name": "wash_warning_present",
+      "assertion": "warnings contains a string mentioning 'laver' or 'lavage' for raw vegetables"
+    },
+    {
+      "name": "egg_cooking_warning_if_egg_present",
+      "assertion": "IF any ingredient is 'œuf' THEN warnings contains 'jaune ferme' or 'bien cuit'"
+    },
+    {
+      "name": "ciqual_cited_in_sources",
+      "assertion": "sources contains entry citing 'Ciqual 2025'"
+    },
+    {
+      "name": "anses_pregnancy_cited",
+      "assertion": "sources contains entry citing 'ANSES' and 'grossesse'"
+    },
+    {
+      "name": "all_rules_cited",
+      "assertion": "rules_applied includes 'dg_carb_per_meal_max' AND 'grossesse_no_raw_cheese' AND 'grossesse_no_alcohol'"
+    }
+  ]
+}

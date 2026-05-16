@@ -1,0 +1,104 @@
+# Verification log — ALIM clinical rules
+
+Tracking effort: open each source document, confirm threshold + direction, capture verbatim citation + page number, update `clinical_rules.json` accordingly.
+
+Statuses:
+- ✅ **verified** : source PDF ouvert, citation verbatim trouvée à la page indiquée
+- 🟡 **adjusted** : seuil seed différait de la source, adapté à la valeur autoritaire
+- ❌ **not_found** : pas pu confirmer dans le délai, reste `to_verify`
+- 🛈 **derived** : valeur dérivée d'une autre règle vérifiée, pas une citation directe
+
+Last update: 2026-05-16 — Alan
+
+---
+
+## ✅ grossesse_caffeine_per_day_max — EFSA 2015 (verified)
+
+- **Source PDF** : EFSA — Caffeine: EFSA explains risk assessment. 2015. TM-04-15-330-EN-N. ISBN 978-92-9199-677-3. doi:10.2805/618813.
+- **PDF local** : `/root/.openclaw/alim/corpus/efsa_caffeine_2015.pdf`
+- **URL canonique** : https://www.efsa.europa.eu/sites/default/files/corporate_publications/files/efsaexplainscaffeine150527.pdf
+- **Avis scientifique sous-jacent** : EFSA Scientific Opinion on the safety of caffeine, EFSA Journal 2015;13(5):4102. doi:10.2903/j.efsa.2015.4102.
+- **Page citée** : 3 (rubrique "Pregnant/lactating women")
+- **Verbatim** : *"Caffeine intakes from all sources up to 200mg per day consumed throughout the day do not raise safety concerns for the foetus."*
+- **Confirme** : seuil 200 mg/jour, "from all sources", pendant la grossesse et la lactation. Aligné avec mon seed.
+- **Note** : pour adultes non-enceintes, le seuil EFSA est 400 mg/jour. La distinction grossesse vs population générale doit être respectée côté tool — pas un seuil unique.
+- **Action** : `source_url` → URL EFSA, `source_status: "verified"`, `verified_at: "2026-05-16"`, `pdf_page: 3`.
+
+---
+
+## ✅ grossesse_no_raw_meat — ANSES Q/R Toxoplasmose 2007 (verified)
+
+- **Source PDF** : AFSSA (ex-ANSES) — Questions-Réponses Toxoplasmose : état des connaissances et évaluation du risque lié à l'alimentation. Janvier 2007 (date document : 21/09/2006).
+- **PDF local** : `/root/.openclaw/alim/corpus/anses_qr_toxoplasmose.pdf`
+- **URL canonique** : https://www.anses.fr/fr/system/files/MIC-QR-Toxoplasmose.pdf
+- **Page citée** : 2 (Section "4/ Je suis enceinte. Que dois-je faire pour éviter la toxoplasmose ?" — tableau "Synthèse actualisée des recommandations de prévention")
+- **Verbatim** : *"Bien cuire tout type de viande (y compris la volaille et le gibier). En pratique, une viande bien cuite a un aspect extérieur doré, voire marron, avec un centre rose très clair, presque beige et ne laisse échapper aucun jus rosé."* / *"Une viande bien cuite correspond à une température à cœur comprise entre 68 et 72°C."* / *"Eviter la cuisson des viandes au four à micro-ondes."*
+- **Confirme** : viande crue / saignante / peu cuite proscrite chez la femme enceinte (sauf immunité toxoplasmose confirmée). Précision température 68-72°C à cœur (mon seed disait > 70°C, je m'aligne sur la fourchette précise).
+- **Action** : `source_url` → URL ANSES, `source_status: "verified"`, `verified_at: "2026-05-16"`, `pdf_page: 2`. Ajouter la fourchette "68-72°C à cœur" dans `rationale_fr`.
+
+---
+
+## ✅ grossesse_wash_raw_vegetables — ANSES Q/R Toxoplasmose 2007 (verified)
+
+- **Source PDF** : idem `grossesse_no_raw_meat`.
+- **Page citée** : 2 (même tableau).
+- **Verbatim** : *"Lors de la préparation des repas, laver à grande eau les légumes et les plantes aromatiques, surtout s'ils sont terreux et consommés crus. Précautions particulièrement renforcées pour les végétaux constamment souillés par de la terre et consommés crus ; radis, salade, fraises, champignons."*
+- **Confirme** : warning lavage soigneux obligatoire dans `warnings` pour toute recette grossesse contenant des légumes crus.
+- **Action** : `source_url` → URL ANSES, `source_status: "verified"`, `verified_at: "2026-05-16"`, `pdf_page: 2`.
+
+---
+
+## 🛈 Note méthodologique — toxoplasmose vs listériose
+
+L'ANSES Q/R Toxoplasmose précise explicitement : *"la consommation de poisson, de lait de vache et de fromages ne présente pas de risque vis à vis de la toxoplasmose"*. Donc les règles `grossesse_no_raw_cheese`, `grossesse_no_raw_fish`, `grossesse_no_raw_eggs`, `grossesse_no_charcuterie_cuite_courte` ne sont pas couvertes par cette source — elles relèvent de la **listériose**, qui demande un autre PDF ANSES (à récupérer dans la prochaine session de vérification, candidat : ANSES portail listériose ou avis MIC-Ra-ListerioseAliments).
+
+---
+
+## 🟡 t2_carb_per_meal_max / t2_carb_per_meal_min — HAS T2 2024 (derived, pas verified)
+
+- **Source PDF** : HAS – Stratégie thérapeutique du patient vivant avec un diabète de type 2 (recommandations). Mai 2024. 56 pages.
+- **PDF local** : `/root/.openclaw/alim/corpus/has_t2_2024.pdf`
+- **URL canonique** : https://www.has-sante.fr/upload/docs/application/pdf/2024-06/strategie_therapeutique_du_patient_vivant_avec_un_diabete_de_type_2_-_recommandations.pdf
+- **Constat** : La HAS T2 2024, mis à jour exhaustivement par rapport à 2013, **ne fixe PAS de seuil glucidique chiffré par repas**. Les recommandations nutritionnelles (R.30 à R.38) restent qualitatives : alimentation équilibrée, individualisation (R.32, R.36), perte de poids ≥ 5 % si surpoids (R.34), pas de régimes restrictifs chez personnes âgées/dénutrition (R.37), pas de régime très faible en glucides ou cétogène (R.91 plus loin dans le PDF).
+- **Verbatim R.30** : *"Il est recommandé la mise en place d'un programme complet et global de modification du mode de vie, dès le diagnostic, comprenant une alimentation équilibrée et l'atteinte des objectifs d'activité physique adaptée dans le but d'améliorer l'équilibre glycémique (grade C)."*
+- **Décision** : mes seuils numériques (60 g max / 30 g min par repas) sont **non-citables comme HAS directs**. Je les passe en `source_status: "derived"` avec citation du principe HAS comme garde-fou. Le service Node ne doit pas afficher ces chiffres comme "HAS recommande 60 g".
+- **Pour aller plus loin** : la SFD (Société Francophone du Diabète) ou Diabetes UK (cité par HAS en référence) ont des seuils plus précis. À explorer si V0+ nécessite des seuils chiffrés présentables comme officiels.
+
+---
+
+## ✅ grossesse_no_alcohol — HAS 2009 (verified)
+
+- **Source PDF** : HAS – Projet de grossesse : informations, messages de prévention, examens à proposer (argumentaire). Septembre 2009. Service des bonnes pratiques professionnelles.
+- **PDF local** : `/root/.openclaw/alim/corpus/has_projet_grossesse_argumentaire.pdf`
+- **URL canonique** : https://www.has-sante.fr/upload/docs/application/pdf/2010-01/projet_de_grossesse_informations_messages_de_prevention_examens_a_proposer_-_argumentaire.pdf
+- **Page citée** : 19 (section 4.6.2 Alcool, tabac, usage de drogues)
+- **Verbatim** : *"l'alcool a une toxicité démontrée sur la période embryonnaire et la période fœtale (grade A). Il doit être recommandé aux femmes de ne pas consommer de boissons contenant de l'alcool pendant toute la durée de la grossesse."* / *"Il n'est pas possible de définir une dose minimale d'alcoolisation sans conséquences sur le fœtus (grade B)."*
+- **Confirme** : tolérance zéro alcool grossesse, grade A HAS. Aligné avec mon seed.
+- **Action** : `source_url` → URL HAS PDF, `source_status: "verified"`, `verified_at: "2026-05-16"`, `pdf_page: 19`.
+
+---
+
+## ✅ grossesse_b9_per_day_min — HAS 2009 (verified, avec caveat)
+
+- **Source PDF** : idem `grossesse_no_alcohol`.
+- **Page citée** : 15 (section 4.4 Traitements médicamenteux).
+- **Verbatim** : *"Les quatre recommandations internationales analysées préconisent une supplémentation en acide folique en période préconceptionnelle à raison de 400 microgrammes par jour jusqu'à la 12e semaine d'aménorrhée (la posologie est plus importante en cas de profil à risque : antécédent de spina bifida, diabète et traitement épileptique)."*
+- **Caveat important** : la référence HAS porte sur la **supplémentation pharmaceutique** (médicament), pas sur l'apport alimentaire en folates. Pour ALIM, on garde 400 µg/jour comme cible orientative pour l'apport alimentaire, mais la `rationale_fr` doit explicitement noter que la supplémentation médicamenteuse reste prescrite séparément par le médecin et n'est pas remplacée par le contenu de la recette.
+- **Action** : `source_url` → URL HAS, `source_status: "verified"`, `verified_at: "2026-05-16"`, `pdf_page: 15`. `rationale_fr` enrichi du caveat.
+
+---
+
+## ✅ hta_salt_per_day_max — WHO 2012 (verified)
+
+- **Source PDF** : WHO Guideline: Sodium intake for adults and children, 2012 (reprinted 2014). ISBN 978 92 4 150483 6.
+- **PDF local** : `/root/.openclaw/alim/corpus/who_sodium_2012.pdf`
+- **URL canonique** : https://iris.who.int/server/api/core/bitstreams/d0f9feb5-ed78-44d1-9e06-533a93352012/content
+- **Page citée** : 2 (Executive summary — Recommendations)
+- **Verbatim** : *"WHO recommends a reduction to <2 g/day sodium (5 g/day salt) in adults (strong recommendation)."*
+- **Grading WHO** : **strong recommendation**.
+- **Applicabilité** : *"These recommendations apply to all individuals, with or without hypertension (including pregnant and lactating women), except for individuals with illnesses or taking drug therapy that may lead to hyponatraemia […] or require physician-supervised diets (e.g. patients with heart failure and those with type I diabetes)."* (page 3)
+- **Confirme** : seuil 5 g/jour sel = 2 g/jour sodium. Cohérent avec ma valeur seed.
+- **Action** : `source_url` → URL canonique WHO IRIS, `source_status: "verified"`, `verified_at: "2026-05-16"`, `pdf_page: 2`.
+
+---
+

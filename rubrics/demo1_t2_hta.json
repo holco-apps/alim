@@ -1,0 +1,128 @@
+{
+  "_meta": {
+    "demo_id": "demo1_t2_hta",
+    "title_fr": "Dîner pour patient adulte avec diabète T2 + HTA",
+    "purpose": "Rubrique pass/fail déterministe. Si une assertion `mandatory` échoue → tool refuse ou regenerate-once. Conditions de refus listées en bas. Cette rubrique est la spec testable, pas une recette : la recette générée doit la satisfaire.",
+    "updated": "2026-05-16"
+  },
+
+  "input_brief": {
+    "pathologies": ["diabete_t2", "hta"],
+    "contraindications": [],
+    "diet_type": "omnivore",
+    "season": "all",
+    "budget_per_meal_eur": null,
+    "equipment": ["plaque", "four"],
+    "portions": 1,
+    "meal_slot": "diner",
+    "notes_fr": "Adulte sans insuffisance rénale, pas de grossesse, pas d'allergie."
+  },
+
+  "forbidden_ingredients": [
+    { "category": "alcool", "reason_fr": "Alcool évité en HTA (effet presseur, interactions médicamenteuses).", "rule_id": "hta_no_alcohol" },
+    { "examples_fr": ["sel ajouté en cuisson explicite", "bouillon cube standard", "sauce soja standard", "moutarde Dijon en quantité non maîtrisée", "olive en saumure non rincée"], "reason_fr": "Sources de sel cachées qui font sauter le plafond 1.6 g/repas." }
+  ],
+
+  "mandatory_warnings_fr": [
+    "Apport en sel maîtrisé par le contenu intrinsèque des aliments — sel ajouté limité à la dose précisée dans la recette.",
+    "Repas adapté à un dîner ; les autres repas de la journée doivent compléter sans dépasser 5 g de sel/jour."
+  ],
+
+  "numeric_thresholds": {
+    "salt_g_per_meal_max": { "value": 1.6, "rule_id": "hta_salt_per_meal_max", "direction": "max" },
+    "carb_g_per_meal_max": { "value": 60, "rule_id": "t2_carb_per_meal_max", "direction": "max" },
+    "carb_g_per_meal_min": { "value": 30, "rule_id": "t2_carb_per_meal_min", "direction": "min" },
+    "added_sugar_g_per_meal_max": { "value": 10, "rule_id": "t2_added_sugar_per_meal_max", "direction": "max", "_field": "added_sugar_g (prompt-derived, pas Ciqual)" },
+    "total_sugar_g_per_meal_warning": { "value": 25, "rule_id": "t2_total_sugar_per_meal_warning", "direction": "warning", "_field": "sugar_g_total (Ciqual sugar_g)" },
+    "fiber_g_per_meal_min": { "value": 7, "rule_id": "t2_fiber_per_meal_min", "direction": "min" },
+    "saturated_fat_g_per_meal_max": { "value": 7, "rule_id": "hta_saturated_fat_per_meal_max", "direction": "max" }
+  },
+
+  "soft_warnings_only": {
+    "_note": "Champs reportés à la sortie pour information mais NON utilisés comme pass/fail. Le potassium est volontairement retiré des seuils obligatoires Demo 1 publique : CKD est hors scope v0, et un seuil potassium minimum dans le repas créerait un risque si le brief praticien omet une fonction rénale altérée.",
+    "potassium_mg_per_meal": { "rule_id": null, "note": "Reporté pour info uniquement. Pas de seuil bas obligatoire en v0 publique." }
+  },
+
+  "required_sources_in_output": [
+    "Anses Ciqual 2025 (pour les valeurs nutritionnelles)",
+    "HAS T2 (pour les seuils glucidiques et IG)",
+    "OMS / HAS HTA (pour le plafond sel)"
+  ],
+
+  "preferred_ingredient_classes_fr": [
+    "Légumineuses ou céréales complètes (IG bas) — lentilles, pois chiches, quinoa, riz basmati, sarrasin",
+    "Protéine maigre (≤ 5 g lipides/100 g cuit) — blanc de volaille, dinde, poisson blanc, tofu ferme, oeuf",
+    "Légumes verts à feuilles / crucifères abondants — brocoli, épinards, courgettes, haricots verts",
+    "Aromates et acides à la place du sel — citron, vinaigre, herbes fraîches, ail, oignon, échalote, gingembre",
+    "Huile végétale insaturée — olive vierge extra, colza"
+  ],
+
+  "acceptable_substitutions": [
+    { "from": "riz blanc", "to": "riz basmati ou semi-complet", "reason_fr": "IG plus bas" },
+    { "from": "pâtes blanches", "to": "pâtes complètes al dente ou sarrasin", "reason_fr": "IG plus bas + fibres" },
+    { "from": "pomme de terre vapeur", "to": "pâtes complètes al dente ou riz basmati", "reason_fr": "IG plus bas" },
+    { "from": "sel cuisine", "to": "citron + herbes fraîches + ail", "reason_fr": "Goût sans Na" }
+  ],
+
+  "refusal_conditions": [
+    "Le brief mentionne 'insuffisance rénale' — refuser (hors scope v0, demo 1 publique sur fonction rénale normale).",
+    "Le brief mentionne 'grossesse' — refuser (sortir du scope T2+HTA pur, orienter vers demo 2).",
+    "L'intersection des contraintes (T2 + HTA + diet_type très restreint + budget bas + équipement absent) rend la search space vide après normalisation — refus poli avec liste des contraintes les plus serrées.",
+    "Couverture CIQUAL < 80 % des ingrédients de la recette (trop d'estimations) — refus.",
+    "Tout sel ajouté explicitement > 0.5 g dans les étapes de la recette — refus (le sel intrinsèque des aliments doit suffire, on tolère un assaisonnement final léger ≤ 0.5 g)."
+  ],
+
+  "expected_output_shape": {
+    "recipe": {
+      "name_fr": "string",
+      "portion_g": "number",
+      "ingredients": [{ "name_fr": "string", "quantity_g": "number", "ciqual_code": "string|null" }],
+      "steps_fr": ["string"]
+    },
+    "nutrients_per_portion": {
+      "_unit": "Tous les nutriments sont per_portion (totaux du repas), pas per_100g.",
+      "energy_kcal":  { "value": "number", "source": "ciqual|estimated|missing", "confidence": "high|medium|low|none" },
+      "carb_g":       { "value": "number", "source": "ciqual|estimated|missing", "confidence": "high|medium|low|none" },
+      "sugar_g_total":{ "value": "number", "source": "ciqual|estimated|missing", "confidence": "high|medium|low|none" },
+      "fiber_g":      { "value": "number", "source": "ciqual|estimated|missing", "confidence": "high|medium|low|none" },
+      "saturated_fat_g":  { "value": "number", "source": "ciqual|estimated|missing", "confidence": "high|medium|low|none" },
+      "salt_g":       { "value": "number", "source": "ciqual|estimated|missing", "confidence": "high|medium|low|none" },
+      "potassium_mg": { "value": "number", "source": "ciqual|estimated|missing", "confidence": "high|medium|low|none", "_note": "Reporté pour info, pas un pass/fail en v0 publique" }
+    },
+    "coverage_summary": { "matched": "int", "unmatched": "int", "estimated": "int", "overall_confidence": "high|medium|low" },
+    "rules_applied": ["rule_id"],
+    "sources": [{ "citation": "string", "url": "string" }],
+    "warnings": ["string"]
+  },
+
+  "smoke_tests": [
+    {
+      "name": "salt_threshold_respected",
+      "assertion": "nutrients_per_portion.salt_g.value <= 1.6 AND nutrients_per_portion.salt_g.source == 'ciqual'"
+    },
+    {
+      "name": "carb_in_band",
+      "assertion": "30 <= nutrients_per_portion.carb_g.value <= 60"
+    },
+    {
+      "name": "fiber_floor",
+      "assertion": "nutrients_per_portion.fiber_g.value >= 7"
+    },
+    {
+      "name": "all_rules_cited",
+      "assertion": "rules_applied includes 'hta_salt_per_meal_max' AND 'hta_saturated_fat_per_meal_max' AND 't2_carb_per_meal_max' AND 't2_fiber_per_meal_min'"
+    },
+    {
+      "name": "ciqual_cited_in_sources",
+      "assertion": "sources contains entry citing 'Ciqual 2025'"
+    },
+    {
+      "name": "no_alcohol_in_recipe",
+      "assertion": "no ingredient matches alcohol_g > 0"
+    },
+    {
+      "name": "no_added_salt_in_steps",
+      "assertion": "recipe.steps_fr does not contain explicit 'sel' beyond ≤ 0.5 g equivalent"
+    }
+  ]
+}

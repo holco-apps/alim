@@ -1,0 +1,23 @@
+[Unit]
+Description=ALIM prototype API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/alim/service
+Environment=NODE_ENV=production
+Environment=ALIM_ROOT=/opt/alim
+Environment=ALIM_HOST=127.0.0.1
+Environment=ALIM_PORT=3012
+ExecStart=/usr/bin/node /opt/alim/service/server.js
+Restart=always
+RestartSec=3
+User=root
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadOnlyPaths=/opt/alim
+
+[Install]
+WantedBy=multi-user.target

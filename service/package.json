@@ -1,0 +1,13 @@
+{
+  "name": "@holco/alim-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test:smoke": "node smoke-test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,461 @@
+{
+  "_meta": {
+    "version": "0.1.0-seed",
+    "updated": "2026-05-16",
+    "purpose": "Activatable clinical rule cards for ALIM v0. Each rule is deterministic and applied post-LLM by validate_generated_recipe(). v0 demos publiques: T2+HTA, grossesse+DG.",
+    "convention": {
+      "id": "stable string, snake_case",
+      "scope": "per_meal | per_day | per_100g | category",
+      "direction": "max | min | equal | forbidden | warning",
+      "evidence_level": "high | medium | low — reflects the underlying scientific consensus for the threshold/direction, independent of whether WE have verified our citation",
+      "source_status": "verified | to_verify | derived — reflects whether ALIM has confirmed the exact citation against the source document. NEVER conflate this with evidence_level."
+    },
+    "downstream_consumer_contract": {
+      "public_output_requires_verified_source": "When a rule is fired and source_status != 'verified', the API/UI MUST NOT present its citation as authoritative. Acceptable surfacings: omit citation, or render with explicit label like 'référence en cours de vérification documentaire'. The threshold/value of the rule may still be applied (the science behind it is real), but the source attribution must not appear verified.",
+      "confidence_downgrade": "Any UI displaying 'confidence' or 'evidence' to the practitioner must compute a derived public_confidence = min(evidence_level, source_status_as_confidence) where source_status maps: verified→high, to_verify→low, derived→medium.",
+      "rationale": "Until each PDF is opened and the exact threshold + page is confirmed, we run validation logic but do not advertise the citation. This protects against citing a number we believe is right but haven't re-checked, and from accidentally claiming HAS authority before we've earned it."
+    }
+  },
+
+  "pathologies": {
+
+    "diabete_t2": {
+      "name_fr": "Diabète de type 2",
+      "rules": [
+        {
+          "id": "t2_carb_per_meal_max",
+          "scope": "per_meal",
+          "direction": "max",
+          "value": 60,
+          "unit": "g",
+          "nutrient": "carb_g",
+          "rationale_fr": "Glucides par repas plafonnés pour limiter le pic glycémique postprandial et faciliter l'équilibre HbA1c. La HAS T2 2024 (R.30, R.36) recommande une alimentation équilibrée et des ajustements individualisés sans poser de seuil chiffré par repas ; le plafond 60 g/repas est dérivé de la pratique libérale et des recommandations internationales (ADA, Diabetes UK) citées en bibliographie HAS. À ne pas présenter comme un chiffre HAS direct.",
+          "source_fr": "HAS – Stratégie thérapeutique du patient vivant avec un diabète de type 2 (recommandations). Mai 2024. R.30 (alimentation équilibrée, grade C) et R.36 (ajustements individualisés selon habitudes, grade AE). Seuil numérique 60 g/repas non spécifié par HAS — dérivé.",
+          "source_url": "https://www.has-sante.fr/upload/docs/application/pdf/2024-06/strategie_therapeutique_du_patient_vivant_avec_un_diabete_de_type_2_-_recommandations.pdf",
+          "source_status": "derived",
+          "verified_at": "2026-05-16",
+          "pdf_page": 14,
+          "verbatim": "Il est recommandé la mise en place d'un programme complet et global de modification du mode de vie, dès le diagnostic, comprenant une alimentation équilibrée et l'atteinte des objectifs d'activité physique adaptée dans le but d'améliorer l'équilibre glycémique (grade C).",
+          "evidence_level": "medium"
+        },
+        {
+          "id": "t2_carb_per_meal_min",
+          "scope": "per_meal",
+          "direction": "min",
+          "value": 30,
+          "unit": "g",
+          "nutrient": "carb_g",
+          "rationale_fr": "Plancher glucidique pour éviter hypoglycémie chez patient sous sulfonylurées/insuline. La HAS T2 2024 (R.32) recommande l'individualisation et déconseille fortement les régimes très faibles en glucides (R.91 'régime très faible en glucides ou cétogène en raison du risque d'acidocétoses associé') ; le plancher 30 g/repas est dérivé de la pratique libérale, pas un chiffre HAS direct.",
+          "source_fr": "HAS – Stratégie thérapeutique DT2, mai 2024. R.32 + R.91 (déconseille régimes très faibles en glucides). Seuil 30 g/repas dérivé.",
+          "source_url": "https://www.has-sante.fr/upload/docs/application/pdf/2024-06/strategie_therapeutique_du_patient_vivant_avec_un_diabete_de_type_2_-_recommandations.pdf",
+          "source_status": "derived",
+          "verified_at": "2026-05-16",
+          "pdf_page": null,
+          "evidence_level": "medium"
+        },
+        {
+          "id": "t2_added_sugar_per_meal_max",
+          "scope": "per_meal",
+          "direction": "max",
+          "value": 10,
+          "unit": "g",
+          "nutrient": "added_sugar_g",
+          "_nutrient_note": "added_sugar_g = sucres ajoutés via la recette (sucre, miel, sirop, etc.), pas les sucres totaux Ciqual. Calcul prompt-derived côté service Node, pas dérivable de Ciqual.",
+          "rationale_fr": "Sucres simples ajoutés à minimiser ; tolérance limitée intégrée au repas. Les sucres intrinsèques des fruits/légumes/laitages n'entrent PAS dans ce comptage.",
+          "source_fr": "PNNS 4 (2019-2023) ; HAS T2.",
+          "source_url": "https://www.mangerbouger.fr/pnns",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "t2_total_sugar_per_meal_warning",
+          "scope": "per_meal",
+          "direction": "warning",
+          "value": 25,
+          "unit": "g",
+          "nutrient": "sugar_g_total",
+          "_nutrient_note": "sugar_g_total = sucres totaux Ciqual (sugar_g), incluant fructose/lactose/saccharose naturels.",
+          "rationale_fr": "Avertissement, pas un seuil bloquant : sucres totaux élevés au-dessus de 25 g/repas → flag dans `warnings`. Aliments riches en fruit ou laitage peuvent légitimement dépasser.",
+          "source_fr": "Dérivé.",
+          "source_url": null,
+          "source_status": "derived",
+          "evidence_level": "medium"
+        },
+        {
+          "id": "t2_fiber_per_meal_min",
+          "scope": "per_meal",
+          "direction": "min",
+          "value": 7,
+          "unit": "g",
+          "nutrient": "fiber_g",
+          "rationale_fr": "Fibres alimentaires ralentissent l'absorption des glucides et améliorent l'HbA1c.",
+          "source_fr": "ANSES – Apports en fibres ; HAS T2.",
+          "source_url": "https://www.anses.fr/fr/system/files/NUT2016SA0186Ra.pdf",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "t2_low_gi_preferred",
+          "scope": "per_meal",
+          "direction": "warning",
+          "value": null,
+          "unit": null,
+          "nutrient": "glycemic_index_estimated",
+          "rationale_fr": "Préférer aliments à index glycémique bas (IG ≤ 55) : légumineuses, céréales complètes, fruits frais entiers. IG non présent dans CIQUAL — estimation par catégorie d'aliment.",
+          "source_fr": "ADA Standards of Care ; HAS T2 ; International Tables of GI (Univ. Sydney).",
+          "source_url": "https://www.has-sante.fr/jcms/c_1022476/",
+          "source_status": "to_verify",
+          "evidence_level": "medium"
+        }
+      ]
+    },
+
+    "hta": {
+      "name_fr": "Hypertension artérielle",
+      "rules": [
+        {
+          "id": "hta_salt_per_day_max",
+          "scope": "per_day",
+          "direction": "max",
+          "value": 5,
+          "unit": "g",
+          "nutrient": "salt_g",
+          "rationale_fr": "Sel (NaCl) limité à 5 g/jour (équivalent à <2 g/jour de sodium) chez l'adulte, recommandation OMS forte applicable avec ou sans HTA. Pour un dîner isolé, viser ≤ 1.6 g (32 % de l'apport quotidien).",
+          "source_fr": "WHO Guideline: Sodium intake for adults and children. Geneva, World Health Organization (WHO), 2012 (reprinted 2014). ISBN 978 92 4 150483 6.",
+          "source_url": "https://iris.who.int/server/api/core/bitstreams/d0f9feb5-ed78-44d1-9e06-533a93352012/content",
+          "source_status": "verified",
+          "verified_at": "2026-05-16",
+          "pdf_page": 2,
+          "verbatim": "WHO recommends a reduction to <2 g/day sodium (5 g/day salt) in adults (strong recommendation).",
+          "evidence_level": "high"
+        },
+        {
+          "id": "hta_salt_per_meal_max",
+          "scope": "per_meal",
+          "direction": "max",
+          "value": 1.6,
+          "unit": "g",
+          "nutrient": "salt_g",
+          "rationale_fr": "Plafond sel par repas dérivé de l'objectif 5 g/jour réparti sur 3 repas (~1.6 g/repas marge incluse pour collations).",
+          "source_fr": "Dérivé de hta_salt_per_day_max.",
+          "source_url": null,
+          "source_status": "derived",
+          "evidence_level": "high"
+        },
+        {
+          "id": "hta_potassium_per_meal_min",
+          "scope": "per_meal",
+          "direction": "min",
+          "value": 1000,
+          "unit": "mg",
+          "nutrient": "potassium_mg",
+          "rationale_fr": "Régime DASH-like favorisant le potassium chez l'hypertendu sans insuffisance rénale. Apport conseillé EFSA 3500 mg/j ; viser ≥ 1000 mg par repas principal.",
+          "source_fr": "EFSA – Dietary reference values for potassium (2016) ; DASH diet ; HAS HTA.",
+          "source_url": "https://www.efsa.europa.eu/en/efsajournal/pub/4592",
+          "source_status": "to_verify",
+          "evidence_level": "medium",
+          "contraindication": ["insuffisance_renale_chronique"]
+        },
+        {
+          "id": "hta_saturated_fat_per_meal_max",
+          "scope": "per_meal",
+          "direction": "max",
+          "value": 7,
+          "unit": "g",
+          "nutrient": "saturated_fat_g",
+          "rationale_fr": "AG saturés ≤ 10 % AET (≈ 22 g/j pour 2000 kcal), répartis pour ≤ 7 g par repas principal.",
+          "source_fr": "ANSES – Actualisation des repères du PNNS (2017).",
+          "source_url": "https://www.anses.fr/fr/system/files/NUT2012SA0103Ra-1.pdf",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "hta_no_alcohol",
+          "scope": "category",
+          "direction": "forbidden",
+          "value": 0,
+          "unit": "g",
+          "nutrient": "alcohol_g",
+          "rationale_fr": "Alcool évité en cas d'HTA (effet presseur direct et interactions médicamenteuses).",
+          "source_fr": "HAS HTA ; SFHTA.",
+          "source_url": "https://www.has-sante.fr/jcms/c_1751525/",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        }
+      ]
+    },
+
+    "diabete_gestationnel": {
+      "name_fr": "Diabète gestationnel",
+      "rules": [
+        {
+          "id": "dg_carb_per_meal_max",
+          "scope": "per_meal",
+          "direction": "max",
+          "value": 45,
+          "unit": "g",
+          "nutrient": "carb_g",
+          "rationale_fr": "Glucides par repas principal plafonnés ; le DG nécessite répartition stricte sur 3 repas + 2-3 collations (~175-200 g/jour).",
+          "source_fr": "CNGOF – Recommandations Diabète gestationnel (2010, MAJ) ; HAS suivi grossesse.",
+          "source_url": "https://www.has-sante.fr/jcms/c_1037110/",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "dg_added_sugar_per_meal_max",
+          "scope": "per_meal",
+          "direction": "max",
+          "value": 0,
+          "unit": "g",
+          "nutrient": "added_sugar_g",
+          "_nutrient_note": "added_sugar_g = sucres ajoutés via la recette (sucre blanc, miel, sirop, confiture), prompt-derived côté service Node. Les sucres naturels de fruits/laitages NE SONT PAS comptés ici.",
+          "rationale_fr": "Aucun sucre ajouté en DG. Les sucres intrinsèques (fruits frais entiers, laitage nature) restent acceptables.",
+          "source_fr": "CNGOF DG.",
+          "source_url": "https://www.has-sante.fr/jcms/c_1037110/",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "dg_total_sugar_per_meal_warning",
+          "scope": "per_meal",
+          "direction": "warning",
+          "value": 15,
+          "unit": "g",
+          "nutrient": "sugar_g_total",
+          "rationale_fr": "Sucres totaux Ciqual au-dessus de 15 g/repas → warning, surtout si non issus exclusivement de fruits/laitages. Aide à détecter une recette qui paraît bonne mais charge en sucres naturels au-delà du raisonnable pour DG.",
+          "source_fr": "Dérivé.",
+          "source_url": null,
+          "source_status": "derived",
+          "evidence_level": "medium"
+        },
+        {
+          "id": "dg_low_gi_required",
+          "scope": "per_meal",
+          "direction": "warning",
+          "value": null,
+          "unit": null,
+          "nutrient": "glycemic_index_estimated",
+          "rationale_fr": "IG bas obligatoire (≤ 55) : légumineuses, céréales complètes, légumes verts.",
+          "source_fr": "CNGOF DG ; ADA Gestational Diabetes.",
+          "source_url": null,
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "dg_fiber_per_meal_min",
+          "scope": "per_meal",
+          "direction": "min",
+          "value": 7,
+          "unit": "g",
+          "nutrient": "fiber_g",
+          "rationale_fr": "Fibres pour ralentir absorption glucidique.",
+          "source_fr": "ANSES fibres ; CNGOF DG.",
+          "source_url": "https://www.anses.fr/fr/system/files/NUT2016SA0186Ra.pdf",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        }
+      ]
+    },
+
+    "grossesse": {
+      "name_fr": "Grossesse (cadre sanitaire)",
+      "rules": [
+        {
+          "id": "grossesse_no_alcohol",
+          "scope": "category",
+          "direction": "forbidden",
+          "value": 0,
+          "unit": "g",
+          "nutrient": "alcohol_g",
+          "rationale_fr": "Aucune consommation d'alcool pendant la grossesse. Toxicité démontrée sur la période embryonnaire et fœtale (grade A HAS). Aucune dose minimale d'alcoolisation sans conséquences sur le fœtus ne peut être définie (grade B). Tolérance zéro.",
+          "source_fr": "HAS – Projet de grossesse : informations, messages de prévention, examens à proposer (argumentaire). Septembre 2009. Service des bonnes pratiques professionnelles.",
+          "source_url": "https://www.has-sante.fr/upload/docs/application/pdf/2010-01/projet_de_grossesse_informations_messages_de_prevention_examens_a_proposer_-_argumentaire.pdf",
+          "source_status": "verified",
+          "verified_at": "2026-05-16",
+          "pdf_page": 19,
+          "verbatim": "l'alcool a une toxicité démontrée sur la période embryonnaire et la période fœtale (grade A). Il doit être recommandé aux femmes de ne pas consommer de boissons contenant de l'alcool pendant toute la durée de la grossesse.",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_no_raw_cheese",
+          "scope": "category",
+          "direction": "forbidden",
+          "value": null,
+          "unit": null,
+          "nutrient": null,
+          "ingredient_category": "fromage_lait_cru",
+          "rationale_fr": "Fromages au lait cru proscrits (listeria). Camembert, brie au lait cru, roquefort, reblochon, morbier, munster, chèvre lait cru.",
+          "source_fr": "ANSES – Listériose et grossesse ; MesConseilsGrossesse (Santé Publique France).",
+          "source_url": "https://www.mangerbouger.fr/manger-mieux/manger-mieux-a-tout-age/femmes-enceintes",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_no_raw_fish",
+          "scope": "category",
+          "direction": "forbidden",
+          "ingredient_category": "poisson_cru",
+          "rationale_fr": "Poisson cru proscrit (listeria, anisakis) : sushi, sashimi, gravlax, tarama non pasteurisé.",
+          "source_fr": "ANSES – Grossesse et alimentation.",
+          "source_url": "https://www.anses.fr/fr/content/grossesse-et-alimentation",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_no_raw_meat",
+          "scope": "category",
+          "direction": "forbidden",
+          "ingredient_category": "viande_crue_ou_saignante",
+          "rationale_fr": "Viande crue/saignante/peu cuite proscrite chez la femme enceinte non immune à la toxoplasmose. Bien cuite à cœur (68-72 °C) ; éviter la cuisson au four à micro-ondes. Aspect extérieur doré à marron, centre rose très clair presque beige, sans jus rosé.",
+          "source_fr": "AFSSA (ANSES) – Questions-Réponses Toxoplasmose : état des connaissances et évaluation du risque lié à l'alimentation. Janvier 2007.",
+          "source_url": "https://www.anses.fr/fr/system/files/MIC-QR-Toxoplasmose.pdf",
+          "source_status": "verified",
+          "verified_at": "2026-05-16",
+          "pdf_page": 2,
+          "verbatim": "Bien cuire tout type de viande (y compris la volaille et le gibier). […] Une viande bien cuite correspond à une température à cœur comprise entre 68 et 72°C. Eviter la cuisson des viandes au four à micro-ondes.",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_no_raw_eggs",
+          "scope": "category",
+          "direction": "forbidden",
+          "ingredient_category": "oeufs_crus",
+          "rationale_fr": "Oeufs crus proscrits (salmonelle, listeria) : mayonnaise maison, mousse au chocolat, tiramisu, sauce hollandaise non cuite.",
+          "source_fr": "ANSES.",
+          "source_url": "https://www.anses.fr/fr/content/grossesse-et-alimentation",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_no_charcuterie_cuite_courte",
+          "scope": "category",
+          "direction": "forbidden",
+          "ingredient_category": "charcuterie_artisanale_ou_crue",
+          "rationale_fr": "Rillettes, pâtés, foie gras, terrines maison, charcuterie en gelée, jambon cru proscrits (listeria).",
+          "source_fr": "ANSES.",
+          "source_url": "https://www.anses.fr/fr/content/grossesse-et-alimentation",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_wash_raw_vegetables",
+          "scope": "category",
+          "direction": "warning",
+          "ingredient_category": "legumes_crus",
+          "rationale_fr": "Lavage à grande eau systématique des légumes et plantes aromatiques crus, particulièrement renforcé pour les végétaux constamment souillés par la terre (radis, salade, fraises, champignons). Avertissement obligatoire dans `warnings` pour toute recette contenant des crudités.",
+          "source_fr": "AFSSA (ANSES) – Questions-Réponses Toxoplasmose : état des connaissances et évaluation du risque lié à l'alimentation. Janvier 2007.",
+          "source_url": "https://www.anses.fr/fr/system/files/MIC-QR-Toxoplasmose.pdf",
+          "source_status": "verified",
+          "verified_at": "2026-05-16",
+          "pdf_page": 2,
+          "verbatim": "Lors de la préparation des repas, laver à grande eau les légumes et les plantes aromatiques, surtout s'ils sont terreux et consommés crus. Précautions particulièrement renforcées pour les végétaux constamment souillés par de la terre et consommés crus ; radis, salade, fraises, champignons.",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_caffeine_per_day_max",
+          "scope": "per_day",
+          "direction": "max",
+          "value": 200,
+          "unit": "mg",
+          "nutrient": "caffeine_mg_estimated",
+          "rationale_fr": "Caféine plafonnée à 200 mg/jour pendant la grossesse et la lactation, toutes sources confondues (~ 2 espressos selon EFSA). Au-dessus, l'innocuité pour le fœtus n'est pas garantie.",
+          "source_fr": "EFSA – Caffeine: EFSA explains risk assessment. 2015. Document TM-04-15-330-EN-N, ISBN 978-92-9199-677-3, doi:10.2805/618813. Avis scientifique sous-jacent : EFSA Scientific Opinion on the safety of caffeine, EFSA Journal 2015;13(5):4102.",
+          "source_url": "https://www.efsa.europa.eu/sites/default/files/corporate_publications/files/efsaexplainscaffeine150527.pdf",
+          "source_status": "verified",
+          "verified_at": "2026-05-16",
+          "pdf_page": 3,
+          "verbatim": "Caffeine intakes from all sources up to 200mg per day consumed throughout the day do not raise safety concerns for the foetus.",
+          "evidence_level": "high"
+        },
+        {
+          "id": "grossesse_b9_per_day_min",
+          "scope": "per_day",
+          "direction": "min",
+          "value": 400,
+          "unit": "µg",
+          "nutrient": "vit_b9_dfe_ug",
+          "rationale_fr": "Folates (vit B9) 400 µg/jour pour prévention des défauts de fermeture du tube neural (anencéphalie, spina bifida). La référence HAS porte explicitement sur la SUPPLÉMENTATION pharmaceutique en période péri-conceptionnelle (28 jours avant conception jusqu'à 12 SA), pas sur l'apport alimentaire seul. Pour ALIM : la sortie n'engage pas la supplémentation médicamenteuse ; la valeur 400 µg/jour sert de cible orientative pour l'apport alimentaire en folates, à compléter par la supplémentation prescrite par le médecin. Pour un repas isolé : ~130 µg DFE (dérivé de 400 µg ÷ 3 repas).",
+          "source_fr": "HAS – Projet de grossesse : informations, messages de prévention, examens à proposer (argumentaire). Septembre 2009. Recommandations internationales convergentes (4 référentiels analysés).",
+          "source_url": "https://www.has-sante.fr/upload/docs/application/pdf/2010-01/projet_de_grossesse_informations_messages_de_prevention_examens_a_proposer_-_argumentaire.pdf",
+          "source_status": "verified",
+          "verified_at": "2026-05-16",
+          "pdf_page": 15,
+          "verbatim": "Les quatre recommandations internationales analysées préconisent une supplémentation en acide folique en période préconceptionnelle à raison de 400 microgrammes par jour jusqu'à la 12e semaine d'aménorrhée.",
+          "evidence_level": "high"
+        }
+      ]
+    },
+
+    "dyslipidemie": {
+      "name_fr": "Dyslipidémie / hypercholestérolémie",
+      "rules": [
+        {
+          "id": "dyslip_saturated_fat_per_meal_max",
+          "scope": "per_meal",
+          "direction": "max",
+          "value": 6,
+          "unit": "g",
+          "nutrient": "saturated_fat_g",
+          "rationale_fr": "AG saturés très restreints ; viser ≤ 10 % AET puis ≤ 8 % AET si LDL élevé.",
+          "source_fr": "HAS – Évaluation et prise en charge du risque cardio-vasculaire.",
+          "source_url": "https://www.has-sante.fr/jcms/c_2748152/",
+          "source_status": "to_verify",
+          "evidence_level": "high"
+        },
+        {
+          "id": "dyslip_cholesterol_per_day_max",
+          "scope": "per_day",
+          "direction": "max",
+          "value": 300,
+          "unit": "mg",
+          "nutrient": "cholesterol_mg",
+          "rationale_fr": "Cholestérol alimentaire ≤ 300 mg/jour, à descendre vers ≤ 200 mg/jour si LDL très élevé.",
+          "source_fr": "HAS dyslipidémie ; ESC/EAS guidelines.",
+          "source_url": "https://www.has-sante.fr/jcms/c_2748152/",
+          "source_status": "to_verify",
+          "evidence_level": "medium"
+        }
+      ]
+    }
+
+  },
+
+  "ingredient_categories": {
+    "fromage_lait_cru": {
+      "name_fr": "Fromages au lait cru",
+      "examples": ["camembert lait cru", "brie lait cru", "roquefort", "reblochon", "morbier", "munster", "chèvre lait cru", "saint-marcellin lait cru"],
+      "ciqual_codes_hint": [],
+      "notes_fr": "Match par nom + drapeau 'lait cru'. Les versions pasteurisées sont permises. À traiter en validation déterministe côté Nora."
+    },
+    "poisson_cru": {
+      "name_fr": "Poisson cru ou peu cuit",
+      "examples": ["sushi", "sashimi", "gravlax", "tartare de poisson", "carpaccio de poisson", "tarama"],
+      "ciqual_codes_hint": [],
+      "notes_fr": "Cuisson à cœur > 70 °C requise pour les femmes enceintes."
+    },
+    "viande_crue_ou_saignante": {
+      "name_fr": "Viande crue ou saignante",
+      "examples": ["tartare de bœuf", "carpaccio de bœuf", "viande saignante", "viande bleue", "rosé"],
+      "ciqual_codes_hint": [],
+      "notes_fr": "Toxoplasmose et listeria."
+    },
+    "oeufs_crus": {
+      "name_fr": "Œufs crus ou peu cuits",
+      "examples": ["mayonnaise maison", "tiramisu", "mousse au chocolat (œufs crus)", "œuf à la coque", "œuf mollet", "sabayon", "sauce hollandaise non cuite"],
+      "ciqual_codes_hint": [],
+      "notes_fr": "Préférer œufs durs ou pasteurisés."
+    },
+    "charcuterie_artisanale_ou_crue": {
+      "name_fr": "Charcuterie crue, artisanale ou en gelée",
+      "examples": ["rillettes", "pâté", "foie gras", "terrine", "jambon cru", "saucisson sec", "chorizo cru", "charcuterie en gelée"],
+      "ciqual_codes_hint": [],
+      "notes_fr": "Jambon blanc industriel sous vide cuit reste autorisé."
+    },
+    "legumes_crus": {
+      "name_fr": "Légumes et fruits crus",
+      "examples": ["crudités", "salade verte", "tomate crue", "concombre cru", "carotte râpée crue"],
+      "ciqual_codes_hint": [],
+      "notes_fr": "Nécessitent un lavage soigneux et une mention 'lavage soigneux' dans `warnings` en cas de grossesse."
+    }
+  }
+}
