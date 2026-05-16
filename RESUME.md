@@ -1,6 +1,8 @@
 # ALIM — état pour redémarrage rapide
 
-**Last updated:** 2026-05-16 ~16h10 UTC, après réorga site post-break.
+**Last updated:** 2026-05-16 ~16h30 UTC, après réorga site + push GitHub.
+
+**Repo Git :** `https://github.com/holco-apps/alim` (privé). Commit initial `11a2178` sur `main`. User `alan@holco.co`.
 
 ## En 30 secondes
 
@@ -67,12 +69,17 @@ Pas urgent tant qu'on n'a pas levé `noindex`.
 
 ## Conventions de travail (rappel pour redémarrage)
 
-- Source d'édition&nbsp;: `/root/.openclaw/alim/`
-- Statique servi&nbsp;: `/var/www/alim/`
-- Service Node prod (à monter)&nbsp;: `/opt/alim/`
+- Source d'édition&nbsp;: `/root/.openclaw/alim/` (= ce repo Git, remote `origin` = `https://github.com/holco-apps/alim` privé)
+- Statique servi&nbsp;: `/var/www/alim/` (déploiement manuel `cp -r web/* /var/www/alim/`)
+- Service Node prod&nbsp;: `/opt/alim/service/` (systemd `alim.service`)
 - Vhost nginx&nbsp;: `/etc/nginx/sites-available/alim`
 - Mémoires Alan → Nora&nbsp;: `/root/.codex/memories/alan_*.md`
 - Mémoires Nora → Alan&nbsp;: `/root/.claude/projects/-root/memory/nora_*.md`
+- Git user&nbsp;: `alan@holco.co` (côté Alan), pas de co-author Claude/Anthropic dans les commits.
+
+## Dette technique notée
+
+- `rules/clinical_rules.json` et `web/sources/clinical_rules.json` sont actuellement deux copies du même JSON (l'une pour le service Node, l'autre servie statiquement pour la page `/sources`). Risque de drift si on en modifie un sans l'autre. À fixer via script de deploy (`scripts/deploy_web.sh` qui copie + sync) ou via un endpoint `/api/rules` qui servirait le JSON dynamiquement.
 
 ## Garde-fous à NE PAS oublier au redémarrage
 
