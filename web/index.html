@@ -95,7 +95,7 @@
   /* ---------- hero ---------- */
   .hero{
     background:var(--paper);
-    padding:64px 0 84px;
+    padding:48px 0 64px;
     border-bottom:1px solid var(--line);
   }
   .hero-grid{
@@ -116,18 +116,18 @@
   }
   .label-line::before{content:""; width:30px; height:2px; background:var(--gold)}
   .h-display{
-    font-size:clamp(40px, 5.6vw, 68px);
-    max-width:18ch;
+    font-size:clamp(32px, 4.2vw, 48px);
+    max-width:20ch;
   }
   .h-display .accent{
     color:var(--navy);
     font-style:italic;
   }
   .lede{
-    margin-top:22px;
-    max-width:54ch;
+    margin-top:20px;
+    max-width:50ch;
     color:var(--ink-soft);
-    font-size:clamp(17px, 1.55vw, 19px);
+    font-size:clamp(15px, 1.25vw, 17px);
     line-height:1.55;
   }
   .hero-actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:28px}
@@ -246,11 +246,11 @@
   }
 
   /* ---------- generic section ---------- */
-  .section{padding:84px 0; border-bottom:1px solid var(--line)}
+  .section{padding:64px 0; border-bottom:1px solid var(--line)}
   .section.cream{background:var(--paper)}
   .section.dark{background:var(--navy); color:#f1f4fc; border-bottom-color:rgba(255,255,255,.10)}
   .section.dark a{color:var(--gold)}
-  .section h2{font-size:clamp(32px, 4.6vw, 52px); max-width:22ch}
+  .section h2{font-size:clamp(26px, 3.4vw, 38px); max-width:24ch}
   .kicker{
     color:var(--navy);
     font:700 11px/1.2 "JetBrains Mono", ui-monospace, monospace;
@@ -264,13 +264,13 @@
     gap:44px; align-items:end;
     margin-bottom:40px;
   }
-  .section-intro p{color:var(--muted); font-size:17px; line-height:1.55}
+  .section-intro p{color:var(--muted); font-size:15px; line-height:1.55}
   .dark .section-intro p{color:#ccd4e5}
   @media (max-width:780px){.section{padding:60px 0}.section-intro{grid-template-columns:1fr; gap:18px; margin-bottom:28px}}
 
   /* ---------- problem (3 paragraphs) ---------- */
   .problem-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:32px}
-  .problem-grid p{color:var(--ink-soft); font-size:16px; line-height:1.6}
+  .problem-grid p{color:var(--ink-soft); font-size:15px; line-height:1.6}
   .problem-grid .pid{
     display:block; margin-bottom:10px;
     color:var(--navy);
@@ -292,8 +292,8 @@
     background:var(--paper);
     border-bottom:1px solid var(--line);
   }
-  .sit header h3{font-size:26px; color:var(--navy)}
-  .sit header .brief{margin-top:6px; color:var(--ink-soft); font-size:14px; line-height:1.5}
+  .sit header h3{font-size:20px; color:var(--navy)}
+  .sit header .brief{margin-top:6px; color:var(--ink-soft); font-size:13px; line-height:1.5}
   .sit-body{padding:18px 22px 22px}
   .sit-toggle{
     display:inline-flex; align-items:center; gap:8px;
@@ -329,8 +329,8 @@
     border-left:0;
   }
   .pillar:first-child{border-left:1px solid var(--line)}
-  .pillar h3{font-size:30px; color:var(--navy); margin-bottom:10px}
-  .pillar p{color:var(--ink-soft); font-size:14.5px; line-height:1.55}
+  .pillar h3{font-size:22px; color:var(--navy); margin-bottom:8px}
+  .pillar p{color:var(--ink-soft); font-size:14px; line-height:1.55}
   @media (max-width:900px){.pillars{grid-template-columns:repeat(2,1fr)}.pillar{border-left:1px solid var(--line)!important}.pillar:nth-child(odd){border-right:0}}
   @media (max-width:560px){.pillars{grid-template-columns:1fr}.pillar{border-right:1px solid var(--line)!important}}
 
@@ -346,7 +346,7 @@
   .corpus-stat{display:flex; gap:10px; align-items:baseline; padding-right:24px; border-right:1px solid var(--line)}
   .corpus-stat:last-of-type{border-right:0}
   .corpus-stat .n{
-    font:400 38px/1 "Instrument Serif", Georgia, serif;
+    font:400 30px/1 "Instrument Serif", Georgia, serif;
     color:var(--navy);
   }
   .corpus-stat .lbl{color:var(--ink-soft); font-size:13px}
@@ -360,8 +360,8 @@
     background:rgba(255,255,255,.04);
     padding:24px; border-radius:8px;
   }
-  .ia-card h3{font-size:28px; color:#fff; margin-bottom:10px}
-  .ia-card p{color:#ccd4e5; font-size:15px; line-height:1.55}
+  .ia-card h3{font-size:22px; color:#fff; margin-bottom:8px}
+  .ia-card p{color:#ccd4e5; font-size:14px; line-height:1.55}
   .ia-card .sub{margin-top:10px; color:#9aa6c4; font-size:12px; font-family:"JetBrains Mono", monospace}
   @media (max-width:760px){.ia-grid{grid-template-columns:1fr}}
 
@@ -468,10 +468,10 @@
   .pricing-card .price{
     color:var(--gold);
     font-family:"Instrument Serif", Georgia, serif;
-    font-size:72px; line-height:.9;
+    font-size:52px; line-height:.9;
   }
-  .pricing-card small{font-family:Inter, system-ui, sans-serif; color:#dce3f4; font-size:15px}
-  .pricing-card p{margin-top:16px; color:#dce3f4; font-size:15px; line-height:1.55}
+  .pricing-card small{font-family:Inter, system-ui, sans-serif; color:#dce3f4; font-size:14px}
+  .pricing-card p{margin-top:14px; color:#dce3f4; font-size:14px; line-height:1.55}
   .pricing-card a{color:var(--gold)}
   .beta-layout{
     display:grid;
@@ -513,7 +513,7 @@
       <div class="label-line">HOLCO × ALIM — pour diététiciens libéraux</div>
       <h1 class="h-display">Donnez un brief patient. <span class="accent">ALIM propose une recette cadrée.</span></h1>
       <p class="lede">
-        Un prototype pour transformer vos contraintes nutritionnelles en recette praticable&nbsp;: portion, ingrédients, nutriments estimés, garde-fous activés et sources déjà vérifiées quand elles existent.
+        Transformer un brief patient en recette praticable, avec garde-fous nutritionnels et sources vérifiées.
       </p>
       <div class="hero-actions">
         <a class="button primary" href="#situations">Voir une recette annotée</a>
@@ -580,22 +580,22 @@
     <div class="section-intro">
       <div>
         <div class="kicker">Pourquoi ALIM</div>
-        <h2>Trois outils manquent à votre tabouret de consultation.</h2>
+        <h2>Trois outils manquent à votre consultation.</h2>
       </div>
-      <p>Chacun fait bien une chose. Aucun ne fait les trois ensemble&nbsp;: rédiger, calculer, vérifier — dans votre IA, en quelques secondes.</p>
+      <p>Rédiger, calculer, vérifier — dans votre IA, en quelques secondes.</p>
     </div>
     <div class="problem-grid">
       <div>
         <span class="pid">01 — L'IA généraliste</span>
-        <p>ChatGPT et Claude rédigent vite et bien, mais seuls, ils n'ont accès ni au corpus normatif français (ANSES, HAS, OMS, EFSA) ni à un calcul nutritionnel rattaché à une table officielle. Vous récupérez une recette plausible — pas auditée.</p>
+        <p>ChatGPT et Claude rédigent vite, mais sans corpus normatif français ni calcul nutritionnel officiel. La recette est plausible — pas auditée.</p>
       </div>
       <div>
         <span class="pid">02 — Le logiciel métier</span>
-        <p>Les logiciels diététiques savent calculer et structurer un plan, mais ils restent en silo&nbsp;: ils ne s'invitent pas dans une conversation, ils n'aident pas à formuler une recette sur mesure pour un brief patient ponctuel.</p>
+        <p>Les logiciels diététiques calculent juste, mais en silo. Ils ne s'invitent pas dans la conversation pour formuler une recette sur mesure.</p>
       </div>
       <div>
         <span class="pid">03 — Le diététicien</span>
-        <p>Vous gardez le contrôle clinique, mais vous repartez de zéro pour chaque recette&nbsp;: choix des ingrédients, vérification des seuils, traque des contre-indications. ALIM s'occupe du squelette, vous gardez le jugement.</p>
+        <p>Vous gardez le contrôle clinique, mais repartez de zéro à chaque recette. ALIM s'occupe du squelette, vous gardez le jugement.</p>
       </div>
     </div>
   </div>
@@ -609,7 +609,7 @@
         <div class="kicker">Bêta — deux situations couvertes</div>
         <h2>Deux briefs cliniques, calculés en direct.</h2>
       </div>
-      <p>Le mockup ci-dessus illustre un cas grossesse + DG. Voici les deux situations pour lesquelles la bêta est documentée et auditable. Chaque carte propose la sortie complète sur demande.</p>
+      <p>Cliquez pour voir la sortie complète.</p>
     </div>
     <div class="sit-grid">
       <article class="sit">
@@ -655,27 +655,27 @@
   <div class="wrap">
     <div class="section-intro">
       <div>
-        <div class="kicker">Ce qu'ALIM ajoute à votre IA</div>
+        <div class="kicker">Ce qu'ALIM ajoute</div>
         <h2>Formuler, calculer, vérifier, refuser.</h2>
       </div>
-      <p>Quatre choses simples que votre IA habituelle ne fait pas seule.</p>
+      <p>Quatre choses que votre IA ne fait pas seule.</p>
     </div>
     <div class="pillars">
       <div class="pillar">
         <h3>Formule</h3>
-        <p>Une recette claire et faisable — ingrédients en grammes, portion, préparation, équipement compatible avec ce que vous avez précisé.</p>
+        <p>Recette claire — ingrédients en grammes, portion, préparation, équipement compatible.</p>
       </div>
       <div class="pillar">
         <h3>Calcule</h3>
-        <p>Les nutriments par portion sont sommés depuis Ciqual quand l'ingrédient y est référencé. Chaque champ garde sa source.</p>
+        <p>Nutriments par portion sommés depuis Ciqual. Chaque champ garde sa source.</p>
       </div>
       <div class="pillar">
         <h3>Vérifie</h3>
-        <p>Les règles activées selon les pathologies sont appliquées après génération — pas en intention, en sortie. Seuils, exclusions, avertissements.</p>
+        <p>Règles activées selon les pathologies, appliquées en sortie. Seuils, exclusions, avertissements.</p>
       </div>
       <div class="pillar">
         <h3>Refuse</h3>
-        <p>Hors périmètre, ALIM refuse au lieu d'improviser&nbsp;: CKD / insuffisance rénale, briefs incohérents, contraintes incompatibles. Le refus est tracé.</p>
+        <p>Hors périmètre (CKD, brief incohérent), ALIM refuse au lieu d'improviser. Refus tracé.</p>
       </div>
     </div>
   </div>
@@ -686,10 +686,10 @@
   <div class="wrap">
     <div class="section-intro">
       <div>
-        <div class="kicker">Transparence documentaire</div>
-        <h2>Nous affichons l'état du corpus au lieu de masquer les limites.</h2>
+        <div class="kicker">Transparence</div>
+        <h2>L'état du corpus est affiché, pas masqué.</h2>
       </div>
-      <p>Vingt-sept règles cliniques activables. Toutes ne sont pas encore vérifiées contre leur source — nous le disons, et nous n'utilisons que les vérifiées comme citations.</p>
+      <p>27 règles cliniques. Seules les vérifiées sont citées en sortie.</p>
     </div>
     <div class="corpus-row">
       <div class="corpus-stat"><span class="n">6</span><span class="lbl"><strong>Vérifiées</strong><br>PDF, page, verbatim</span></div>
@@ -706,24 +706,24 @@
     <div class="section-intro">
       <div>
         <div class="kicker">Dans votre IA</div>
-        <h2>Vous restez dans ChatGPT ou Claude. ALIM apporte le calcul et les garde-fous.</h2>
+        <h2>Restez dans ChatGPT ou Claude.</h2>
       </div>
-      <p>La configuration sensible (clé, préférences) reste sur alim.care. Votre IA habituelle appelle ALIM dans la conversation et vous présente la sortie auditée.</p>
+      <p>ALIM apporte le calcul et les garde-fous, depuis votre conversation.</p>
     </div>
     <div class="ia-grid">
       <div class="ia-card">
         <h3>ChatGPT</h3>
-        <p>Custom GPT dédié, avec une action qui appelle ALIM en HTTPS. Vous lui demandez une recette&nbsp;: il vous répond avec le format ALIM, sourcé et cadré.</p>
-        <div class="sub">action HTTPS · clé Bearer collée</div>
+        <p>Custom GPT qui appelle ALIM en HTTPS. Vous demandez une recette, la sortie est sourcée et cadrée.</p>
+        <div class="sub">action HTTPS · clé Bearer</div>
       </div>
       <div class="ia-card">
         <h3>Claude (MCP)</h3>
-        <p>Serveur MCP local qui interroge ALIM en HTTPS, avec votre clé. Même logique que PennyPilot&nbsp;: vos préférences restent locales, ALIM ne stocke rien de votre conversation.</p>
+        <p>Serveur MCP local qui interroge ALIM. Préférences locales, rien stocké côté ALIM.</p>
         <div class="sub">@holco/alim-mcp · à venir</div>
       </div>
     </div>
-    <p style="margin-top:22px; color:#9aa6c4; font-size:14px">
-      Parcours&nbsp;: créez votre clé sur <a href="/configurer/">alim.care/configurer</a>, ajoutez ALIM à votre IA, demandez une recette. ALIM calcule, vérifie, refuse ou corrige.
+    <p style="margin-top:18px; color:#9aa6c4; font-size:13px">
+      Créez votre clé sur <a href="/configurer/">alim.care/configurer</a>, ajoutez ALIM à votre IA, demandez une recette.
     </p>
   </div>
 </section>
@@ -733,9 +733,9 @@
   <div class="wrap try-layout">
     <div>
       <div class="kicker">Test praticien</div>
-      <h2>Essayez un brief clinique.</h2>
-      <p class="lede" style="font-size:17px; margin-top:18px">
-        La bêta couvre deux intersections&nbsp;: T2 + HTA, ou grossesse + diabète gestationnel. CKD / insuffisance rénale est refusé. Le brief reste sur votre poste tant que vous n'avez pas cliqué&nbsp;: aucune donnée patient n'est conservée.
+      <h2>Essayez un brief.</h2>
+      <p class="lede" style="font-size:15px; margin-top:14px">
+        Bêta&nbsp;: T2 + HTA, ou grossesse + DG. CKD refusé. Aucune donnée conservée.
       </p>
     </div>
     <div class="form-surface">
@@ -813,18 +813,15 @@
   <div class="wrap beta-layout">
     <div>
       <div class="kicker">Bêta restreinte</div>
-      <h2>Une offre pour les premiers praticiens qui testent.</h2>
-      <p style="margin-top:22px; color:#ccd4e5; font-size:16px; line-height:1.6; max-width:60ch">
-        Pendant la phase de validation documentaire, l'accès est ouvert à un petit groupe de diététiciens libéraux qui acceptent de tester, remonter ce qui manque et garder le contrôle clinique. En échange, le tarif bêta reste verrouillé à vie tant que l'abonnement reste actif.
-      </p>
-      <p style="margin-top:14px; color:#9aa6c4; font-size:14px">
-        Tarif public prévu à la sortie de bêta&nbsp;: 29 €/mois HT.
+      <h2>Une offre pour les premiers praticiens.</h2>
+      <p style="margin-top:18px; color:#ccd4e5; font-size:14px; line-height:1.6; max-width:54ch">
+        Groupe restreint pendant la validation documentaire. Tarif verrouillé à vie tant que l'abonnement reste actif. Public à la sortie de bêta&nbsp;: 29 €/mois HT.
       </p>
     </div>
     <div class="pricing-card">
       <div class="price">9 €<small>&nbsp;/ mois HT</small></div>
-      <p>Bêta verrouillée à vie tant que l'abonnement reste actif. Accès aux deux situations couvertes, support direct par e-mail.</p>
-      <p>Pour rejoindre&nbsp;: <a href="mailto:alim@holco.co?subject=B%C3%AAta%20ALIM%20%E2%80%94%20Demande%20d%27acc%C3%A8s%20tarif%20verrouill%C3%A9">alim@holco.co</a></p>
+      <p>Verrouillé à vie. Accès aux deux situations couvertes, support par e-mail.</p>
+      <p>Rejoindre&nbsp;: <a href="mailto:alim@holco.co?subject=B%C3%AAta%20ALIM%20%E2%80%94%20Demande%20d%27acc%C3%A8s%20tarif%20verrouill%C3%A9">alim@holco.co</a></p>
     </div>
   </div>
 </section>
