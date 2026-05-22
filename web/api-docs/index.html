@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>API ALIM — documentation bêta</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Documentation API ALIM : endpoint generate_clinical_recipe, payload, modèle de réponse, refus hors périmètre, règles PII, périmètre bêta.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#233872">
+<link rel="icon" href="/assets/alim-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#233872; --navy-deep:#172650;
+    --gold:#f7da29; --gold-soft:#fff6b7;
+    --paper:#f5f0e8; --paper-alt:#fcfaf5;
+    --white:#fff;
+    --ink:#111827; --ink-soft:#3f4860; --muted:#687083;
+    --line:#ded8ca;
+    --ok:#286c4d; --warn:#9a661f; --bad:#8a2a2a;
+    --code-bg:#172650; --code-fg:#e7decb;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:108px}
+  body{
+    margin:0; color:var(--ink); background:var(--paper-alt);
+    font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--navy); text-decoration-thickness:1px; text-underline-offset:3px}
+  h1,h2,h3,h4{
+    margin:0;
+    font-family:"Instrument Serif", Georgia, serif;
+    font-weight:400; letter-spacing:-0.01em; line-height:1.15;
+    color:var(--navy-deep);
+  }
+  p{margin:0 0 12px}
+
+  .site-header{
+    position:sticky; top:0; z-index:30;
+    border-bottom:1px solid rgba(35,56,114,.10);
+    background:rgba(252,250,245,.92); backdrop-filter:blur(14px);
+  }
+  .nav{
+    width:min(1120px, calc(100% - 40px)); margin:0 auto;
+    height:92px; display:flex; align-items:center; justify-content:space-between; gap:24px;
+  }
+  .brand{
+    display:inline-flex; align-items:center; gap:10px;
+    color:var(--navy); text-decoration:none; font-weight:700;
+  }
+  .brand-svg{height:38px; width:auto}
+  .nav-links{display:flex; align-items:center; gap:22px; font-size:14px}
+  .nav-links a{color:#4b5567; text-decoration:none}
+  .nav-links a:hover{color:var(--navy)}
+  .nav-cta{
+    display:inline-flex; align-items:center; min-height:34px;
+    padding:6px 12px; border-radius:6px;
+    background:var(--navy); color:#fff !important; text-decoration:none;
+    font:700 13px/1.2 inherit;
+  }
+
+  /* layout 2 colonnes (TOC + content) ≥ 960 */
+  .layout{
+    width:min(1200px, calc(100% - 40px));
+    margin:0 auto;
+    padding-block:48px 96px;
+    display:grid; grid-template-columns:240px 1fr; gap:48px;
+    align-items:start;
+  }
+  .toc{
+    position:sticky; top:108px;
+    border-left:2px solid var(--line);
+    padding-left:18px;
+    font-size:13.5px;
+  }
+  .toc h4{
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 12px;
+  }
+  .toc ul{list-style:none; padding:0; margin:0; display:grid; gap:8px}
+  .toc a{color:var(--ink-soft); text-decoration:none}
+  .toc a:hover{color:var(--navy)}
+
+  main{min-width:0}
+  .kicker{
+    font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:14px;
+  }
+  h1.h-display{font-size:clamp(32px, 4.2vw, 44px); margin-bottom:18px}
+  .lede{
+    font-size:16px; line-height:1.65; color:var(--ink-soft);
+    max-width:64ch; margin-bottom:32px;
+  }
+  h2{
+    font-size:24px; margin-top:42px; margin-bottom:14px;
+    padding-top:24px; border-top:1px solid var(--line);
+  }
+  h2:first-of-type{border-top:0; padding-top:0; margin-top:0}
+  h3{font-size:17px; margin:24px 0 8px; color:var(--ink); font-weight:600}
+  h3 code{background:none; padding:0; font-size:1em; color:var(--navy-deep)}
+  p, li{font-size:14.5px; line-height:1.65; color:var(--ink-soft)}
+  strong{color:var(--ink); font-weight:600}
+  em{color:var(--ink)}
+  ul{padding-left:22px; margin:0 0 14px}
+  li{margin-bottom:6px}
+
+  code{
+    font:0.92em "JetBrains Mono", ui-monospace, monospace;
+    background:var(--paper);
+    padding:1px 6px; border-radius:3px;
+    color:var(--navy-deep);
+    border:1px solid var(--line);
+  }
+  pre.code{
+    background:var(--code-bg); color:var(--code-fg);
+    padding:18px 22px;
+    border-radius:8px;
+    overflow-x:auto;
+    margin:14px 0 20px;
+    font:13px/1.55 "JetBrains Mono", ui-monospace, monospace;
+  }
+  pre.code code{background:none; padding:0; border:0; color:inherit}
+
+  .endpoint{
+    display:inline-flex; align-items:center; gap:10px;
+    margin:6px 0 14px;
+    padding:8px 14px;
+    background:var(--paper); border:1px solid var(--line);
+    border-radius:6px;
+    font:600 13.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--navy-deep);
+  }
+  .verb{
+    display:inline-block; padding:3px 8px; border-radius:4px;
+    font-size:11px; letter-spacing:.06em;
+    background:var(--gold); color:var(--navy-deep);
+  }
+  .verb.get{background:var(--sage, #B8C4B2); color:var(--navy-deep)}
+
+  .table-wrap{overflow-x:auto; margin:0 0 24px}
+  table{
+    width:100%; border-collapse:collapse;
+    font-size:13.5px;
+  }
+  th, td{
+    text-align:left; padding:10px 14px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  th{
+    font:600 12px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted);
+    background:var(--paper);
+    border-bottom:1px solid var(--line-strong);
+  }
+  td code{font-size:0.92em}
+
+  .callout{
+    margin:18px 0;
+    padding:14px 18px;
+    background:var(--gold-soft);
+    border-left:3px solid var(--gold);
+    border-radius:0 6px 6px 0;
+  }
+  .callout.warn{
+    background:#fbeaea;
+    border-left-color:var(--bad);
+  }
+  .callout p{margin:0; font-size:13.5px; color:var(--ink)}
+  .callout strong{color:var(--navy-deep)}
+
+  footer{
+    background:var(--navy-deep); color:#d6dded;
+    padding:32px 0 48px; font-size:13px;
+  }
+  footer .wrap{width:min(1120px, calc(100% - 40px)); margin:0 auto}
+  footer a{color:var(--gold)}
+  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px}
+
+  @media (max-width:960px){
+    .layout{grid-template-columns:1fr; gap:32px}
+    .toc{position:static; border-left:0; padding-left:0; padding-bottom:18px; border-bottom:1px solid var(--line)}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav">
+    <a class="brand" href="/" aria-label="ALIM — accueil">
+      <svg class="brand-svg" viewBox="0 0 130 44" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALIM"><text x="0" y="34" font-family="Instrument Serif, Georgia, serif" font-size="36" font-weight="500" fill="currentColor" letter-spacing="0.5">ALIM</text><circle cx="120" cy="24" r="6" fill="#f7da29"/></svg>
+    </a>
+    <nav class="nav-links">
+      <a href="/#install">Installer</a>
+      <a href="/#piliers">Fonctions</a>
+      <a href="/sources/">Corpus</a>
+      <a href="/api-docs/">API</a>
+      <a class="nav-cta" href="/configurer/">Rejoindre la bêta</a>
+    </nav>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="toc" aria-label="Sommaire">
+    <h4>API ALIM — V0</h4>
+    <ul>
+      <li><a href="#vue-ensemble">Vue d'ensemble</a></li>
+      <li><a href="#authentification">Authentification</a></li>
+      <li><a href="#endpoint-generate">POST /api/generate</a></li>
+      <li><a href="#payload">Payload</a></li>
+      <li><a href="#reponse">Modèle de réponse</a></li>
+      <li><a href="#refus">Refus hors périmètre</a></li>
+      <li><a href="#pii">Règles PII</a></li>
+      <li><a href="#perimetre">Périmètre bêta</a></li>
+      <li><a href="#sante">Santé service</a></li>
+      <li><a href="#changelog">Changelog</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <p class="kicker">Documentation bêta</p>
+    <h1 class="h-display">API ALIM.</h1>
+    <p class="lede">
+      ALIM expose une API HTTPS qui reçoit un brief patient anonyme et renvoie une recette
+      cadrée par la base Ciqual 2025 et les recommandations cliniques françaises.
+      Cette doc couvre le périmètre bêta — elle évoluera avec l'authentification dédiée.
+    </p>
+
+    <h2 id="vue-ensemble">Vue d'ensemble</h2>
+    <p>L'API est consommée par&nbsp;:</p>
+    <ul>
+      <li><strong>Custom GPT ALIM</strong> (ChatGPT) — action HTTPS configurée sur cette API ;</li>
+      <li><strong>Serveur MCP local</strong> (Claude Desktop, Cursor) — appel relayé par le MCP wrapper ;</li>
+      <li><strong>Mirabelle</strong>, l'agent de démo public sur <a href="/">alim.care</a> — appel orchestré côté serveur ALIM.</li>
+    </ul>
+
+    <p>L'API est <strong>stateless</strong>&nbsp;: chaque requête est indépendante, aucune donnée patient n'est conservée au-delà de la réponse, sauf agrégation statistique anonyme.</p>
+
+    <p>Base URL&nbsp;: <code>https://alim.care</code></p>
+
+    <h2 id="authentification">Authentification</h2>
+    <p>L'authentification par <strong>clé Bearer</strong> sera obligatoire avant diffusion publique. Format prévu&nbsp;:</p>
+    <pre class="code"><code>Authorization: Bearer alim_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></pre>
+    <p>Cycle de vie d'une clé&nbsp;:</p>
+    <ul>
+      <li>générée à l'admission en bêta, transmise par e-mail au praticien après validation manuelle de sa demande sur <a href="/configurer/">/configurer/</a>&nbsp;;</li>
+      <li>personnelle, non transférable ;</li>
+      <li>quota par clé (par défaut 20 générations/jour en bêta) ;</li>
+      <li>révocable à tout moment par e-mail à <a href="mailto:alim@holco.co">alim@holco.co</a>.</li>
+    </ul>
+    <div class="callout">
+      <p><strong>Phase actuelle</strong>&nbsp;: l'endpoint <code>POST /api/generate</code> reste accessible sans clé pour la démo web et le Custom GPT V0. Cet état est temporaire. La version authentifiée sera servie sur <code>/api/v1/generate</code> avec migration progressive du Custom GPT.</p>
+    </div>
+
+    <h2 id="endpoint-generate">POST /api/generate</h2>
+    <p>Génère une recette cadrée à partir d'un brief patient anonyme.</p>
+    <p class="endpoint">
+      <span class="verb">POST</span>
+      <code>https://alim.care/api/generate</code>
+    </p>
+
+    <h3 id="payload">Payload</h3>
+    <pre class="code"><code>{
+  "pathologies": ["diabete_gestationnel", "grossesse"],
+  "meal_slot": "dejeuner",
+  "diet_type": "vegetarien",
+  "season": "ete",
+  "equipment": ["plaque", "four"],
+  "portions": 1,
+  "notes": "Sans crudités à risque."
+}</code></pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>pathologies</code></td><td>string[]</td><td>1+ valeurs parmi <code>diabete_t2</code>, <code>hta</code>, <code>diabete_gestationnel</code>, <code>grossesse</code>. Hors périmètre → refus.</td></tr>
+          <tr><td><code>meal_slot</code></td><td>string</td><td><code>petit_dejeuner</code>, <code>dejeuner</code>, <code>diner</code>, <code>collation</code></td></tr>
+          <tr><td><code>diet_type</code></td><td>string</td><td>défaut <code>omnivore</code>. Aussi&nbsp;: <code>vegetarien</code>, <code>vegan</code>, <code>pescetarien</code>, <code>sans_gluten</code>, <code>sans_lactose</code></td></tr>
+          <tr><td><code>season</code></td><td>string</td><td>défaut <code>all</code>. Aussi&nbsp;: <code>printemps</code>, <code>ete</code>, <code>automne</code>, <code>hiver</code></td></tr>
+          <tr><td><code>equipment</code></td><td>string[]</td><td>défaut <code>["plaque","four"]</code>. Aussi&nbsp;: <code>vapeur</code>, <code>micro_ondes</code>, <code>blender</code></td></tr>
+          <tr><td><code>portions</code></td><td>integer</td><td>défaut <code>1</code></td></tr>
+          <tr><td><code>notes</code></td><td>string</td><td>Brief libre, anonymisé (cf. règles PII).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="reponse">Modèle de réponse</h3>
+    <pre class="code"><code>{
+  "recipe": {
+    "name_fr": "Salade tiède quinoa, pois chiches et œuf dur",
+    "portion_g": 462,
+    "ingredients": [
+      { "name_fr": "Quinoa cuit", "quantity_g": 120, "ciqual_code": "9341" },
+      { "name_fr": "Pois chiches cuits", "quantity_g": 90, "ciqual_code": "20347" },
+      ...
+    ],
+    "steps_fr": [
+      "Rincer les pois chiches…",
+      "Cuire le quinoa…",
+      "Servir tiède."
+    ]
+  },
+  "nutrients_per_portion": {
+    "energy_kcal":     { "value": 462,  "source": "ciqual", "confidence": "high" },
+    "carb_g":          { "value": 52,   "source": "ciqual", "confidence": "high" },
+    "sugar_g_total":   { "value": 4,    "source": "ciqual", "confidence": "high" },
+    "fiber_g":         { "value": 9,    "source": "ciqual", "confidence": "high" },
+    "saturated_fat_g": { "value": 1.8,  "source": "ciqual", "confidence": "high" },
+    "salt_g":          { "value": 0.3,  "source": "ciqual", "confidence": "high" },
+    "vit_b9_dfe_ug":   { "value": 290,  "source": "ciqual", "confidence": "high" }
+  },
+  "rules": [
+    {
+      "id": "dg_glucides_meal_max",
+      "rationale_fr": "Glucides cadrés pour le repas (diabète gestationnel).",
+      "status": "passed"
+    },
+    {
+      "id": "grossesse_toxoplasmose_legumes",
+      "rationale_fr": "Légumes cuits ou bien lavés.",
+      "status": "passed"
+    }
+  ],
+  "sources": [
+    { "fr": "ANSES — Q/R Toxoplasmose", "pdf_page": 2, "url": "https://www.anses.fr/..." },
+    { "fr": "EFSA — Folate DRV",        "pdf_page": null, "url": "https://www.efsa.europa.eu/..." }
+  ],
+  "warnings": [
+    "Outil d'aide à la formulation, réservé aux professionnels — ne remplace pas le jugement clinique."
+  ]
+}</code></pre>
+
+    <h2 id="refus">Refus hors périmètre</h2>
+    <p>Si le brief sort du périmètre couvert (par ex. insuffisance rénale), ou si la validation déterministe échoue, l'API renvoie un statut <code>422 Unprocessable Entity</code> avec une charge utile <code>refused</code>&nbsp;:</p>
+    <pre class="code"><code>{
+  "refused": {
+    "reason_fr": "ALIM v0 couvre seulement les deux démos publiques : diabète T2 + HTA, ou grossesse + diabète gestationnel."
+  },
+  "warnings": [
+    "Outil d'aide à la formulation, réservé aux professionnels — ne remplace pas le jugement clinique."
+  ]
+}</code></pre>
+    <p>Tout refus est tracé et n'apparaît jamais sous la forme d'une recette improvisée. C'est la garantie principale du moteur.</p>
+
+    <h2 id="pii">Règles PII</h2>
+    <div class="callout warn">
+      <p><strong>Aucune donnée nominative patient</strong> ne doit transiter par l'API. Sont en particulier prohibés&nbsp;: nom, prénom, date de naissance, e-mail, numéro de téléphone, NIR (numéro de sécurité sociale), identifiant interne de cabinet.</p>
+    </div>
+    <p>Côté <code>notes</code>&nbsp;: décrire le profil <em>anonymement</em> — pathologie, âge approximatif, contraintes alimentaires, équipement, saison. Pas d'identifiant.</p>
+    <p>Côté Mirabelle (démo publique), un préfiltre côté serveur rejette automatiquement tout message contenant une signature PII détectée (e-mail, téléphone FR, date complète, NIR). Le même préfiltre sera étendu aux clients authentifiés.</p>
+
+    <h2 id="perimetre">Périmètre bêta</h2>
+    <p>L'API V0 couvre <strong>deux situations cliniques</strong>&nbsp;:</p>
+    <ul>
+      <li><strong>Diabète T2 + HTA</strong> — adulte, fonction rénale normale, hors grossesse ;</li>
+      <li><strong>Grossesse + diabète gestationnel</strong> — hors complication aiguë.</li>
+    </ul>
+    <p>L'insuffisance rénale (CKD) est <strong>explicitement hors périmètre</strong>. Toute mention déclenche un refus traçable.</p>
+
+    <h2 id="sante">Santé service</h2>
+    <p class="endpoint">
+      <span class="verb get">GET</span>
+      <code>https://alim.care/api/health</code>
+    </p>
+    <pre class="code"><code>{ "ok": true, "service": "alim", "version": "0.1.0" }</code></pre>
+
+    <h2 id="changelog">Changelog</h2>
+    <ul>
+      <li><strong>2026-05</strong>&nbsp;: V0 — moteur déterministe stateless, deux situations couvertes, refus traçable hors périmètre. Endpoint <code>POST /api/generate</code> sans authentification pour la phase bêta restreinte.</li>
+      <li><strong>À venir</strong>&nbsp;: authentification Bearer, quota par clé, journaux anonymes, migration vers <code>/api/v1/generate</code>.</li>
+    </ul>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><strong style="color:#fff">ALIM</strong> · outil d'aide à la formulation pour diététiciens libéraux.</p>
+    <p style="margin-top:8px; color:#9aa6c4">Ne remplace pas le jugement clinique. Prototype en validation documentaire.</p>
+    <div class="footer-links">
+      <a href="/">Accueil</a>
+      <a href="/configurer/">Rejoindre la bêta</a>
+      <a href="/sources/">Corpus</a>
+      <a href="/mentions-legales/">Mentions légales</a>
+      <a href="mailto:alim@holco.co">alim@holco.co</a>
+      <a href="https://holco.co/">HOLCO</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

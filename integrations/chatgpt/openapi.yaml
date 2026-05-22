@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: ALIM
+  version: 0.1.0
+  description: >
+    ALIM aide les professionnels de la nutrition à générer des fiches recettes
+    cadrées à partir d'un brief patient anonymisé. La bêta publique couvre deux
+    situations : diabète de type 2 + HTA, et grossesse + diabète gestationnel.
+servers:
+  - url: https://alim.care
+paths:
+  /api/generate:
+    post:
+      operationId: generateClinicalRecipe
+      summary: Générer une recette nutritionnelle cadrée
+      description: >
+        Génère une recette avec ingrédients en grammes, nutriments par portion,
+        garde-fous appliqués, sources et avertissements. Refuse les cas hors
+        périmètre bêta.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                pathologies:
+                  type: array
+                  minItems: 1
+                  maxItems: 4
+                  items:
+                    type: string
+                    enum:
+                      - diabete_t2
+                      - hta
+                      - diabete_gestationnel
+                      - grossesse
+                  description: >
+                    Pathologies ou situations couvertes. Combinaisons bêta :
+                    [diabete_t2, hta] ou [grossesse, diabete_gestationnel].
+                diet_type:
+                  type: string
+                  enum:
+                    - omnivore
+                    - vegetarien
+                    - vegan
+                    - pescetarien
+                    - sans_gluten
+                    - sans_lactose
+                  default: omnivore
+                season:
+                  type: string
+                  enum:
+                    - printemps
+                    - ete
+                    - automne
+                    - hiver
+                    - all
+                  default: all
+                meal_slot:
+                  type: string
+                  enum:
+                    - petit_dejeuner
+                    - dejeuner
+                    - diner
+                    - collation
+                  default: dejeuner
+                portions:
+                  type: integer
+                  minimum: 1
+                  maximum: 8
+                  default: 1
+                equipment:
+                  type: array
+                  maxItems: 8
+                  items:
+                    type: string
+                    enum:
+                      - plaque
+                      - four
+                      - vapeur
+                      - micro_ondes
+                      - blender
+                notes:
+                  type: string
+                  maxLength: 600
+                  description: >
+                    Brief anonymisé : goûts, saison, contraintes culinaires,
+                    budget, temps disponible, préférences. Ne jamais inclure
+                    nom, prénom, date de naissance, téléphone, e-mail, NIR ou
+                    tout identifiant patient.
+              required:
+                - pathologies
+                - meal_slot
+      responses:
+        "200":
+          description: Recette cadrée générée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlimRecipeResponse"
+        "422":
+          description: Brief refusé ou hors périmètre bêta
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlimRefusalResponse"
+        "400":
+          description: Requête invalide
+        "500":
+          description: Erreur interne ALIM
+components:
+  schemas:
+    NutrientValue:
+      type: object
+      properties:
+        value:
+          type: number
+        source:
+          type: string
+        confidence:
+          type: string
+      required:
+        - value
+        - source
+        - confidence
+    Ingredient:
+      type: object
+      properties:
+        name_fr:
+          type: string
+        quantity_g:
+          type: number
+        ciqual_code:
+          type:
+            - string
+            - "null"
+      required:
+        - name_fr
+        - quantity_g
+        - ciqual_code
+    Source:
+      type: object
+      properties:
+        citation:
+          type: string
+        url:
+          type: string
+      required:
+        - citation
+        - url
+    AlimRecipeResponse:
+      type: object
+      properties:
+        recipe:
+          type: object
+          properties:
+            name_fr:
+              type: string
+            portion_g:
+              type: number
+            ingredients:
+              type: array
+              items:
+                $ref: "#/components/schemas/Ingredient"
+            steps_fr:
+              type: array
+              items:
+                type: string
+          required:
+            - name_fr
+            - portion_g
+            - ingredients
+            - steps_fr
+        nutrients_per_portion:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/NutrientValue"
+        coverage_summary:
+          type: object
+        rules_applied:
+          type: array
+          items:
+            type: string
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Source"
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - recipe
+        - nutrients_per_portion
+        - coverage_summary
+        - rules_applied
+        - sources
+        - warnings
+    AlimRefusalResponse:
+      type: object
+      properties:
+        refused:
+          type: object
+          properties:
+            reason_fr:
+              type: string
+          required:
+            - reason_fr
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - refused

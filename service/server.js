@@ -1,7 +1,21 @@
 import { createServer } from "node:http";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+// Load /etc/alim.env if present (systemd unit ne charge pas EnvironmentFile pour l'instant)
+const ENV_FILE = process.env.ALIM_ENV_FILE || "/etc/alim.env";
+if (existsSync(ENV_FILE)) {
+  try {
+    const content = readFileSync(ENV_FILE, "utf8");
+    for (const line of content.split("\n")) {
+      const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+      if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+    }
+  } catch (e) {
+    console.error("[env] could not read", ENV_FILE, e.message);
+  }
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = process.env.ALIM_ROOT || resolve(__dirname, "..");
@@ -343,6 +357,400 @@ async function readJson(req) {
   }
 }
 
+// ----- Onboarding (bêta /configurer/) -----------------------------------
+const ONBOARDING_DIR = process.env.ALIM_ONBOARDING_DIR || "/var/lib/alim/onboarding";
+const ONBOARDING_FILE = `${ONBOARDING_DIR}/submissions.jsonl`;
+const REQUIRED_FIELDS = ["cabinet_name", "ville", "exercice", "annees", "prenom", "nom", "email", "ia_preferee"];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const STR_LIMIT = 1000;
+
+function clampStr(s) {
+  return typeof s === "string" ? s.trim().slice(0, STR_LIMIT) : "";
+}
+
+function randomToken() {
+  const bytes = new Uint8Array(9);
+  globalThis.crypto.getRandomValues(bytes);
+  return "alim-" + Array.from(bytes, b => b.toString(36).padStart(2, "0")).join("").slice(0, 14);
+}
+
+async function handleOnboardingSubmit(input) {
+  const data = (input && typeof input === "object") ? input : {};
+  // Validate required fields
+  for (const k of REQUIRED_FIELDS) {
+    if (!clampStr(data[k])) {
+      return { status: 400, payload: { ok: false, error: `Champ manquant : ${k}` } };
+    }
+  }
+  const email = clampStr(data.email);
+  if (!EMAIL_RE.test(email)) {
+    return { status: 400, payload: { ok: false, error: "Email invalide." } };
+  }
+  if (data.cgu_accepted !== true || data.engagement_feedback !== true) {
+    return { status: 400, payload: { ok: false, error: "Acceptation des conditions et de l'engagement requises." } };
+  }
+  const token = randomToken();
+  const record = {
+    token,
+    ts: new Date().toISOString(),
+    cabinet_name: clampStr(data.cabinet_name),
+    ville: clampStr(data.ville),
+    exercice: clampStr(data.exercice),
+    annees: clampStr(data.annees),
+    prenom: clampStr(data.prenom),
+    nom: clampStr(data.nom),
+    email,
+    ia_preferee: clampStr(data.ia_preferee),
+    motif: clampStr(data.motif || ""),
+    cgu_accepted: true,
+    engagement_feedback: true,
+    source: clampStr(data.source || "alim.care/configurer"),
+  };
+  // Append to JSONL
+  const { promises: fsp } = await import("node:fs");
+  await fsp.mkdir(ONBOARDING_DIR, { recursive: true }).catch(() => {});
+  await fsp.appendFile(ONBOARDING_FILE, JSON.stringify(record) + "\n", "utf8");
+  console.log(`[onboarding] ${token} ${record.email} ${record.cabinet_name}`);
+  // Optional: notify via Resend if key present
+  if (process.env.RESEND_API_KEY) {
+    notifyResend(record).catch((e) => console.error("[onboarding] notify error:", e.message));
+  }
+  return { status: 200, payload: { ok: true, token } };
+}
+
+async function notifyResend(record) {
+  const html = `
+<p>Nouvelle demande bêta ALIM — <strong>${escapeHtml(record.cabinet_name)}</strong></p>
+<ul>
+  <li><strong>${escapeHtml(record.prenom)} ${escapeHtml(record.nom)}</strong> &lt;${escapeHtml(record.email)}&gt;</li>
+  <li>Ville : ${escapeHtml(record.ville)}</li>
+  <li>Exercice : ${escapeHtml(record.exercice)} · ${escapeHtml(record.annees)}</li>
+  <li>IA préférée : ${escapeHtml(record.ia_preferee)}</li>
+  <li>Motif : ${escapeHtml(record.motif || "—")}</li>
+  <li>Token : <code>${record.token}</code></li>
+</ul>`.trim();
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: process.env.RESEND_FROM || "ALIM <alim@holco.co>",
+      to: process.env.RESEND_TO || "alim@holco.co",
+      subject: `[ALIM] Nouvelle demande bêta — ${record.cabinet_name}`,
+      html,
+    }),
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ===== Demo chat (alim.care widget) =====================================
+const DEMO_MODEL = process.env.ALIM_DEMO_MODEL || "claude-sonnet-4-6";
+const DEMO_RATE_LIMIT_PER_IP_PER_DAY = 20;
+const DEMO_RATE_LIMIT_GLOBAL_PER_HOUR = 120;
+const demoIpRl = new Map();   // ip → { count, resetAt }
+const demoGlobalRl = { count: 0, resetAt: 0 };
+
+const DEMO_SYSTEM_PROMPT = `Vous êtes **Mirabelle**, agente de démonstration d'ALIM. Vous faites découvrir l'outil ALIM aux diététiciennes libérales en l'appelant en outil dans la conversation. Vous n'êtes PAS ALIM : vous êtes une IA qui *utilise* ALIM via function-calling, exactement comme ChatGPT ou Claude le feront chez la praticienne une fois la bêta installée.
+
+**RÈGLE STRICTE DE POLITESSE** : vous vouvoyez TOUJOURS l'interlocutrice. Jamais de "tu". Jamais de "ton", "ta", "tes". Toujours "vous", "votre", "vos". Pas d'exception.
+
+Identité :
+- Vous vous présentez "Mirabelle" si on vous demande qui vous êtes. Pas "ALIM".
+- Vous rappelez que vous êtes une démo publique, et que les vraies sorties ALIM se font dans l'IA habituelle du praticien.
+
+**Présentation d'ALIM** — quand on vous demande "qu'est-ce qu'ALIM ?", "à quoi sert ALIM ?", ou questions similaires, vous répondez de manière courte et structurée (3 points) :
+1. ALIM est un outil d'aide à la formulation nutritionnelle pour diététiciennes libérales françaises.
+2. ALIM s'installe dans votre IA habituelle (ChatGPT, Claude, Mistral…) via Custom GPT ou serveur MCP. C'est l'IA qui rédige ; ALIM ajoute les calculs Ciqual, les garde-fous cliniques HAS/ANSES/EFSA, et les sources.
+3. La bêta couvre deux situations : diabète T2 + HTA, et grossesse + diabète gestationnel. Pour rejoindre la bêta : /configurer/.
+
+Ne récitez pas mécaniquement ces 3 points pour chaque message — uniquement quand on vous interroge sur ALIM lui-même.
+
+**LIMITE DE LA DÉMO** : une seule recette par session. Après avoir appelé generate_clinical_recipe une fois avec succès, vous ne pouvez plus appeler le tool dans la même conversation. Si l'utilisatrice demande une autre recette, vous répondez poliment qu'une seule génération est possible en démo publique, et que les générations illimitées sont disponibles via /configurer/ (bêta). Vous restez disponible pour des questions sur ALIM.
+
+Votre rôle est strict : aider à formuler UNE recette cadrée pour les deux situations couvertes en bêta. Pas plus.
+
+Périmètre couvert (sortie autorisée) :
+- Diabète T2 + HTA (adulte, fonction rénale normale, hors grossesse)
+- Grossesse + diabète gestationnel (hors complication aiguë)
+
+Tout le reste → refuser poliment et orienter vers la bêta (/configurer/). En particulier l'insuffisance rénale (CKD) est explicitement hors périmètre.
+
+Ton :
+- Pro mais proche. Pas condescendante, pas survendeuse, pas robotique.
+- Phrases courtes. Pas d'emoji. Pas de tournures bavardes.
+- Si jargon, courte définition entre parenthèses la première fois.
+
+Format d'échange :
+1. Si le brief est clair → un message d'accueil très court (1 phrase) puis appel direct du tool generate_clinical_recipe.
+2. Si manque un paramètre essentiel (pathologie, repas) → poser UNE question courte. Pas plus.
+3. Après le tool call, présenter la sortie ALIM en quelques phrases : titre, 3 nutriments clés, 1-2 garde-fous, sources. Toujours mentionner "Sous votre supervision clinique."
+4. Si le brief est hors périmètre → refus court + orientation /configurer/ pour rejoindre la bêta sur les situations couvertes. Ne JAMAIS suggérer que /configurer/ ouvre un outil hors périmètre. Ne JAMAIS donner d'amorce nutritionnelle (phosphore, potassium, protéines, etc.) sur une situation que tu n'as pas générée via le tool.
+5. Tu ne dois jamais inventer de valeurs nutritionnelles ni de règles cliniques en dehors du tool. Si le tool refuse, tu présentes le refus, pas de contournement.
+
+Règles de présentation des nutriments (CRITIQUE — diététicienne lit) :
+- Convention française Ciqual : les **glucides** affichés (carb_g) sont les **glucides assimilables**, **distincts des fibres** (fiber_g). Ne JAMAIS écrire "glucides dont fibres" ou "57 g glucides (dont 23 g fibres)". Présenter les fibres comme une ligne séparée : "glucides 57 g, fibres 23 g".
+- Présenter UNIQUEMENT les valeurs retournées par le tool. Ne jamais ajouter de qualificatif que le tool n'a pas donné : pas d'"index glycémique bas/haut", pas d'"équilibre acido-basique", pas de "charge glycémique", pas d'"index inflammatoire". Si tu veux mentionner un mécanisme, fais-le en pédagogie générale ("les lentilles apportent des fibres solubles") sans chiffrer ni qualifier la recette elle-même.
+- Les garde-fous présentés doivent provenir des règles actually retournées par le tool (champ rules ou activations). Pas de garde-fou inventé.
+- Sources : ne citer que celles présentes dans la sortie du tool. "Ciqual 2025 (ANSES)" est toujours juste pour les nutriments. Pour les seuils cliniques, citer la source exacte retournée (HAS, OMS sodium, EFSA folate, ANSES toxoplasmose, etc.).
+
+Données patient :
+- Le visiteur peut donner des infos anonymes sur un cas (pathologie, âge, contraintes, équipement). C'est OK.
+- S'il donne nom/prénom/date de naissance/numéro → demander de retirer. Tu refuses de traiter avec des identifiants nominatifs.
+
+Tu es une démo publique. Court, utile, honnête.`;
+
+const DEMO_TOOLS = [
+  {
+    name: "generate_clinical_recipe",
+    description: "Génère une recette diététique cadrée par les règles cliniques et la base Ciqual 2025. Renvoie titre, ingrédients en grammes, nutriments par portion, garde-fous activés, sources. Ne fournit qu'une sortie auditée — refuse hors périmètre.",
+    input_schema: {
+      type: "object",
+      properties: {
+        pathologies: {
+          type: "array",
+          items: { type: "string", enum: ["diabete_t2", "hta", "diabete_gestationnel", "grossesse"] },
+          description: "Pathologies à prendre en compte. Doit correspondre à un périmètre couvert."
+        },
+        meal_slot: {
+          type: "string",
+          enum: ["petit_dejeuner", "dejeuner", "diner", "collation"],
+          description: "Repas concerné."
+        },
+        diet_type: {
+          type: "string",
+          enum: ["omnivore", "vegetarien", "vegan", "pescetarien", "sans_gluten", "sans_lactose"],
+          default: "omnivore"
+        },
+        season: {
+          type: "string",
+          enum: ["printemps", "ete", "automne", "hiver", "all"],
+          default: "all"
+        },
+        equipment: {
+          type: "array",
+          items: { type: "string", enum: ["plaque", "four", "vapeur", "micro_ondes", "blender"] },
+          default: ["plaque", "four"]
+        },
+        portions: { type: "integer", default: 1 },
+        notes: { type: "string", description: "Brief anonymisé (sans données identifiantes)." }
+      },
+      required: ["pathologies", "meal_slot"]
+    }
+  }
+];
+
+function getClientIp(req) {
+  const xf = req.headers["x-forwarded-for"];
+  if (xf) return String(xf).split(",")[0].trim();
+  return req.socket?.remoteAddress || "0.0.0.0";
+}
+
+function demoRateLimitOk(ip) {
+  const now = Date.now();
+  if (now > demoGlobalRl.resetAt) {
+    demoGlobalRl.count = 0;
+    demoGlobalRl.resetAt = now + 60 * 60 * 1000;
+  }
+  if (demoGlobalRl.count >= DEMO_RATE_LIMIT_GLOBAL_PER_HOUR) {
+    return { ok: false, reason: "global" };
+  }
+  const ipState = demoIpRl.get(ip) || { count: 0, resetAt: now + 24 * 60 * 60 * 1000 };
+  if (now > ipState.resetAt) {
+    ipState.count = 0;
+    ipState.resetAt = now + 24 * 60 * 60 * 1000;
+  }
+  if (ipState.count >= DEMO_RATE_LIMIT_PER_IP_PER_DAY) {
+    return { ok: false, reason: "ip", resetAt: ipState.resetAt };
+  }
+  ipState.count += 1;
+  demoIpRl.set(ip, ipState);
+  demoGlobalRl.count += 1;
+  return { ok: true };
+}
+
+// Préfiltre PII local — bloque avant tout appel Anthropic.
+// Garde-fou pour éviter qu'un visiteur colle par accident nom/email/tél/date NIR.
+const PII_PATTERNS = [
+  { re: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/, label: "adresse e-mail" },
+  { re: /(?:\+33[\s.-]?|0)[1-9](?:[\s.-]?\d{2}){4}\b/, label: "numéro de téléphone" },
+  { re: /\b\d{2}[\/.-]\d{2}[\/.-](?:19|20)\d{2}\b/, label: "date complète (potentielle date de naissance)" },
+  { re: /\b[12]\s?\d{2}\s?(?:0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}\s?\d{2}\b/, label: "numéro de sécurité sociale" },
+  { re: /\b\d{15}\b/, label: "séquence de 15 chiffres (potentiel NIR / IBAN)" },
+];
+
+function detectPii(text) {
+  for (const p of PII_PATTERNS) {
+    if (p.re.test(text)) return p.label;
+  }
+  return null;
+}
+
+async function handleDemoChat(req, res) {
+  // Setup SSE early
+  const sse = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return sendJson(res, 503, { ok: false, error: "Démo indisponible — ANTHROPIC_API_KEY manquante côté serveur." });
+  }
+
+  let input;
+  try {
+    input = await readJson(req);
+  } catch (e) {
+    return sendJson(res, 400, { ok: false, error: "Body JSON invalide." });
+  }
+
+  const message = typeof input?.message === "string" ? input.message.trim() : "";
+  if (!message) {
+    return sendJson(res, 400, { ok: false, error: "Message vide." });
+  }
+  if (message.length > 1200) {
+    return sendJson(res, 400, { ok: false, error: "Message trop long (1200 caractères max)." });
+  }
+
+  // PII preflight — refuse avant tout appel LLM.
+  const piiKind = detectPii(message);
+  if (piiKind) {
+    return sendJson(res, 422, {
+      ok: false,
+      error: `Brief refusé : ${piiKind} détectée. Mirabelle ne traite que des briefs anonymisés (pathologie, profil clinique, contraintes alimentaires, équipement). Retirez les coordonnées avant d'envoyer.`
+    });
+  }
+
+  const ip = getClientIp(req);
+  const rl = demoRateLimitOk(ip);
+  if (!rl.ok) {
+    return sendJson(res, 429, {
+      ok: false,
+      error: rl.reason === "global"
+        ? "Beaucoup de demandes en cours sur la démo. Réessayez dans une heure."
+        : "Limite démo atteinte (5/jour). Rejoignez la bêta sur /configurer/ pour un accès dédié."
+    });
+  }
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no"
+  });
+  sse({ type: "start" });
+
+  let Anthropic;
+  try {
+    ({ default: Anthropic } = await import("@anthropic-ai/sdk"));
+  } catch (e) {
+    sse({ type: "error", message: "SDK Anthropic non disponible côté serveur." });
+    return res.end();
+  }
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const convo = [{ role: "user", content: message }];
+
+  try {
+    // Limite à 4 cycles internes LLM↔tool DANS la même requête HTTP (pas 4 tours utilisateur).
+    // Le frontend envoie un message one-shot ; on borne le nombre d'allers-retours du modèle pour
+    // borner le coût et éviter les boucles si jamais Claude rappelait le tool de manière imprévue.
+    for (let turn = 0; turn < 4; turn++) {
+      const stream = client.messages.stream({
+        model: DEMO_MODEL,
+        max_tokens: 700,
+        system: DEMO_SYSTEM_PROMPT,
+        tools: DEMO_TOOLS,
+        messages: convo
+      });
+
+      const blocks = [];
+      let current = null;
+
+      for await (const event of stream) {
+        if (event.type === "content_block_start") {
+          current = { ...event.content_block };
+          if (current.type === "tool_use") {
+            current.inputJson = "";
+            sse({ type: "tool_use_start", name: current.name });
+          }
+        } else if (event.type === "content_block_delta") {
+          const d = event.delta;
+          if (current?.type === "text" && d?.type === "text_delta") {
+            current.text = (current.text || "") + d.text;
+            sse({ type: "text", delta: d.text });
+          } else if (current?.type === "tool_use" && d?.type === "input_json_delta") {
+            current.inputJson += d.partial_json || "";
+          }
+        } else if (event.type === "content_block_stop") {
+          if (current?.type === "tool_use") {
+            try { current.input = JSON.parse(current.inputJson || "{}"); } catch { current.input = {}; }
+          }
+          if (current) blocks.push(current);
+          current = null;
+        }
+      }
+
+      const message_ = await stream.finalMessage();
+      const stopReason = message_.stop_reason;
+
+      // Assemble assistant message for conversation history
+      const assistantContent = blocks.map((b) => {
+        if (b.type === "text") return { type: "text", text: b.text || "" };
+        if (b.type === "tool_use") return { type: "tool_use", id: b.id, name: b.name, input: b.input };
+        return null;
+      }).filter(Boolean);
+      convo.push({ role: "assistant", content: assistantContent });
+
+      // If a tool was called, execute it and feed back
+      const toolBlocks = blocks.filter((b) => b.type === "tool_use");
+      if (toolBlocks.length > 0 && stopReason === "tool_use") {
+        const toolResults = [];
+        for (const tb of toolBlocks) {
+          if (tb.name === "generate_clinical_recipe") {
+            const brief = {
+              pathologies: tb.input.pathologies || [],
+              meal_slot: tb.input.meal_slot || "dejeuner",
+              diet_type: tb.input.diet_type || "omnivore",
+              season: tb.input.season || "all",
+              equipment: tb.input.equipment || ["plaque", "four"],
+              portions: tb.input.portions || 1,
+              notes: tb.input.notes || ""
+            };
+            const normalized = normalizeBrief(brief);
+            let outputPayload;
+            if (!normalized.ok) {
+              outputPayload = normalized.payload;
+            } else {
+              const r = generate(normalized.brief);
+              outputPayload = r.payload;
+            }
+            toolResults.push({
+              type: "tool_result",
+              tool_use_id: tb.id,
+              content: JSON.stringify(outputPayload).slice(0, 8000)
+            });
+            sse({ type: "tool_use_end", name: tb.name, ok: !outputPayload.refused });
+          }
+        }
+        convo.push({ role: "user", content: toolResults });
+        continue; // next turn
+      }
+
+      // No tool, end of conversation
+      break;
+    }
+    sse({ type: "done" });
+  } catch (err) {
+    console.error("[demo-chat] error:", err.message);
+    sse({ type: "error", message: "La démo a rencontré une erreur. Réessayez ou rejoignez la bêta sur /configurer/." });
+  } finally {
+    res.end();
+  }
+}
+// ========================================================================
+
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
@@ -383,6 +791,23 @@ const server = createServer(async (req, res) => {
         warnings: [DISCLAIMER]
       });
     }
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/onboarding/submit") {
+    try {
+      const input = await readJson(req);
+      const r = await handleOnboardingSubmit(input);
+      return sendJson(res, r.status, r.payload);
+    } catch (error) {
+      return sendJson(res, error.status || 500, {
+        ok: false,
+        error: error.message || "Erreur interne lors de la soumission."
+      });
+    }
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/demo-chat") {
+    return handleDemoChat(req, res);
   }
 
   if (url.pathname.startsWith("/api/")) {

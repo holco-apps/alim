@@ -61,7 +61,7 @@
     backdrop-filter:blur(14px);
   }
   .nav{
-    height:68px;
+    height:92px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -75,8 +75,8 @@
     text-decoration:none;
     font-weight:700;
   }
-  .brand img{width:30px; height:30px; border-radius:7px}
-  .brand span{font-size:17px}
+  .brand-svg{height:38px; width:auto; transition:transform .25s ease}
+  .brand:hover .brand-svg{transform:scale(1.03)}
   .nav-links{display:flex; align-items:center; gap:22px; font-size:14px}
   .nav-links a{color:#4b5567; text-decoration:none}
   .nav-links a:hover{color:var(--navy)}
@@ -162,82 +162,429 @@
   .trust-line strong{color:var(--ink-soft); font-weight:700}
   .trust-line .dot-sep{color:var(--line-strong)}
 
-  /* ---------- mockup ---------- */
+  /* ---------- ChatGPT-like mockup ---------- */
   .mockup{
-    background:#fff;
-    border:1px solid rgba(35,56,114,.16);
-    border-radius:10px;
-    box-shadow:0 24px 60px -28px rgba(23,38,80,.32), 0 2px 8px rgba(23,38,80,.06);
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    box-shadow:0 24px 60px -28px rgba(17,24,39,.20), 0 2px 8px rgba(17,24,39,.05);
     overflow:hidden;
     width:100%;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "Söhne", Inter, sans-serif;
+    color:#111827;
   }
-  .mockup-chrome{
-    display:flex; align-items:center; gap:8px;
-    padding:11px 14px;
-    background:#f6f3eb;
-    border-bottom:1px solid rgba(35,56,114,.10);
+  .mockup-top{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 16px;
+    background:#ffffff;
+    border-bottom:1px solid #ececf1;
   }
-  .mockup-chrome .dot{width:11px; height:11px; border-radius:50%; display:inline-block}
-  .mockup-chrome .dot.r{background:#f87171}
-  .mockup-chrome .dot.y{background:#fbbf24}
-  .mockup-chrome .dot.g{background:#34d399}
-  .mockup-chrome .mockup-title{
-    margin-left:8px; color:#6b7280; font-size:12px;
-    font-family:"JetBrains Mono", ui-monospace, monospace;
-  }
-  .mockup-body{padding:18px 18px 22px; display:grid; gap:12px}
-  .msg{display:flex; gap:10px; align-items:flex-start}
-  .msg-avatar{
-    flex:0 0 30px; height:30px; border-radius:50%;
+  .mockup-logo{
     display:inline-flex; align-items:center; justify-content:center;
-    background:#eef2ff; color:var(--navy);
-    font-weight:700; font-size:13px;
+    width:22px; height:22px;
+    color:#111827;
   }
-  .msg-avatar.ai{background:var(--navy); color:var(--gold)}
-  .msg-bubble{
-    flex:1; min-width:0;
-    padding:12px 14px;
-    background:#f4f6fb;
+  .mockup-logo svg{width:22px; height:22px}
+  .mockup-app{
+    font-weight:600; font-size:14px; color:#111827; letter-spacing:-.01em;
+  }
+  .mockup-sep{color:#c0c6d0; padding:0 2px}
+  .mockup-tool-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:3px 9px; border-radius:999px;
+    background:#f3f4f6; color:#4b5563;
+    font-size:11.5px; font-weight:500;
+  }
+  .mockup-tool-tag::before{
+    content:''; width:6px; height:6px; border-radius:50%; background:#10a37f;
+  }
+  .mockup-body{padding:18px 22px 22px; display:grid; gap:16px}
+
+  .msg{display:grid; grid-template-columns:28px 1fr; gap:12px; align-items:flex-start}
+  .msg-avatar{
+    width:28px; height:28px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:11.5px;
+    background:#e5e7eb; color:#374151;
+  }
+  .msg-avatar.ai{
+    background:#000; color:#fff;
+  }
+  .msg-name{
+    font-size:13px; font-weight:600; color:#111827; margin-bottom:4px;
+  }
+  .msg-content{
+    font-size:14px; line-height:1.55; color:#111827;
+  }
+  .msg-content p{margin:0}
+
+  .tool-call{
+    margin-left:40px;
+    background:#f7f7f8;
+    border:1px solid #ececf1;
     border-radius:10px;
-    font-size:14px; line-height:1.5; color:var(--ink);
+    padding:10px 12px;
+    display:flex; align-items:center; gap:10px;
+    font-size:12.5px; color:#4b5563;
   }
-  .msg-bubble.bubble-ai{
-    background:var(--paper-alt);
-    border:1px solid rgba(35,56,114,.12);
-    border-left:3px solid var(--gold);
+  .tool-call-icon{
+    flex:0 0 18px; width:18px; height:18px;
+    color:#10a37f;
+    display:inline-flex; align-items:center; justify-content:center;
   }
-  .tool-row{
-    margin:2px 0 2px 40px;
+  .tool-call code{
+    font: 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color:#111827;
+    background:#ececf1; padding:1px 5px; border-radius:3px;
+  }
+
+  /* ---------- Hero rappel + micro ---------- */
+  .hero-micro{
+    margin:14px 0 0;
+    font: 600 11.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.08em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  .hero-rappel{
+    margin:14px 0 0;
+    font: 400 14px/1.5 "Instrument Serif", Georgia, serif;
+    color:var(--navy);
+    font-style:italic;
+    max-width:48ch;
+  }
+
+  /* ---------- Sketches crayonnés décoratifs ---------- */
+  .sketch{
+    position:absolute;
+    width:140px; height:140px;
+    color:var(--navy);
+    opacity:0;
+    pointer-events:none;
+    z-index:0;
+    animation:sketch-in 1200ms ease 600ms forwards;
+  }
+  @keyframes sketch-in{
+    from{opacity:0; transform:translateY(8px) rotate(-4deg)}
+    to{opacity:0.18; transform:translateY(0) rotate(0)}
+  }
+  .sketch-hero-tl{top:32px; left:18px; transform:rotate(-8deg); animation-delay:400ms}
+  .sketch-hero-br{bottom:48px; right:24px; transform:rotate(6deg); width:160px; height:160px; animation-delay:700ms; color:var(--gold-deep, #b5901c)}
+  .sketch-ba-l{top:40px; left:-30px; width:160px; height:160px; transform:rotate(-12deg); color:var(--gold-deep, #b5901c); animation-delay:300ms}
+  .sketch-ba-r{bottom:30px; right:-20px; width:170px; height:170px; transform:rotate(15deg); animation-delay:500ms}
+  .sketch-beta{top:48px; right:60px; width:120px; height:120px; transform:rotate(8deg); color:var(--gold)}
+
+  /* Tilt léger continu pour donner vie */
+  .sketch{animation:sketch-in 1200ms ease forwards, sketch-bob 8s ease-in-out infinite 1.5s}
+  @keyframes sketch-bob{
+    0%,100%{}
+    50%{transform:translateY(-4px) rotate(2deg)}
+  }
+  /* Override per-instance pour garder rotations distinctes */
+  .sketch-hero-tl{animation-name:sketch-in, sketch-bob-l}
+  .sketch-hero-br{animation-name:sketch-in, sketch-bob-r}
+  .sketch-ba-l{animation-name:sketch-in, sketch-bob-l}
+  .sketch-ba-r{animation-name:sketch-in, sketch-bob-r}
+  .sketch-beta{animation-name:sketch-in, sketch-bob-r}
+  @keyframes sketch-bob-l{
+    0%,100%{transform:rotate(-8deg)}
+    50%{transform:translateY(-5px) rotate(-12deg)}
+  }
+  @keyframes sketch-bob-r{
+    0%,100%{transform:rotate(8deg)}
+    50%{transform:translateY(-5px) rotate(12deg)}
+  }
+
+  @media (max-width:760px){
+    .sketch{width:90px; height:90px; opacity:0.10}
+    .sketch-hero-tl{left:4px; top:6px}
+    .sketch-hero-br{right:4px; bottom:24px; width:110px; height:110px}
+    .sketch-ba-l, .sketch-ba-r{display:none}
+    .sketch-beta{display:none}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .sketch{animation:none !important; opacity:0.16}
+  }
+
+  /* ---------- Hero orbit (ALIM + IA satellites animés) ---------- */
+  .hero-orbit{
+    position:relative;
+    margin:0 auto;
+    width:100%;
+    max-width:400px;
+    aspect-ratio:1 / 1;
+  }
+  .orbit-svg{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    overflow:visible;
+  }
+  /* Anneau qui tourne lentement */
+  .orbit-ring{
+    transform-origin:200px 200px;
+    animation:orbit-spin 60s linear infinite;
+  }
+  /* Anneau intérieur statique très discret */
+  .orbit-inner-ring{
+    transform-origin:200px 200px;
+  }
+  /* Sources qui tournent autour du hub (sens inverse pour contraste) */
+  .orbit-sources{
+    transform-origin:200px 200px;
+    animation:sources-spin 40s linear infinite reverse;
+  }
+  @keyframes sources-spin{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(360deg)}
+  }
+  @keyframes orbit-spin{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(360deg)}
+  }
+  /* Hub qui respire */
+  .orbit-hub{
+    transform-origin:200px 200px;
+    animation:hub-pulse 4.5s ease-in-out infinite;
+  }
+  .orbit-glow{
+    transform-origin:200px 200px;
+    animation:glow-pulse 4.5s ease-in-out infinite;
+  }
+  @keyframes hub-pulse{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.04)}
+  }
+  @keyframes glow-pulse{
+    0%,100%{opacity:0.7; transform:scale(0.96)}
+    50%{opacity:1; transform:scale(1.12)}
+  }
+  /* Lignes pulsantes */
+  .orbit-line{
+    animation:line-flow 5s linear infinite;
+  }
+  .ol-1{animation-delay:0s}
+  .ol-2{animation-delay:1.6s}
+  .ol-3{animation-delay:3.2s}
+  @keyframes line-flow{
+    from{stroke-dashoffset:0}
+    to{stroke-dashoffset:-32}
+  }
+  /* Satellites HTML positionnés en % */
+  .orbit-sat{
+    position:absolute;
     display:inline-flex; align-items:center; gap:8px;
-    padding:5px 10px; border-radius:999px;
-    background:#fff5d1; color:#7a5a00;
-    font:700 11px/1.2 "JetBrains Mono", ui-monospace, monospace;
-    border:1px solid rgba(247,218,41,.5);
+    padding:8px 12px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--navy-deep);
+    font:600 13px/1 Inter, sans-serif;
+    cursor:pointer;
+    box-shadow:0 6px 18px -8px rgba(23,38,80,.20);
+    transform:translate(-50%,-50%);
+    opacity:0;
+    animation:sat-pop 700ms var(--ease, cubic-bezier(.4,1.6,.5,1)) forwards;
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   }
-  .recipe-title{
-    display:block; color:var(--navy);
-    font:600 16px/1.3 "Instrument Serif", Georgia, serif;
-    margin-bottom:8px;
+  .orbit-sat:hover{
+    transform:translate(-50%,-50%) scale(1.06);
+    border-color:var(--navy);
+    box-shadow:0 12px 28px -8px rgba(23,38,80,.30);
   }
-  .mockup-meta{
-    display:flex; flex-wrap:wrap; gap:4px 14px;
-    margin:4px 0 10px;
-    color:var(--muted); font-size:12px;
+  .orbit-sat-mark{
+    width:18px; height:18px;
+    display:inline-flex; align-items:center; justify-content:center;
   }
-  .mockup-meta b{color:var(--ink); font-weight:700}
-  .mockup-rules{margin:6px 0 4px; padding:0; list-style:none; display:grid; gap:4px}
-  .mockup-rules li{font-size:13px; color:var(--ink-soft)}
-  .mockup-rules li::before{content:"✓ "; color:var(--ok); font-weight:700}
-  .mockup-sources{
-    margin:10px 0 6px; padding:0; list-style:none;
-    display:grid; gap:3px;
-    font-size:12px; color:var(--muted);
+  .orbit-sat-mark svg{width:18px; height:18px}
+  .orbit-sat-1{left:50%; top:15%; animation-delay:200ms}
+  .orbit-sat-2{left:80.25%; top:67.5%; animation-delay:400ms}
+  .orbit-sat-3{left:19.75%; top:67.5%; animation-delay:600ms}
+  @keyframes sat-pop{
+    from{opacity:0; transform:translate(-50%,-50%) scale(0.5)}
+    to{opacity:1; transform:translate(-50%,-50%) scale(1)}
   }
-  .mockup-sources li::before{content:"↳ "; color:var(--navy)}
-  .mockup-disclaimer{
-    margin-top:10px; padding-top:10px;
-    border-top:1px dashed var(--line);
-    font-size:11px; color:var(--muted); font-style:italic;
+  /* Particules dorées qui flottent */
+  .orbit-particle{
+    position:absolute;
+    width:5px; height:5px; border-radius:50%;
+    background:var(--gold);
+    opacity:.5;
+    animation:float 6s ease-in-out infinite;
+  }
+  .p1{left:12%; top:25%; animation-delay:0s}
+  .p2{left:88%; top:35%; animation-delay:2s}
+  .p3{left:50%; top:90%; animation-delay:4s}
+  @keyframes float{
+    0%,100%{transform:translateY(0); opacity:.4}
+    50%{transform:translateY(-12px); opacity:.85}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .orbit-ring, .orbit-hub, .orbit-glow, .orbit-line, .orbit-sat, .orbit-particle, .orbit-sources{
+      animation:none !important;
+    }
+    .orbit-sat{opacity:1; transform:translate(-50%,-50%)}
+  }
+
+  /* ---------- Flow diagram (legacy, kept for fallback) ---------- */
+  .flow-diagram{
+    margin:0;
+    padding:0;
+    width:100%;
+    max-width:520px;
+  }
+  .flow-steps{
+    list-style:none;
+    margin:0; padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .flow-step{
+    background:var(--paper-alt);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    position:relative;
+    transition:transform .25s ease, border-color .25s ease, box-shadow .3s ease;
+  }
+  .flow-step:hover{
+    transform:translateY(-2px);
+    border-color:var(--navy);
+    box-shadow:0 12px 26px -10px rgba(23,38,80,.16);
+  }
+  .flow-step.flow-alim{
+    background:linear-gradient(135deg, #fffdf3 0%, var(--gold-soft) 100%);
+    border-color:var(--gold);
+  }
+  .flow-step.flow-step-check{
+    background:var(--paper);
+    border-color:rgba(35,56,114,.18);
+  }
+  .flow-num{
+    font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  .flow-step.flow-alim .flow-num{color:#7a5a00}
+  .flow-title{
+    font:400 19px/1.2 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-0.01em;
+  }
+  .flow-desc{
+    font-size:13px; line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .flow-arrow{
+    color:var(--navy);
+    opacity:.5;
+    align-self:center;
+    height:14px;
+  }
+  .flow-arrow svg{width:34px; height:12px; transform:rotate(90deg)}
+
+  .flow-proofs{
+    list-style:none;
+    margin:22px 0 0;
+    padding:0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 18px;
+  }
+  .flow-proofs li{
+    display:flex; align-items:center; gap:8px;
+    font-size:12.5px; color:var(--ink-soft);
+    line-height:1.4;
+  }
+  .proof-check{
+    flex:0 0 16px; width:16px; height:16px;
+    border-radius:50%;
+    background:var(--gold);
+    color:var(--navy-deep);
+    display:inline-flex; align-items:center; justify-content:center;
+    font:700 10px/1 Inter, sans-serif;
+  }
+  @media (max-width:540px){
+    .flow-proofs{grid-template-columns:1fr}
+  }
+
+  /* ---------- Avant / Avec ALIM ---------- */
+  .beforeafter{background:var(--paper-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+  .ba-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-top:8px;
+  }
+  .ba-col{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 26px;
+  }
+  .ba-col.ba-before{
+    background:rgba(138, 42, 42, 0.03);
+    border-color:rgba(138, 42, 42, 0.15);
+  }
+  .ba-col.ba-after{
+    background:linear-gradient(135deg, #fffdf3 0%, var(--gold-soft) 100%);
+    border:1px solid var(--gold);
+    box-shadow:0 8px 24px -10px rgba(247, 218, 41, 0.25);
+  }
+  .ba-tag{
+    font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  .ba-col.ba-before .ba-tag{color:var(--bad)}
+  .ba-col.ba-after .ba-tag{color:#7a5a00}
+  .ba-col ul{list-style:none; padding:0; margin:0; display:grid; gap:10px}
+  .ba-col li{
+    display:flex; align-items:flex-start; gap:10px;
+    font-size:14.5px; line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .ba-col.ba-after li{color:var(--ink)}
+  .ba-x, .ba-v{
+    flex:0 0 20px; width:20px; height:20px;
+    border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font:700 12px/1 Inter, sans-serif;
+    margin-top:1px;
+  }
+  .ba-x{background:rgba(138, 42, 42, 0.10); color:var(--bad)}
+  .ba-v{background:var(--gold); color:var(--navy-deep)}
+
+  .ba-refs{
+    margin-top:32px;
+    display:flex; flex-wrap:wrap; align-items:center;
+    gap:10px 18px;
+    padding:14px 18px;
+    background:var(--paper);
+    border-radius:10px;
+    border:1px solid var(--line);
+    font-size:13px;
+  }
+  .ba-refs-label{
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .ba-refs-list{color:var(--ink); flex:1; min-width:200px}
+  .ba-refs-link{
+    color:var(--navy); text-decoration:none; font-weight:500;
+    border-bottom:1px solid rgba(35,56,114,.3);
+  }
+  .ba-refs-link:hover{color:var(--navy-deep); border-bottom-color:var(--navy)}
+
+  @media (max-width:760px){
+    .ba-grid{grid-template-columns:1fr}
+    .ba-refs{flex-direction:column; align-items:flex-start; gap:6px}
   }
   @media (max-width:960px){
     .hero-grid{grid-template-columns:1fr; gap:40px}
@@ -320,7 +667,76 @@
   .sit-summary li::before{content:"· "; color:var(--navy)}
   @media (max-width:760px){.sit-grid{grid-template-columns:1fr}}
 
-  /* ---------- 4 piliers ---------- */
+  /* ---------- Carrousel piliers (5 slides) ---------- */
+  .pillar-carousel{margin-top:8px}
+  .pc-viewport{
+    overflow:hidden;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#fff;
+  }
+  .pc-track{
+    list-style:none; margin:0; padding:0;
+    display:flex;
+    transition:transform 600ms cubic-bezier(.45,.05,.2,.95);
+  }
+  .pc-slide{
+    flex:0 0 100%;
+    padding:48px 56px;
+    min-height:240px;
+    display:flex; flex-direction:column; justify-content:center; gap:10px;
+    background:linear-gradient(135deg, #fff 0%, #fffdf3 100%);
+    transition:opacity .4s ease;
+    opacity:.4;
+  }
+  .pc-slide.is-active{opacity:1}
+  .pc-num{
+    font: 600 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em; color:var(--gold-deep, #b5901c);
+    text-transform:uppercase;
+  }
+  .pc-slide h3{
+    font:400 30px/1.1 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .pc-slide p{
+    font:400 15px/1.55 Inter, sans-serif;
+    color:var(--ink-soft);
+    max-width:62ch;
+  }
+  .pc-controls{
+    display:flex; align-items:center; justify-content:center; gap:16px;
+    margin-top:18px;
+  }
+  .pc-prev, .pc-next{
+    width:38px; height:38px; border-radius:50%;
+    background:#fff; border:1px solid var(--line);
+    color:var(--navy);
+    font:500 16px/1 Inter, sans-serif;
+    cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background .15s, border-color .15s;
+  }
+  .pc-prev:hover, .pc-next:hover{background:var(--paper-alt); border-color:var(--navy)}
+  .pc-dots{display:flex; gap:8px}
+  .pc-dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--line); border:0; padding:0; cursor:pointer;
+    transition:background .25s ease, transform .25s ease;
+  }
+  .pc-dot:hover{background:var(--ink-soft)}
+  .pc-dot.is-active{
+    background:var(--gold);
+    transform:scale(1.4);
+  }
+  @media (max-width:600px){
+    .pc-slide{padding:36px 28px; min-height:220px}
+    .pc-slide h3{font-size:24px}
+  }
+
+  /* ---------- 4 piliers (legacy classes) ---------- */
   .pillars{display:grid; grid-template-columns:repeat(4,minmax(0,1fr))}
   .pillar{
     padding:28px;
@@ -473,12 +889,229 @@
   .pricing-card small{font-family:Inter, system-ui, sans-serif; color:#dce3f4; font-size:14px}
   .pricing-card p{margin-top:14px; color:#dce3f4; font-size:14px; line-height:1.55}
   .pricing-card a{color:var(--gold)}
+  .pricing-card .beta-cta{
+    display:inline-block;
+    padding:10px 18px;
+    background:var(--gold); color:var(--navy-deep) !important;
+    border-radius:6px;
+    font:700 14px/1.2 Inter, sans-serif;
+    text-decoration:none;
+    transition: background .15s, transform .15s;
+  }
+  .pricing-card .beta-cta:hover{background:#fae764; transform:translateY(-1px)}
   .beta-layout{
     display:grid;
     grid-template-columns:minmax(0,1fr) minmax(320px,.6fr);
     gap:44px; align-items:start;
   }
   @media (max-width:860px){.beta-layout{grid-template-columns:1fr}}
+
+  /* ---------- quote bandeau + logos sources ---------- */
+  .quote-band{
+    background:linear-gradient(180deg, var(--paper-alt) 0%, #fffbed 100%);
+    border-bottom:1px solid var(--line);
+  }
+  .rhetoric{
+    margin:0 0 40px;
+    padding:0;
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size:clamp(22px, 2.6vw, 32px);
+    line-height:1.25;
+    color:var(--navy-deep);
+    max-width:34ch;
+    letter-spacing:-0.005em;
+    position:relative;
+  }
+  .rhetoric::before{
+    content:'';
+    display:block;
+    width:36px;
+    height:2px;
+    background:var(--gold);
+    margin-bottom:18px;
+  }
+  .rhetoric em{
+    font-style:italic;
+    color:var(--navy);
+    background:linear-gradient(0deg, var(--gold-soft) 0 35%, transparent 35%);
+    padding:0 2px;
+  }
+
+  .logos-row{margin-top:8px}
+  .logos-row.dark{margin-top:36px}
+  .logos-label{
+    font:600 11px/1 Inter, sans-serif;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 16px;
+  }
+  .logos-row.dark .logos-label{color:#94a0bf}
+  .logos-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+    gap:12px;
+  }
+  .logo-chip{
+    display:grid;
+    grid-template-columns:36px 1fr;
+    column-gap:12px;
+    row-gap:2px;
+    align-items:center;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    transition:border-color 200ms ease, transform 200ms ease, box-shadow 240ms ease;
+  }
+  .logo-chip:hover{
+    border-color:var(--navy);
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(35, 56, 114, 0.08);
+  }
+  .logo-chip.dark{
+    background:rgba(255,255,255,.04);
+    border-color:rgba(255,255,255,.12);
+  }
+  .logo-chip.dark:hover{
+    border-color:var(--gold);
+    background:rgba(247, 218, 41, 0.06);
+  }
+  .lm-mark{
+    grid-row:1 / 3;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    border-radius:8px;
+    background:var(--navy);
+    color:var(--gold);
+  }
+  .logo-chip.dark .lm-mark{
+    background:rgba(247, 218, 41, 0.14);
+    color:var(--gold);
+  }
+  .lm-mark svg{width:18px; height:18px}
+  .lm-name{
+    align-self:end;
+    font:700 14px/1.1 Inter, sans-serif;
+    color:var(--ink);
+  }
+  .logo-chip.dark .lm-name{color:#fff}
+  .lm-sub{
+    align-self:start;
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.3;
+  }
+  .logo-chip.dark .lm-sub{color:#94a0bf}
+  @media (max-width:540px){
+    .logos-list{grid-template-columns:1fr 1fr}
+  }
+
+  /* ---------- install steps ---------- */
+  .install-steps{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:20px;
+    counter-reset:installs;
+  }
+  .install-steps li{
+    position:relative;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    padding:24px 22px 22px;
+    transition:border-color 240ms ease, background 240ms ease;
+  }
+  .install-steps li:hover{
+    border-color:var(--gold);
+    background:rgba(247, 218, 41, 0.06);
+  }
+  .install-steps .step-n{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:var(--gold);
+    color:var(--navy-deep);
+    font:700 14px/1 Inter, sans-serif;
+    margin-bottom:14px;
+  }
+  .install-steps h3{
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size:1.4rem;
+    color:#fff;
+    margin:0 0 6px;
+  }
+  .install-steps p{
+    color:#c9d2e8;
+    font-size:14px;
+    line-height:1.5;
+  }
+  .install-steps a{color:var(--gold)}
+  @media (max-width:780px){
+    .install-steps{grid-template-columns:1fr; gap:14px}
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-section{background:var(--paper-alt); border-top:1px solid var(--line)}
+
+  /* ---------- cadre légal ---------- */
+  .legal-section{background:var(--paper); border-top:1px solid var(--line)}
+  .legal-list{
+    list-style:none; padding:0; margin:0;
+    display:grid; grid-template-columns:1fr 1fr; gap:18px;
+  }
+  .legal-list li{
+    background:var(--paper-alt);
+    border:1px solid var(--line);
+    border-left:3px solid var(--gold);
+    border-radius:8px;
+    padding:16px 18px;
+    font-size:13.5px; line-height:1.55; color:var(--ink-soft);
+  }
+  .legal-list strong{display:block; color:var(--navy-deep); margin-bottom:4px; font:600 14px/1.3 Inter, sans-serif}
+  .legal-foot{
+    margin-top:22px; font-size:13px; color:var(--muted);
+    text-align:center;
+  }
+  @media (max-width:760px){.legal-list{grid-template-columns:1fr}}
+  .faq-list{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:18px;
+    margin-top:8px;
+  }
+  .faq-item{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 22px;
+  }
+  .faq-q{
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size:1.18rem;
+    color:var(--navy-deep);
+    margin:0 0 8px;
+  }
+  .faq-a{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    line-height:1.55;
+  }
+  @media (max-width:780px){
+    .faq-list{grid-template-columns:1fr}
+  }
 
   /* ---------- footer ---------- */
   footer{background:var(--navy-deep); color:#d6dded; padding:36px 0 54px; font-size:13px}
@@ -491,41 +1124,59 @@
 <header class="site-header">
   <div class="wrap nav">
     <a class="brand" href="/">
-      <img src="/assets/alim-logo.png" alt="ALIM">
-      <span>ALIM.care</span>
+      <svg class="brand-svg" viewBox="0 0 130 44" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALIM"><text x="0" y="34" font-family="Instrument Serif, Georgia, serif" font-size="36" font-weight="500" fill="currentColor" letter-spacing="0.5">ALIM</text><circle cx="120" cy="24" r="6" fill="#f7da29"/></svg>
     </a>
     <nav class="nav-links">
+      <a href="#install">Installer</a>
+      <a href="#piliers">Fonctions</a>
       <a href="#situations">Situations</a>
-      <a href="#piliers">Ce qu'ALIM ajoute</a>
-      <a href="#corpus">Transparence</a>
-      <a href="#ia">Dans votre IA</a>
-      <a href="#try">Tester</a>
       <a href="/sources/">Corpus</a>
-      <a class="nav-cta" href="#beta">Rejoindre la bêta</a>
+      <a href="#try">Tester</a>
+      <a href="#faq">FAQ</a>
+      <a class="nav-cta" href="/configurer/">Rejoindre la bêta</a>
     </nav>
   </div>
 </header>
 
 <!-- ============ HERO ============ -->
+<!-- Illustrations décoratives crayon (background hero) -->
+<svg class="sketch sketch-hero-tl" viewBox="0 0 80 80" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Tomate -->
+  <circle cx="40" cy="48" r="22"/>
+  <path d="M28 26 L40 32 L52 26 M40 32 L40 24 M40 24 L35 19 M40 24 L45 19"/>
+  <path d="M28 46 Q32 56 38 54" opacity="0.5"/>
+  <path d="M48 52 Q54 56 52 64" opacity="0.5"/>
+</svg>
+<svg class="sketch sketch-hero-br" viewBox="0 0 80 80" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Branche d'épi de blé -->
+  <line x1="40" y1="74" x2="40" y2="22"/>
+  <ellipse cx="35" cy="26" rx="3.5" ry="6" transform="rotate(-25 35 26)"/>
+  <ellipse cx="45" cy="26" rx="3.5" ry="6" transform="rotate(25 45 26)"/>
+  <ellipse cx="34" cy="36" rx="3.5" ry="6" transform="rotate(-25 34 36)"/>
+  <ellipse cx="46" cy="36" rx="3.5" ry="6" transform="rotate(25 46 36)"/>
+  <ellipse cx="33" cy="46" rx="3.5" ry="6" transform="rotate(-25 33 46)"/>
+  <ellipse cx="47" cy="46" rx="3.5" ry="6" transform="rotate(25 47 46)"/>
+  <ellipse cx="34" cy="56" rx="3.5" ry="6" transform="rotate(-25 34 56)"/>
+  <ellipse cx="46" cy="56" rx="3.5" ry="6" transform="rotate(25 46 56)"/>
+</svg>
+
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <div class="label-line">HOLCO × ALIM — pour diététiciens libéraux</div>
-      <h1 class="h-display">Donnez un brief patient. <span class="accent">ALIM propose une recette cadrée.</span></h1>
+      <div class="label-line">Pour les professionnels de la nutrition</div>
+      <h1 class="h-display">Des recettes qui changent. <span class="accent">Un cadre qui tient.</span></h1>
       <p class="lede">
-        Transformer un brief patient en recette praticable, avec garde-fous nutritionnels et sources vérifiées.
+        ALIM s'ajoute à ChatGPT ou Claude pour aider les diététiciens à produire plus vite des fiches recettes
+        <strong>variées, calculées et sourcées</strong>, à partir d'un brief patient anonymisé.
       </p>
       <div class="hero-actions">
-        <a class="button primary" href="#situations">Voir une recette annotée</a>
-        <a class="button secondary" href="#try">Tester un brief</a>
-        <a class="button tertiary" href="/sources/">Voir le corpus</a>
+        <a class="button primary" href="/configurer/">Rejoindre la bêta</a>
+        <a class="button tertiary" href="#" data-open-mirabelle="1">Parler à Mirabelle</a>
       </div>
+      <p class="hero-micro">Démo encadrée — diabète T2 + HTA · grossesse + diabète gestationnel</p>
+      <p class="hero-rappel">ALIM prépare une proposition cadrée. Vous gardez la main : vous validez, adaptez ou refusez.</p>
       <div class="trust-line">
         <span><strong>Bêta restreinte</strong></span>
-        <span class="dot-sep">·</span>
-        <span>T2 + HTA</span>
-        <span class="dot-sep">·</span>
-        <span>Grossesse + diabète gestationnel</span>
         <span class="dot-sep">·</span>
         <span>Aucune donnée patient</span>
         <span class="dot-sep">·</span>
@@ -533,71 +1184,138 @@
       </div>
     </div>
 
-    <!-- Mockup statique : conversation IA + sortie ALIM -->
-    <aside class="mockup" aria-label="Aperçu d'une conversation avec ALIM">
-      <div class="mockup-chrome">
-        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-        <span class="mockup-title">Conversation — assistant praticien</span>
-      </div>
-      <div class="mockup-body">
-        <div class="msg">
-          <span class="msg-avatar">D</span>
-          <div class="msg-bubble">
-            Patiente enceinte 2<sup>e</sup> trimestre, diabète gestationnel. Déjeuner végétarien d'été, simple, sans crudités à risque.
-          </div>
-        </div>
-        <div class="tool-row">→ ALIM · generate_clinical_recipe</div>
-        <div class="msg">
-          <span class="msg-avatar ai">A</span>
-          <div class="msg-bubble bubble-ai">
-            <span class="recipe-title">Salade tiède quinoa, pois chiches, courgettes rôties et œuf dur</span>
-            <div class="mockup-meta">
-              <span>Énergie&nbsp;<b>462 kcal</b></span>
-              <span>Glucides&nbsp;<b>52 g</b></span>
-              <span>Fibres&nbsp;<b>9 g</b></span>
-              <span>Folates B9&nbsp;<b>290 µg</b></span>
-            </div>
-            <ul class="mockup-rules">
-              <li>Glucides cadrés pour le repas (diabète gestationnel)</li>
-              <li>Aucun sucre ajouté</li>
-              <li>Légumes cuits ou bien lavés (toxoplasmose)</li>
-            </ul>
-            <ul class="mockup-sources">
-              <li>ANSES — Q/R Toxoplasmose (p. 2)</li>
-              <li>EFSA — Folate Dietary Reference Value</li>
-            </ul>
-            <p class="mockup-disclaimer">Outil d'aide à la formulation. Ne remplace pas le jugement clinique.</p>
-          </div>
-        </div>
-      </div>
+    <!-- Visuel hero animé — ALIM au centre, IA en orbite -->
+    <aside class="hero-orbit" aria-label="ALIM compatible avec ChatGPT, Claude, Mistral">
+      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" class="orbit-svg">
+        <defs>
+          <radialGradient id="orbitHub" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff6b7" />
+            <stop offset="100%" stop-color="#f7da29" />
+          </radialGradient>
+          <filter id="hubBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="8" />
+          </filter>
+          <!-- Cercle pour textPath des sources (r=92, entre hub et satellites) -->
+          <path id="orbitSourcesPath" d="M 200,200 m -92,0 a 92,92 0 1,1 184,0 a 92,92 0 1,1 -184,0" />
+        </defs>
+        <!-- Anneau intérieur (sources) — discret -->
+        <circle class="orbit-inner-ring" cx="200" cy="200" r="92" fill="none" stroke="#233872" stroke-opacity="0.08" stroke-width="1" />
+        <!-- Texte sources qui tourne autour du hub -->
+        <g class="orbit-sources">
+          <text font-family="JetBrains Mono, ui-monospace, monospace" font-size="9.5" letter-spacing="0.16em" fill="#233872" fill-opacity="0.62" font-weight="500">
+            <textPath href="#orbitSourcesPath" startOffset="0%">
+              CIQUAL 2025 · ANSES · EFSA · HAS · PNNS · INCA · OMS · CIQUAL 2025 · ANSES · EFSA · HAS · PNNS · INCA · OMS ·
+            </textPath>
+          </text>
+        </g>
+        <!-- Anneau extérieur (orbite IA) -->
+        <circle class="orbit-ring" cx="200" cy="200" r="150" fill="none" stroke="#233872" stroke-opacity="0.15" stroke-width="1" stroke-dasharray="2 6" />
+        <!-- Lignes radiales vers chaque IA -->
+        <g class="orbit-lines" stroke="#233872" stroke-opacity="0.22" stroke-width="1" stroke-linecap="round" stroke-dasharray="3 5">
+          <line class="orbit-line ol-1" x1="200" y1="200" x2="200" y2="60" />
+          <line class="orbit-line ol-2" x1="200" y1="200" x2="321" y2="270" />
+          <line class="orbit-line ol-3" x1="200" y1="200" x2="79"  y2="270" />
+        </g>
+        <!-- Glow hub -->
+        <circle class="orbit-glow" cx="200" cy="200" r="62" fill="#f7da29" fill-opacity="0.25" filter="url(#hubBlur)" />
+        <!-- Hub central ALIM -->
+        <g class="orbit-hub">
+          <circle cx="200" cy="200" r="52" fill="url(#orbitHub)" />
+          <circle cx="200" cy="200" r="52" fill="none" stroke="#172650" stroke-opacity="0.18" stroke-width="0.6" />
+          <text x="200" y="194" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="22" font-weight="500" fill="#172650">ALIM</text>
+          <text x="200" y="212" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, monospace" font-size="7" letter-spacing="0.12em" fill="#172650" fill-opacity="0.6">VÉRIFIE &amp; CADRE</text>
+        </g>
+      </svg>
+
+      <!-- Satellites HTML pour bénéficier des hovers / animations -->
+      <button type="button" class="orbit-sat orbit-sat-1" aria-label="ChatGPT — compatible via Custom GPT">
+        <span class="orbit-sat-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.84a5.94 5.94 0 0 0-.51-4.88 6 6 0 0 0-6.47-2.88 6 6 0 0 0-10.18 2.18A5.96 5.96 0 0 0 1.71 7.4a6 6 0 0 0 .74 7.04 5.94 5.94 0 0 0 .51 4.88 6 6 0 0 0 6.47 2.88 6 6 0 0 0 10.18-2.18 5.96 5.96 0 0 0 3.41-3.14 6 6 0 0 0-.74-7.04Z"/></svg>
+        </span>
+        <span class="orbit-sat-label">ChatGPT</span>
+      </button>
+      <button type="button" class="orbit-sat orbit-sat-2" aria-label="Claude — compatible via MCP">
+        <span class="orbit-sat-mark" aria-hidden="true" style="color:#cc785c">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.5 17.5 9 7h2l3.5 10.5h-2L11.7 15H8.3l-.8 2.5h-2Zm3.3-4h2.4L10 9.7l-1.2 3.8Zm10.7 4V7h-2v10.5h2Z"/></svg>
+        </span>
+        <span class="orbit-sat-label">Claude</span>
+      </button>
+      <button type="button" class="orbit-sat orbit-sat-3" aria-label="Mistral — compatible MCP-ready">
+        <span class="orbit-sat-mark" aria-hidden="true" style="color:#fa520e">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="3" height="16"/><rect x="8" y="4" width="3" height="16" opacity="0.8"/><rect x="13" y="4" width="3" height="16" opacity="0.6"/><rect x="18" y="4" width="3" height="16" opacity="0.4"/></svg>
+        </span>
+        <span class="orbit-sat-label">Mistral</span>
+      </button>
+
+      <!-- Particules ambient -->
+      <span class="orbit-particle p1" aria-hidden="true"></span>
+      <span class="orbit-particle p2" aria-hidden="true"></span>
+      <span class="orbit-particle p3" aria-hidden="true"></span>
     </aside>
   </div>
 </section>
 
-<!-- ============ PROBLÈME ============ -->
-<section class="section cream" id="probleme">
+<!-- Illustrations décoratives crayon (background avant/avec) -->
+<svg class="sketch sketch-ba-l" viewBox="0 0 80 80" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Citron coupé en deux -->
+  <ellipse cx="40" cy="40" rx="26" ry="18"/>
+  <ellipse cx="40" cy="40" rx="20" ry="13"/>
+  <line x1="40" y1="27" x2="40" y2="53"/>
+  <line x1="20" y1="40" x2="60" y2="40"/>
+  <line x1="26" y1="29" x2="54" y2="51"/>
+  <line x1="54" y1="29" x2="26" y2="51"/>
+</svg>
+<svg class="sketch sketch-ba-r" viewBox="0 0 80 80" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Brocoli -->
+  <path d="M25 40 Q18 35 22 25 Q26 19 33 22 Q35 16 42 18 Q50 18 50 28 Q57 30 54 40 L50 44 L25 44 Z"/>
+  <line x1="29" y1="44" x2="29" y2="60"/>
+  <line x1="40" y1="44" x2="40" y2="64"/>
+  <line x1="50" y1="44" x2="50" y2="60"/>
+  <circle cx="27" cy="29" r="3" opacity="0.5"/>
+  <circle cx="36" cy="25" r="3" opacity="0.5"/>
+  <circle cx="45" cy="28" r="3" opacity="0.5"/>
+</svg>
+
+<!-- ============ AVANT / AVEC ALIM ============ -->
+<section class="section beforeafter">
   <div class="wrap">
     <div class="section-intro">
       <div>
-        <div class="kicker">Pourquoi ALIM</div>
-        <h2>Trois outils manquent à votre consultation.</h2>
+        <div class="kicker">Le travail invisible</div>
+        <h2>Préparer une fiche recette, ça prend du temps.</h2>
       </div>
-      <p>Rédiger, calculer, vérifier — dans votre IA, en quelques secondes.</p>
+      <p>Trouver l'idée. L'adapter au patient, à la saison, au temps disponible. Recalculer. Sourcer. Mettre en forme.</p>
     </div>
-    <div class="problem-grid">
-      <div>
-        <span class="pid">01 — L'IA généraliste</span>
-        <p>ChatGPT et Claude rédigent vite, mais sans corpus normatif français ni calcul nutritionnel officiel. La recette est plausible — pas auditée.</p>
-      </div>
-      <div>
-        <span class="pid">02 — Le logiciel métier</span>
-        <p>Les logiciels diététiques calculent juste, mais en silo. Ils ne s'invitent pas dans la conversation pour formuler une recette sur mesure.</p>
-      </div>
-      <div>
-        <span class="pid">03 — Le diététicien</span>
-        <p>Vous gardez le contrôle clinique, mais repartez de zéro à chaque recette. ALIM s'occupe du squelette, vous gardez le jugement.</p>
-      </div>
+
+    <div class="ba-grid">
+      <article class="ba-col ba-before">
+        <p class="ba-tag">Avant — IA seule</p>
+        <ul>
+          <li><span class="ba-x" aria-hidden="true">×</span>Je cherche une idée qui ne ressemble pas aux précédentes</li>
+          <li><span class="ba-x" aria-hidden="true">×</span>Je l'adapte au patient, à la saison, au temps disponible</li>
+          <li><span class="ba-x" aria-hidden="true">×</span>Je vérifie les apports et les limites</li>
+          <li><span class="ba-x" aria-hidden="true">×</span>Je retrouve les sources</li>
+          <li><span class="ba-x" aria-hidden="true">×</span>Je mets en forme une fiche utilisable</li>
+        </ul>
+      </article>
+
+      <article class="ba-col ba-after">
+        <p class="ba-tag">Avec ALIM dans votre IA</p>
+        <ul>
+          <li><span class="ba-v" aria-hidden="true">✓</span>Une idée de recette variée</li>
+          <li><span class="ba-v" aria-hidden="true">✓</span>Des ingrédients en grammes</li>
+          <li><span class="ba-v" aria-hidden="true">✓</span>Des nutriments par portion</li>
+          <li><span class="ba-v" aria-hidden="true">✓</span>Des garde-fous listés</li>
+          <li><span class="ba-v" aria-hidden="true">✓</span>Des sources attachées</li>
+        </ul>
+      </article>
     </div>
+
+    <p class="ba-refs">
+      <span class="ba-refs-label">Références mobilisées</span>
+      <span class="ba-refs-list">Ciqual&nbsp;2025 · ANSES · EFSA · HAS · PNNS · INCA · OMS</span>
+      <a class="ba-refs-link" href="/sources/">Voir le corpus complet →</a>
+    </p>
   </div>
 </section>
 
@@ -650,36 +1368,97 @@
   </div>
 </section>
 
-<!-- ============ 4 PILIERS ============ -->
+<!-- ============ 5 FONCTIONS — verbes d'action ============ -->
 <section class="section cream" id="piliers">
   <div class="wrap">
     <div class="section-intro">
       <div>
-        <div class="kicker">Ce qu'ALIM ajoute</div>
-        <h2>Formuler, calculer, vérifier, refuser.</h2>
+        <div class="kicker">Ce qu'ALIM fait, ce que votre IA ne fait pas</div>
+        <h2>Formuler, calculer, vérifier, citer, refuser.</h2>
       </div>
-      <p>Quatre choses que votre IA ne fait pas seule.</p>
+      <p>Cinq gestes simples, dans la conversation que vous tenez déjà avec votre IA.</p>
     </div>
-    <div class="pillars">
-      <div class="pillar">
-        <h3>Formule</h3>
-        <p>Recette claire — ingrédients en grammes, portion, préparation, équipement compatible.</p>
+    <div class="pillar-carousel" id="pillarCarousel">
+      <div class="pc-viewport">
+        <ul class="pc-track" id="pcTrack">
+          <li class="pc-slide is-active">
+            <span class="pc-num">01</span>
+            <h3>Formuler une recette</h3>
+            <p>Décrivez le profil patient. ALIM renvoie une recette praticable directement dans le chat — ingrédients en grammes, portion, préparation, équipement compatible.</p>
+          </li>
+          <li class="pc-slide">
+            <span class="pc-num">02</span>
+            <h3>Calculer les nutriments</h3>
+            <p>Énergie, glucides, fibres, micro-nutriments par portion. Sommés depuis Ciqual&nbsp;2025. Chaque champ garde sa source.</p>
+          </li>
+          <li class="pc-slide">
+            <span class="pc-num">03</span>
+            <h3>Activer les garde-fous</h3>
+            <p>Selon la pathologie déclarée (T2 + HTA, grossesse + DG), les règles cliniques s'appliquent en sortie. Seuils, exclusions, avertissements.</p>
+          </li>
+          <li class="pc-slide">
+            <span class="pc-num">04</span>
+            <h3>Citer ses sources</h3>
+            <p>Chaque règle activée est citée avec verbatim PDF, page, et organisme (ANSES, EFSA, HAS).</p>
+          </li>
+          <li class="pc-slide">
+            <span class="pc-num">05</span>
+            <h3>Refuser proprement</h3>
+            <p>Hors périmètre (rein, brief incohérent), ALIM refuse au lieu d'improviser. Refus tracé.</p>
+          </li>
+        </ul>
       </div>
-      <div class="pillar">
-        <h3>Calcule</h3>
-        <p>Nutriments par portion sommés depuis Ciqual. Chaque champ garde sa source.</p>
-      </div>
-      <div class="pillar">
-        <h3>Vérifie</h3>
-        <p>Règles activées selon les pathologies, appliquées en sortie. Seuils, exclusions, avertissements.</p>
-      </div>
-      <div class="pillar">
-        <h3>Refuse</h3>
-        <p>Hors périmètre (CKD, brief incohérent), ALIM refuse au lieu d'improviser. Refus tracé.</p>
+      <div class="pc-controls">
+        <button type="button" class="pc-prev" aria-label="Précédent">←</button>
+        <div class="pc-dots" id="pcDots" role="tablist" aria-label="Choisir une fonction">
+          <button type="button" class="pc-dot is-active" data-i="0" aria-label="Formuler"></button>
+          <button type="button" class="pc-dot" data-i="1" aria-label="Calculer"></button>
+          <button type="button" class="pc-dot" data-i="2" aria-label="Activer"></button>
+          <button type="button" class="pc-dot" data-i="3" aria-label="Citer"></button>
+          <button type="button" class="pc-dot" data-i="4" aria-label="Refuser"></button>
+        </div>
+        <button type="button" class="pc-next" aria-label="Suivant">→</button>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+(() => {
+  const root = document.getElementById('pillarCarousel');
+  if (!root) return;
+  const track = document.getElementById('pcTrack');
+  const slides = track.querySelectorAll('.pc-slide');
+  const dots = root.querySelectorAll('.pc-dot');
+  const prev = root.querySelector('.pc-prev');
+  const next = root.querySelector('.pc-next');
+  let i = 0;
+  const N = slides.length;
+
+  function go(n){
+    i = (n + N) % N;
+    track.style.transform = `translateX(-${i * 100}%)`;
+    slides.forEach((s, k) => s.classList.toggle('is-active', k === i));
+    dots.forEach((d, k) => d.classList.toggle('is-active', k === i));
+  }
+  prev.addEventListener('click', () => { go(i - 1); pause(); });
+  next.addEventListener('click', () => { go(i + 1); pause(); });
+  dots.forEach((d, k) => d.addEventListener('click', () => { go(k); pause(); }));
+
+  let timer = null, paused = false;
+  function tick(){ if (!paused) go(i + 1); }
+  function start(){ if (!timer) timer = setInterval(tick, 4200); }
+  function pause(){ paused = true; setTimeout(() => paused = false, 9000); }
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) start(); else { clearInterval(timer); timer = null; } });
+  }, { threshold: 0.3 });
+  io.observe(root);
+
+  root.addEventListener('mouseenter', () => paused = true);
+  root.addEventListener('mouseleave', () => paused = false);
+})();
+</script>
 
 <!-- ============ TRANSPARENCE CORPUS ============ -->
 <section class="section" id="corpus">
@@ -700,31 +1479,68 @@
   </div>
 </section>
 
-<!-- ============ DANS VOTRE IA ============ -->
-<section class="section dark" id="ia">
+<!-- ============ INSTALLATION — 3 ÉTAPES ============ -->
+<section class="section dark" id="install">
   <div class="wrap">
     <div class="section-intro">
       <div>
-        <div class="kicker">Dans votre IA</div>
-        <h2>Restez dans ChatGPT ou Claude.</h2>
+        <div class="kicker">Installation</div>
+        <h2>Trois minutes pour installer ALIM dans votre IA.</h2>
       </div>
-      <p>ALIM apporte le calcul et les garde-fous, depuis votre conversation.</p>
+      <p>Pas de code. Pas de fichier de configuration. Pas de clé API à manipuler.</p>
     </div>
-    <div class="ia-grid">
-      <div class="ia-card">
-        <h3>ChatGPT</h3>
-        <p>Custom GPT qui appelle ALIM en HTTPS. Vous demandez une recette, la sortie est sourcée et cadrée.</p>
-        <div class="sub">action HTTPS · clé Bearer</div>
-      </div>
-      <div class="ia-card">
-        <h3>Claude (MCP)</h3>
-        <p>Serveur MCP local qui interroge ALIM. Préférences locales, rien stocké côté ALIM.</p>
-        <div class="sub">@holco/alim-mcp · à venir</div>
-      </div>
+
+    <ol class="install-steps">
+      <li>
+        <span class="step-n">1</span>
+        <h3>Créez votre clé</h3>
+        <p>Sur <a href="/configurer/">alim.care/configurer</a> — une clé Bearer, en 30 secondes.</p>
+      </li>
+      <li>
+        <span class="step-n">2</span>
+        <h3>Ajoutez ALIM à votre IA</h3>
+        <p>Custom GPT pour ChatGPT, ou serveur MCP local pour Claude. Une URL à coller, c'est tout.</p>
+      </li>
+      <li>
+        <span class="step-n">3</span>
+        <h3>Demandez une recette</h3>
+        <p>Dans votre conversation habituelle. ALIM s'invite, formule, calcule, cite ses sources.</p>
+      </li>
+    </ol>
+
+    <div class="logos-row dark" aria-label="IA compatibles avec ALIM">
+      <p class="logos-label">Compatible avec</p>
+      <ul class="logos-list">
+        <li class="logo-chip dark logo-chatgpt">
+          <span class="lm-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3a4 4 0 0 1 3.46 6c1.32.6 2.04 2.04 1.74 3.5a4 4 0 0 1-3.2 3.2c-.3 1.46-1.74 2.34-3.2 1.74A4 4 0 0 1 5.5 15a4 4 0 0 1 0-6 4 4 0 0 1 6.5-6Z"/></svg>
+          </span>
+          <span class="lm-name">ChatGPT</span>
+          <span class="lm-sub">Custom GPT · action HTTPS</span>
+        </li>
+        <li class="logo-chip dark logo-claude">
+          <span class="lm-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 18c2-6 5-12 7-12s2 4 0 7-3 5 0 5"/><path d="M19 18c-2-6-5-12-7-12"/></svg>
+          </span>
+          <span class="lm-name">Claude</span>
+          <span class="lm-sub">Serveur MCP local</span>
+        </li>
+        <li class="logo-chip dark logo-mcp">
+          <span class="lm-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l5-3 5 3 5-3 5 3v10l-5 3-5-3-5 3-5-3V7Z"/><path d="M3 7l5 3M13 7l5 3M8 10v10M18 10v10"/></svg>
+          </span>
+          <span class="lm-name">Model Context Protocol</span>
+          <span class="lm-sub">standard Anthropic</span>
+        </li>
+        <li class="logo-chip dark logo-cursor">
+          <span class="lm-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l16 8-7 1-1 7-8-16Z"/></svg>
+          </span>
+          <span class="lm-name">Cursor &amp; autres</span>
+          <span class="lm-sub">tout client MCP-compatible</span>
+        </li>
+      </ul>
     </div>
-    <p style="margin-top:18px; color:#9aa6c4; font-size:13px">
-      Créez votre clé sur <a href="/configurer/">alim.care/configurer</a>, ajoutez ALIM à votre IA, demandez une recette.
-    </p>
   </div>
 </section>
 
@@ -732,10 +1548,13 @@
 <section class="section cream" id="try">
   <div class="wrap try-layout">
     <div>
-      <div class="kicker">Test praticien</div>
-      <h2>Essayez un brief.</h2>
+      <div class="kicker">Formulaire rapide (sans installation)</div>
+      <h2>Voir une vraie sortie ALIM.</h2>
       <p class="lede" style="font-size:15px; margin-top:14px">
-        Bêta&nbsp;: T2 + HTA, ou grossesse + DG. CKD refusé. Aucune donnée conservée.
+        Pour les visiteurs pressés. Préférez <a href="#" data-open-mirabelle="1"><strong>Mirabelle</strong></a> pour la conversation guidée.
+      </p>
+      <p style="font-size:12.5px; color:var(--muted); margin-top:6px">
+        Démo encadrée — diabète T2 + HTA, ou grossesse + diabète gestationnel. Aucune donnée conservée.
       </p>
     </div>
     <div class="form-surface">
@@ -808,6 +1627,90 @@
   </div>
 </section>
 
+<!-- ============ FAQ ============ -->
+<section class="section faq-section" id="faq">
+  <div class="wrap">
+    <div class="section-intro">
+      <div>
+        <div class="kicker">Questions fréquentes</div>
+        <h2>Tout ce que vous devez comprendre avant d'installer.</h2>
+      </div>
+      <p>Réponses courtes. Si une question manque, écrivez à <a href="mailto:alim@holco.co">alim@holco.co</a>.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <p class="faq-q">Qu'est-ce qu'un Custom GPT ou un serveur MCP ?</p>
+        <p class="faq-a">Ce sont deux façons standards de connecter un outil externe à votre IA. Le Custom GPT branche ALIM dans ChatGPT en une URL. Le MCP (Model Context Protocol, standard Anthropic) branche ALIM dans Claude ou Cursor. Vous n'écrivez aucune ligne de code.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Quelles IA sont supportées aujourd'hui ?</p>
+        <p class="faq-a">ChatGPT (Custom GPT), Claude (serveur MCP), et tout autre client compatible MCP (Cursor, etc.). L'ajout d'autres IA dépend de la disponibilité de leur protocole d'outils.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Mes données patient sont-elles transmises à ALIM ?</p>
+        <p class="faq-a">Non. Vous envoyez un brief clinique anonyme (pathologie, contraintes alimentaires, équipement). Aucun nom, aucun identifiant. Rien n'est conservé après la réponse.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Que se passe-t-il si je sors du périmètre couvert ?</p>
+        <p class="faq-a">ALIM refuse explicitement et trace le refus. Aujourd'hui le périmètre bêta couvre <em>diabète T2 + HTA</em> et <em>grossesse + diabète gestationnel</em>. L'insuffisance rénale (CKD) est hors périmètre et déclenche un refus.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CADRE LÉGAL ============ -->
+<section class="section legal-section" id="cadre-legal">
+  <div class="wrap">
+    <div class="section-intro">
+      <div>
+        <div class="kicker">Cadre légal &amp; déontologique</div>
+        <h2>Outil d'aide à la formulation, jamais un acte médical.</h2>
+      </div>
+      <p>Ce qu'ALIM s'interdit explicitement, parce que ça relève des professions médicales réglementées.</p>
+    </div>
+    <ul class="legal-list">
+      <li>
+        <strong>Pas de diagnostic ni de prescription.</strong>
+        ALIM ne pose aucun diagnostic et ne prescrit aucun traitement médical (art. L. 4161-1 du Code de la santé publique).
+      </li>
+      <li>
+        <strong>Pas d'interprétation de bilan biologique à visée médicale.</strong>
+        Les explications fournies sur des marqueurs ont une visée strictement pédagogique de compréhension du terrain.
+      </li>
+      <li>
+        <strong>Aucune substitution au suivi médical.</strong>
+        ALIM ne remplace ni la consultation médicale, ni la consultation diététique, ni l'avis du médecin traitant. Le praticien reste seul responsable de l'usage clinique des sorties.
+      </li>
+      <li>
+        <strong>Aucune donnée nominative patient.</strong>
+        Les briefs transmis à ALIM sont anonymes. Aucun identifiant patient (nom, prénom, date de naissance, numéro de sécurité sociale) ne doit transiter.
+      </li>
+      <li>
+        <strong>Refus traçable hors périmètre.</strong>
+        Toute situation hors des deux protocoles couverts (T2 + HTA, grossesse + DG) fait l'objet d'un refus tracé, pas d'une improvisation. L'insuffisance rénale (CKD) est explicitement hors périmètre.
+      </li>
+      <li>
+        <strong>Démo publique &amp; bêta.</strong>
+        Cette interface est en validation documentaire. Les sorties n'engagent ni HOLCO INVEST ni les organismes cités. La démo est limitée à 5 messages/IP/jour.
+      </li>
+    </ul>
+    <p class="legal-foot">
+      Pour les mentions complètes : <a href="/mentions-legales/">mentions légales</a> ·
+      Données nutritionnelles : Anses Ciqual 2025 — Licence Etalab 2.0.
+    </p>
+  </div>
+</section>
+
+<!-- Illustrations décoratives crayon (background bêta) -->
+<svg class="sketch sketch-beta" viewBox="0 0 80 80" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Noix dans sa coque -->
+  <ellipse cx="40" cy="40" rx="22" ry="26"/>
+  <path d="M40 16 Q34 40 40 64"/>
+  <path d="M40 16 Q46 40 40 64"/>
+  <path d="M22 30 Q40 38 58 30" opacity="0.5"/>
+  <path d="M22 50 Q40 42 58 50" opacity="0.5"/>
+</svg>
+
 <!-- ============ BÊTA RESTREINTE ============ -->
 <section class="section dark" id="beta">
   <div class="wrap beta-layout">
@@ -821,7 +1724,7 @@
     <div class="pricing-card">
       <div class="price">9 €<small>&nbsp;/ mois HT</small></div>
       <p>Verrouillé à vie. Accès aux deux situations couvertes, support par e-mail.</p>
-      <p>Rejoindre&nbsp;: <a href="mailto:alim@holco.co?subject=B%C3%AAta%20ALIM%20%E2%80%94%20Demande%20d%27acc%C3%A8s%20tarif%20verrouill%C3%A9">alim@holco.co</a></p>
+      <p style="margin-top:16px"><a href="/configurer/" class="beta-cta">Rejoindre la bêta →</a></p>
     </div>
   </div>
 </section>
@@ -830,10 +1733,11 @@
   <div class="wrap">
     <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO INVEST ni les organismes cités. Aucune donnée patient n'est collectée. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab 2.0.</p>
     <div class="footer-links">
-      <a href="mailto:alim@holco.co">alim@holco.co</a>
-      <a href="https://holco.co/">HOLCO INVEST</a>
+      <a href="/configurer/">Rejoindre la bêta</a>
       <a href="/sources/">Corpus</a>
-      <a href="/configurer/">Configurer</a>
+      <a href="/mentions-legales/">Mentions légales</a>
+      <a href="mailto:alim@holco.co">alim@holco.co</a>
+      <a href="https://holco.co/">HOLCO</a>
       <span>© 2026 HOLCO</span>
     </div>
   </div>
@@ -1031,7 +1935,7 @@
       $('#result').scrollIntoView({behavior:'smooth', block:'nearest'});
     } catch (err) {
       clearStatus();
-      showStatus('info', 'Le moteur de génération n\'est pas joignable. Écrivez à <a href="mailto:alim@holco.co">alim@holco.co</a> pour rejoindre la bêta.');
+      showStatus('info', 'Le moteur de génération n\'est pas joignable. <a href="/configurer/">Rejoindre la bêta</a> pour recevoir votre accès dédié.');
     } finally {
       $('#btn-generate').disabled = false;
     }
@@ -1041,6 +1945,662 @@
     $('#status-area').innerHTML = `<div class="status ${kind}">${html}</div>`;
   }
   function clearStatus(){ $('#status-area').innerHTML = ''; }
+})();
+</script>
+
+<!-- ============ DEMO CHAT WIDGET ============ -->
+<style>
+  /* Trigger FAB — Mirabelle (fruit doré + prénom) */
+  .alim-fab{
+    position:fixed; right:24px; bottom:24px; z-index:90;
+    display:inline-flex; align-items:center; gap:12px;
+    padding:10px 18px 10px 10px;
+    background:var(--navy-deep); color:#fff;
+    border:1px solid rgba(247,218,41,.4);
+    border-radius:999px;
+    font:600 14px/1 Inter, sans-serif;
+    cursor:pointer;
+    box-shadow:0 18px 40px -16px rgba(23,38,80,.55);
+    transition: transform .2s, background .2s, box-shadow .2s;
+  }
+  .alim-fab:hover{
+    background:var(--navy);
+    transform:translateY(-2px);
+    box-shadow:0 22px 48px -16px rgba(23,38,80,.65);
+  }
+  .alim-fab:hover .fruit{transform:rotate(-8deg)}
+  .alim-fab .fruit{
+    flex:0 0 36px; width:36px; height:36px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FFE791 0%, #F4C842 55%, #C9A02A 100%);
+    border:1.5px solid #FFFCF5;
+    box-shadow:inset 0 -3px 6px rgba(176,128,30,.35);
+    display:inline-flex; align-items:center; justify-content:center;
+    position:relative;
+    transition:transform .35s cubic-bezier(.4,1.6,.5,1);
+    animation:fruit-bob 4s ease-in-out infinite;
+  }
+  .alim-fab .fruit::before{
+    /* tige */
+    content:''; position:absolute; top:-3px; left:50%;
+    width:2px; height:5px; background:#6b4f1f; transform:translateX(-50%);
+    border-radius:1px;
+  }
+  .alim-fab .fruit::after{
+    /* feuille */
+    content:''; position:absolute; top:-2px; left:54%;
+    width:9px; height:6px; background:#5a8c4a;
+    border-radius:0 90% 0 0;
+    transform:rotate(35deg);
+    box-shadow:inset -1px 0 0 rgba(0,0,0,.06);
+  }
+  .alim-fab .label{
+    display:inline-flex; flex-direction:column; line-height:1.1; text-align:left;
+  }
+  .alim-fab .label b{
+    font:600 14.5px/1 Inter, sans-serif;
+    letter-spacing:-0.005em;
+    color:#fff;
+  }
+  .alim-fab .label small{
+    font:500 11px/1 Inter, sans-serif;
+    color:rgba(255,255,255,.75);
+    margin-top:3px;
+    letter-spacing:.04em;
+  }
+  @keyframes fruit-bob{
+    0%,100%{ transform:translateY(0) }
+    50%    { transform:translateY(-2px) }
+  }
+
+  /* Panel */
+  .alim-panel{
+    position:fixed; right:24px; bottom:24px; z-index:95;
+    width:min(420px, calc(100vw - 32px));
+    height:min(620px, calc(100vh - 48px));
+    background:var(--paper-alt);
+    border:1px solid rgba(35,56,114,.18);
+    border-radius:16px;
+    box-shadow:0 30px 80px -20px rgba(23,38,80,.45), 0 2px 12px rgba(23,38,80,.08);
+    display:none;
+    flex-direction:column;
+    overflow:hidden;
+    font: 14px/1.55 Inter, ui-sans-serif, system-ui, sans-serif;
+    color:var(--ink);
+  }
+  .alim-panel.is-open{display:flex}
+
+  .alim-head{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 18px;
+    background:var(--navy-deep);
+    color:#fff;
+    border-bottom:1px solid rgba(247,218,41,.2);
+  }
+  .alim-head .mark{
+    width:36px; height:36px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #FFE791 0%, #F4C842 55%, #C9A02A 100%);
+    border:1.5px solid #FFFCF5;
+    box-shadow:inset 0 -3px 6px rgba(176,128,30,.35);
+    position:relative;
+    flex:0 0 36px;
+  }
+  .alim-head .mark::before{
+    content:''; position:absolute; top:-3px; left:50%;
+    width:2px; height:5px; background:#6b4f1f; transform:translateX(-50%);
+    border-radius:1px;
+  }
+  .alim-head .mark::after{
+    content:''; position:absolute; top:-2px; left:54%;
+    width:9px; height:6px; background:#5a8c4a;
+    border-radius:0 90% 0 0;
+    transform:rotate(35deg);
+  }
+  .alim-head .title{
+    display:flex; flex-direction:column; line-height:1.2;
+  }
+  .alim-head .title b{
+    font:400 16px/1.1 "Instrument Serif", Georgia, serif;
+    color:#fff;
+  }
+  .alim-head .title small{
+    color:#cdd5e8; font-size:11.5px; margin-top:2px;
+    letter-spacing:.04em;
+  }
+  .alim-head .close{
+    margin-left:auto;
+    background:transparent; border:0; color:#cdd5e8;
+    width:28px; height:28px; border-radius:6px; cursor:pointer;
+    font:400 18px/1 Inter, sans-serif;
+  }
+  .alim-head .close:hover{background:rgba(255,255,255,.08); color:#fff}
+
+  .alim-body{
+    flex:1 1 auto; overflow-y:auto;
+    padding:18px;
+    display:flex; flex-direction:column; gap:14px;
+    scrollbar-width:thin;
+  }
+  .alim-intro{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .alim-intro h4{
+    font:400 17px/1.2 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    margin:0 0 6px;
+  }
+  .alim-intro p{
+    font-size:13px; color:var(--ink-soft); line-height:1.55;
+    margin:0 0 12px;
+  }
+  .alim-suggests{
+    display:flex; flex-wrap:wrap; gap:6px;
+  }
+  .alim-suggest{
+    border:1px solid var(--line); background:var(--paper-alt);
+    border-radius:999px; padding:6px 12px;
+    font:500 12px/1 Inter, sans-serif;
+    color:var(--navy); cursor:pointer;
+    transition:all .15s;
+  }
+  .alim-suggest:hover{background:var(--navy); color:#fff; border-color:var(--navy)}
+
+  .alim-msg{display:grid; grid-template-columns:26px 1fr; gap:10px; align-items:flex-start}
+  .alim-av{
+    width:26px; height:26px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font:600 11px/1 Inter, sans-serif;
+  }
+  .alim-av.user{background:#eef2ff; color:var(--navy)}
+  .alim-av.ai{background:var(--navy-deep); color:var(--gold)}
+  .alim-name{
+    font:600 11.5px/1 Inter, sans-serif;
+    color:var(--muted); letter-spacing:.04em;
+    margin-bottom:4px;
+  }
+  .alim-text{
+    font-size:13.5px; line-height:1.5; color:var(--ink);
+    white-space:pre-wrap; word-wrap:break-word;
+  }
+  .alim-text strong{color:var(--navy-deep); font-weight:600}
+  .alim-text em{font-style:italic}
+  .alim-text .md-li{display:block; padding-left:2px}
+  .alim-msg.ai .alim-text{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  .alim-tool{
+    margin-left:36px;
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px;
+    background:var(--gold-soft);
+    border:1px solid rgba(247,218,41,.5);
+    border-radius:999px;
+    font:500 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:#7a5a00;
+  }
+  .alim-tool::before{
+    content:''; width:6px; height:6px; border-radius:50%;
+    background:#7a5a00;
+    animation:pulse-dot .8s ease-in-out infinite alternate;
+  }
+  .alim-tool.done::before{background:var(--ok); animation:none}
+  .alim-tool.done .tool-spinner{display:none}
+  .tool-spinner{animation:spin 1s linear infinite; color:#7a5a00}
+  @keyframes spin{from{transform:rotate(0)} to{transform:rotate(360deg)}}
+  @keyframes pulse-dot{ from{opacity:.4} to{opacity:1} }
+
+  /* Recipe card visuelle après tool_use OK */
+  .recipe-card{
+    margin-left:36px;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px;
+    background:linear-gradient(135deg, #fffdf3 0%, var(--gold-soft) 100%);
+    border:1px solid var(--gold);
+    border-radius:10px;
+    box-shadow:0 6px 16px -8px rgba(247,218,41,.4);
+    animation:fade-in-up 500ms ease forwards;
+  }
+  .recipe-icon{
+    flex:0 0 32px; width:32px; height:32px;
+    color:var(--navy-deep);
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#fff;
+    border-radius:50%;
+    border:1px solid var(--gold);
+  }
+  .recipe-icon svg{width:18px; height:18px}
+  .recipe-tag{
+    font:500 12px/1.4 Inter, sans-serif;
+    color:var(--navy-deep);
+  }
+  @keyframes fade-in-up{
+    from{opacity:0; transform:translateY(8px)}
+    to{opacity:1; transform:translateY(0)}
+  }
+
+  /* CTA bêta inline après recette */
+  .beta-inline{
+    margin-left:0;
+    margin-top:6px;
+    padding:14px 16px;
+    background:var(--navy-deep);
+    border-radius:10px;
+    color:#fff;
+  }
+  .beta-inline p{
+    margin:0 0 10px;
+    font-size:12.5px; line-height:1.5;
+    color:rgba(255,255,255,.88);
+  }
+  .beta-inline strong{color:#fff}
+  .beta-inline-cta{
+    display:inline-block;
+    padding:8px 14px;
+    background:var(--gold); color:var(--navy-deep) !important;
+    border-radius:6px;
+    font:600 12.5px/1 Inter, sans-serif;
+    text-decoration:none;
+  }
+  .beta-inline-cta:hover{background:#fae764}
+
+  .alim-error{
+    background:#fef2f2; border:1px solid #fca5a5; color:#991b1b;
+    border-radius:8px; padding:10px 14px;
+    font-size:12.5px; line-height:1.5;
+  }
+  .alim-error a{color:#991b1b; text-decoration:underline}
+
+  .alim-foot{
+    padding:12px 14px 14px;
+    background:#fff;
+    border-top:1px solid var(--line);
+  }
+  .alim-form{display:flex; gap:8px; align-items:flex-end}
+  .alim-input{
+    flex:1; min-height:38px; max-height:120px;
+    padding:9px 12px;
+    border:1px solid var(--line); border-radius:8px;
+    background:var(--paper-alt);
+    font: 14px/1.4 Inter, sans-serif;
+    color:var(--ink); resize:none;
+    font-family:inherit;
+  }
+  .alim-input:focus{outline:none; border-color:var(--navy); box-shadow:0 0 0 3px rgba(35,56,114,.1)}
+  .alim-send{
+    flex:0 0 auto;
+    width:38px; height:38px; border-radius:8px;
+    background:var(--navy); color:#fff; border:0;
+    cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    transition:background .15s;
+  }
+  .alim-send:hover{background:var(--navy-deep)}
+  .alim-send:disabled{background:#9ca3af; cursor:not-allowed}
+
+  .alim-disclaim{
+    font-size:10.5px; color:var(--muted);
+    margin:8px 2px 0; line-height:1.5;
+    text-align:center;
+  }
+  .alim-disclaim a, .alim-disclaim button{
+    color:var(--navy); text-decoration:underline;
+    background:none; border:0; padding:0; font:inherit; cursor:pointer;
+  }
+
+  /* Modal mentions légales démo */
+  .alim-modal-bg{
+    position:fixed; inset:0; z-index:120;
+    background:rgba(23,38,80,.55); backdrop-filter:blur(4px);
+    display:none; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .alim-modal-bg.is-open{display:flex}
+  .alim-modal{
+    width:min(560px, 100%); max-height:80vh; overflow-y:auto;
+    background:var(--paper-alt); color:var(--ink);
+    border-radius:14px; padding:28px 30px;
+    box-shadow:0 30px 80px -20px rgba(23,38,80,.55);
+    font:14px/1.55 Inter, ui-sans-serif, sans-serif;
+  }
+  .alim-modal h3{
+    font:400 22px/1.2 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    margin:0 0 14px;
+  }
+  .alim-modal p{margin:0 0 10px; color:var(--ink-soft); font-size:13.5px}
+  .alim-modal ul{padding-left:18px; margin:0 0 12px}
+  .alim-modal li{margin-bottom:6px; color:var(--ink-soft); font-size:13.5px}
+  .alim-modal strong{color:var(--ink)}
+  .alim-modal .modal-close{
+    margin-top:14px;
+    padding:9px 18px;
+    background:var(--navy); color:#fff; border:0; border-radius:6px;
+    font:600 13px/1 Inter, sans-serif; cursor:pointer;
+  }
+  .alim-modal .modal-close:hover{background:var(--navy-deep)}
+
+  @media (max-width:520px){
+    .alim-fab{right:14px; bottom:14px; padding:12px 16px; font-size:13px}
+    .alim-panel{right:8px; bottom:8px; left:8px; width:auto; height:calc(100vh - 16px); border-radius:14px}
+  }
+</style>
+
+<button class="alim-fab" id="alim-fab" type="button" aria-label="Discuter avec Mirabelle, agent démo ALIM">
+  <span class="fruit" aria-hidden="true"></span>
+  <span class="label">
+    <b>Mirabelle</b>
+    <small>essayez la démo</small>
+  </span>
+</button>
+
+<aside class="alim-panel" id="alim-panel" role="dialog" aria-label="Démo ALIM avec Mirabelle" aria-hidden="true">
+  <header class="alim-head">
+    <span class="mark" aria-hidden="true"></span>
+    <div class="title">
+      <b>Mirabelle</b>
+      <small>agent démo · utilise ALIM via Claude Haiku</small>
+    </div>
+    <button type="button" class="close" id="alim-close" aria-label="Fermer la démo">×</button>
+  </header>
+
+  <div class="alim-body" id="alim-body">
+    <div class="alim-intro">
+      <h4>Mirabelle vous montre ALIM en action.</h4>
+      <p>Je suis une IA qui <em>appelle</em> ALIM en outil — exactement comme ChatGPT ou Claude le feront dans votre poste de travail une fois la bêta installée. Décrivez un cas anonyme, je génère une recette cadrée.</p>
+      <div class="alim-suggests">
+        <button type="button" class="alim-suggest" data-suggest="Patient adulte avec diabète T2 et HTA. Dîner omnivore d'hiver, plaque et four. Pas d'allergie connue.">Diabète T2 + HTA · dîner d'hiver</button>
+        <button type="button" class="alim-suggest" data-suggest="Patiente enceinte 2e trimestre, diabète gestationnel. Déjeuner végétarien d'été, simple, sans crudités à risque.">Grossesse + DG · déjeuner d'été</button>
+        <button type="button" class="alim-suggest" data-suggest="Patient avec insuffisance rénale chronique stade 3. Dîner sans sel.">Hors périmètre · CKD (test refus)</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="alim-foot">
+    <form class="alim-form" id="alim-form" onsubmit="return false">
+      <textarea class="alim-input" id="alim-input" rows="1" placeholder="Décrivez le cas anonyme en quelques mots…" maxlength="1200"></textarea>
+      <button type="submit" class="alim-send" id="alim-send" aria-label="Envoyer">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h10M9 5l3 3-3 3"/></svg>
+      </button>
+    </form>
+    <p class="alim-disclaim">
+      Outil d'aide à la formulation pour professionnels. Ne remplace pas le jugement clinique ni le suivi médical.
+      Aucune donnée nominative patient. Démo publique limitée à 5 messages/jour ·
+      <button type="button" id="alim-show-mentions">mentions démo</button> ·
+      <a href="/configurer/">rejoindre la bêta</a>
+    </p>
+  </footer>
+</aside>
+
+<!-- Mentions légales démo (modal accessible depuis le widget) -->
+<div class="alim-modal-bg" id="alim-modal-bg" role="dialog" aria-label="Mentions légales de la démo" aria-hidden="true">
+  <div class="alim-modal">
+    <h3>Mentions légales — démo Mirabelle</h3>
+    <p><strong>Nature de la démo.</strong> Mirabelle est un agent de démonstration. Elle parle via un LLM (Anthropic Claude Haiku) et appelle l'outil ALIM via function-calling. Les sorties sont générées en temps réel sur la base du moteur déterministe ALIM (base Ciqual 2025, règles cliniques HAS/ANSES/EFSA documentées sur <a href="/sources/">/sources/</a>).</p>
+
+    <p><strong>Ce qu'ALIM ne fait pas.</strong></p>
+    <ul>
+      <li>ALIM <strong>ne pose aucun diagnostic</strong> et <strong>ne prescrit aucun traitement</strong> (art. L. 4161-1 du Code de la santé publique).</li>
+      <li>ALIM <strong>n'interprète pas de bilan biologique à visée médicale</strong>. Les explications fournies sont strictement pédagogiques.</li>
+      <li>ALIM <strong>ne remplace pas</strong> le jugement clinique du praticien, ni le suivi médical de la personne accompagnée.</li>
+      <li>ALIM <strong>ne se substitue pas</strong> à une consultation diététique ou médicale.</li>
+    </ul>
+
+    <p><strong>Périmètre couvert.</strong> La démo et la bêta ne traitent que deux situations : diabète T2 + HTA, et grossesse + diabète gestationnel. L'insuffisance rénale (CKD) est explicitement hors périmètre. Tout brief hors périmètre fait l'objet d'un refus traçable.</p>
+
+    <p><strong>Données échangées.</strong> Aucune donnée nominative patient ne doit transiter par Mirabelle. Vous envoyez un brief anonyme (pathologie, profil clinique synthétique, contraintes, équipement). Les messages ne sont pas conservés au-delà de la réponse, sauf agrégation statistique anonyme à des fins d'amélioration.</p>
+
+    <p><strong>Responsabilité.</strong> Cette démo est mise à disposition à titre informatif. Les sorties produites n'engagent ni HOLCO INVEST, ni les organismes cités (ANSES, EFSA, HAS, INCA, Ciqual). Le praticien reste seul responsable de l'usage clinique éventuel des recommandations.</p>
+
+    <p><strong>Disponibilité.</strong> Démo en validation documentaire, sans garantie de disponibilité ininterrompue. Limite d'usage : 5 messages par adresse IP et par jour.</p>
+
+    <p style="font-size:12.5px; color:var(--muted)">Données nutritionnelles : Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em> — doi:10.57745/RDMHWY — Licence Etalab 2.0. Pour les mentions complètes : <a href="/mentions-legales/">/mentions-legales/</a>.</p>
+
+    <button class="modal-close" type="button" id="alim-modal-close">Fermer</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const fab = document.getElementById('alim-fab');
+  const panel = document.getElementById('alim-panel');
+  const close = document.getElementById('alim-close');
+  const body = document.getElementById('alim-body');
+  const form = document.getElementById('alim-form');
+  const input = document.getElementById('alim-input');
+  const send = document.getElementById('alim-send');
+
+  let busy = false;
+  let recipeUsed = false;
+
+  function open() {
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+    fab.style.display = 'none';
+    setTimeout(() => input.focus(), 100);
+  }
+  function closePanel() {
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+    fab.style.display = '';
+  }
+  fab.addEventListener('click', open);
+  close.addEventListener('click', closePanel);
+
+  // CTA externes qui ouvrent Mirabelle (e.g. hero primaire)
+  document.querySelectorAll('[data-open-mirabelle]').forEach(el => {
+    el.addEventListener('click', (e) => { e.preventDefault(); open(); });
+  });
+
+  // Modal mentions démo
+  const modalBg = document.getElementById('alim-modal-bg');
+  const modalClose = document.getElementById('alim-modal-close');
+  const showMentionsBtn = document.getElementById('alim-show-mentions');
+  function openModal(){ modalBg.classList.add('is-open'); modalBg.setAttribute('aria-hidden','false'); }
+  function closeModal(){ modalBg.classList.remove('is-open'); modalBg.setAttribute('aria-hidden','true'); }
+  showMentionsBtn?.addEventListener('click', openModal);
+  modalClose?.addEventListener('click', closeModal);
+  modalBg?.addEventListener('click', (e) => { if (e.target === modalBg) closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeModal(); }
+  });
+
+  document.querySelectorAll('.alim-suggest').forEach(btn => {
+    btn.addEventListener('click', () => {
+      input.value = btn.dataset.suggest || '';
+      input.focus();
+      submit();
+    });
+  });
+
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submit();
+    }
+  });
+  form.addEventListener('submit', (e) => { e.preventDefault(); submit(); });
+
+  function appendUser(text) {
+    const el = document.createElement('div');
+    el.className = 'alim-msg user';
+    el.innerHTML = `
+      <span class="alim-av user" aria-hidden="true">D</span>
+      <div>
+        <div class="alim-name">Vous</div>
+        <div class="alim-text"></div>
+      </div>`;
+    el.querySelector('.alim-text').textContent = text;
+    body.appendChild(el);
+    scroll();
+  }
+  function appendAi() {
+    const el = document.createElement('div');
+    el.className = 'alim-msg ai';
+    el.innerHTML = `
+      <span class="alim-av ai" aria-hidden="true">M</span>
+      <div>
+        <div class="alim-name">Mirabelle · démo ALIM</div>
+        <div class="alim-text"></div>
+      </div>`;
+    body.appendChild(el);
+    scroll();
+    return el.querySelector('.alim-text');
+  }
+  function appendTool(name) {
+    const el = document.createElement('div');
+    el.className = 'alim-tool';
+    el.dataset.name = name;
+    el.innerHTML = `
+      <svg class="tool-spinner" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="8 24"/>
+      </svg>
+      <span>Appel d'<strong>${name}</strong>…</span>`;
+    body.appendChild(el);
+    scroll();
+    return el;
+  }
+  function appendRecipeCard() {
+    const el = document.createElement('div');
+    el.className = 'recipe-card';
+    el.innerHTML = `
+      <span class="recipe-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 14h22M5 14a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3"/>
+          <path d="M9 14V9a7 7 0 0 1 14 0v5"/>
+          <path d="M11 17v6M16 17v6M21 17v6"/>
+        </svg>
+      </span>
+      <span class="recipe-tag">Recette générée par ALIM · cadrée Ciqual + HAS</span>`;
+    body.appendChild(el);
+    scroll();
+  }
+  function appendBetaCta() {
+    const el = document.createElement('div');
+    el.className = 'beta-inline';
+    el.innerHTML = `
+      <p><strong>Une seule recette possible en démo.</strong> Pour des générations illimitées, des préférences personnalisées et un accès complet, rejoignez la bêta.</p>
+      <a class="beta-inline-cta" href="/configurer/">Rejoindre la bêta →</a>`;
+    body.appendChild(el);
+    scroll();
+  }
+  function appendError(html) {
+    const el = document.createElement('div');
+    el.className = 'alim-error';
+    el.innerHTML = html;
+    body.appendChild(el);
+    scroll();
+  }
+  function scroll() { body.scrollTop = body.scrollHeight; }
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  }
+  function renderMarkdown(s) {
+    let h = escapeHTML(s);
+    // bold
+    h = h.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+    // italic (single asterisk, ne pas confondre avec liste)
+    h = h.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+    // listes : transformer "- " début de ligne en bullet
+    h = h.replace(/(^|\n)[\-•]\s+(.+)/g, '$1<span class="md-li">•&nbsp;$2</span>');
+    return h;
+  }
+
+  async function submit() {
+    if (busy) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = 'auto';
+    busy = true;
+    send.disabled = true;
+
+    appendUser(text);
+    let aiText = null;
+    let currentTool = null;
+
+    try {
+      const res = await fetch('/api/demo-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        appendError(errJson.error || `Erreur HTTP ${res.status}.`);
+        return;
+      }
+      if (!res.body) { appendError("Pas de réponse du serveur."); return; }
+
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let idx;
+        while ((idx = buf.indexOf('\n\n')) !== -1) {
+          const block = buf.slice(0, idx).trim();
+          buf = buf.slice(idx + 2);
+          if (!block.startsWith('data:')) continue;
+          let data;
+          try { data = JSON.parse(block.slice(5).trim()); } catch { continue; }
+
+          if (data.type === 'start') { /* noop */ }
+          else if (data.type === 'text') {
+            if (!aiText) aiText = appendAi();
+            aiText._raw = (aiText._raw || '') + data.delta;
+            aiText.innerHTML = renderMarkdown(aiText._raw);
+            scroll();
+          }
+          else if (data.type === 'tool_use_start') {
+            currentTool = appendTool(data.name);
+            aiText = null;
+          }
+          else if (data.type === 'tool_use_end') {
+            if (currentTool) {
+              currentTool.classList.add('done');
+              currentTool.innerHTML = `
+                <span aria-hidden="true">✓</span>
+                <span>${data.name} — ${data.ok ? 'sortie cadrée reçue' : 'refus traçable'}</span>`;
+            }
+            if (data.ok) {
+              recipeUsed = true;
+              appendRecipeCard();
+            }
+            currentTool = null;
+            aiText = null;
+          }
+          else if (data.type === 'error') {
+            appendError(data.message || 'Erreur de la démo.');
+          }
+          else if (data.type === 'done') { /* end */ }
+        }
+      }
+      if (recipeUsed && !body.querySelector('.beta-inline')) {
+        appendBetaCta();
+        input.placeholder = "Vous pouvez encore poser des questions sur ALIM…";
+      }
+    } catch (e) {
+      appendError("Réseau interrompu. Réessayez ou <a href='/configurer/'>rejoignez la bêta</a>.");
+    } finally {
+      busy = false;
+      send.disabled = false;
+      input.focus();
+    }
+  }
 })();
 </script>
 </body>

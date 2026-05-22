@@ -1,0 +1,118 @@
+{
+  "_meta": {
+    "version": "0.1.0",
+    "updated": "2026-05-22",
+    "purpose": "Index d'inspiration culinaire pour ALIM. Ne pas copier les recettes, ingrédients détaillés, étapes ou photos. Utiliser uniquement comme cartographie de thèmes, formats, contraintes et liens externes.",
+    "copyright_policy": "Les contenus tiers restent protégés. ALIM génère des recettes originales, recalculées via Ciqual et cadrées par ses propres règles cliniques."
+  },
+  "sources": [
+    {
+      "id": "federation_francaise_diabetiques_recettes",
+      "name": "Fédération Française des Diabétiques — Recettes",
+      "url": "https://www.federationdesdiabetiques.org/diabete/recettes",
+      "publisher": "Fédération Française des Diabétiques",
+      "use_for": [
+        "typologies de plats diabète",
+        "formats patients",
+        "saisonnalité et diversité",
+        "inspiration non copiée"
+      ],
+      "do_not_use_for": [
+        "copie de textes",
+        "copie d'ingrédients détaillés",
+        "copie d'étapes",
+        "copie de photos"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "mangerbouger_fabrique_menus",
+      "name": "MangerBouger — Fabrique à menus / recettes",
+      "url": "https://www.mangerbouger.fr/manger-mieux/la-fabrique-a-menus",
+      "publisher": "Santé publique France / PNNS",
+      "use_for": [
+        "idées grand public équilibrées",
+        "formats saisonniers",
+        "budget et simplicité",
+        "repères de présentation patient"
+      ],
+      "do_not_use_for": [
+        "copie commerciale de recettes",
+        "réutilisation d'images"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "ameli_grossesse_alimentation",
+      "name": "Ameli — Adapter son alimentation pendant la grossesse",
+      "url": "https://www.ameli.fr/assure/sante/devenir-parent/grossesse/grossesse-en-bonne-sante/grossesse-alimentation/alimentation-grossesse",
+      "publisher": "Assurance Maladie",
+      "use_for": [
+        "règles de sécurité grossesse",
+        "listériose",
+        "toxoplasmose",
+        "messages patients"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "ciqual_2025",
+      "name": "Ciqual 2025",
+      "url": "https://ciqual.anses.fr/",
+      "publisher": "ANSES",
+      "use_for": [
+        "calcul nutritionnel",
+        "composition alimentaire",
+        "source de vérité des nutriments"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "open_food_facts",
+      "name": "Open Food Facts",
+      "url": "https://world.openfoodfacts.org/",
+      "publisher": "Open Food Facts",
+      "use_for": [
+        "phase ultérieure",
+        "aliments industriels",
+        "sels et sucres de produits emballés",
+        "marques"
+      ],
+      "priority": "later"
+    }
+  ],
+  "seed_ideas": [
+    {
+      "id": "t2_hta_bowl_legumineuses",
+      "covered_situation": "diabete_t2_hta",
+      "format": "bol complet chaud",
+      "patient_need": "dîner rassasiant qui change du poulet-riz",
+      "culinary_direction": "légumineuses + céréale IG modéré + crucifère + sauce acide sans sel",
+      "tags": ["hiver", "fibres", "sel_maitrise", "sans_sucre_ajoute", "batch_cooking"]
+    },
+    {
+      "id": "t2_hta_assiette_poisson_herbes",
+      "covered_situation": "diabete_t2_hta",
+      "format": "assiette poisson/légumes",
+      "patient_need": "recette rapide, peu salée, pas fade",
+      "culinary_direction": "poisson blanc ou tofu + légumes verts + citron/herbes/ail + féculent en portion maîtrisée",
+      "tags": ["rapide", "plaque", "four", "sel_maitrise"]
+    },
+    {
+      "id": "grossesse_dg_salade_froide",
+      "covered_situation": "grossesse_dg",
+      "format": "salade repas froide",
+      "patient_need": "déjeuner d'été transportable",
+      "culinary_direction": "légumineuse cuite rincée + quinoa/sarrasin + crudités soigneusement lavées + protéine pasteurisée ou tofu",
+      "tags": ["ete", "froid", "folates", "lavage_crudites", "sans_sucre_ajoute"]
+    },
+    {
+      "id": "grossesse_dg_collation_salee",
+      "covered_situation": "grossesse_dg",
+      "format": "collation salée",
+      "patient_need": "alternative aux collations sucrées",
+      "culinary_direction": "tartinade de légumineuse sans sucre + légumes lavés + portion glucidique mesurée",
+      "tags": ["collation", "salé", "fibres", "sans_sucre_ajoute"]
+    }
+  ]
+}

@@ -12,6 +12,23 @@ Last update: 2026-05-16 — Alan
 
 ---
 
+## ✅ grossesse_no_raw_cheese / grossesse_no_raw_fish / grossesse_no_charcuterie_cuite_courte — Ameli grossesse alimentation 2025 (verified)
+
+- **Source web** : Assurance Maladie (ameli.fr) — Adapter son alimentation pendant la grossesse. Mise à jour 04/03/2025.
+- **URL canonique** : https://www.ameli.fr/assure/sante/devenir-parent/grossesse/grossesse-en-bonne-sante/grossesse-alimentation/alimentation-grossesse
+- **Section citée** : "Conseils pour prévenir la listériose au cours de la grossesse"
+- **Confirme** :
+  - éviter les fromages au lait cru, surtout pâtes molles, croûtes, fromages crus râpés ;
+  - éviter poissons fumés, poissons crus, coquillages crus, surimi, tarama ;
+  - éviter charcuterie cuite à risque : rillettes, pâtés, foie gras, produits en gelée.
+- **Action 2026-05-22 Nora** :
+  - `grossesse_no_raw_cheese` → `source_status: "verified"`
+  - `grossesse_no_raw_fish` → `source_status: "verified"`
+  - `grossesse_no_charcuterie_cuite_courte` → `source_status: "verified"`
+- **Note** : `grossesse_no_raw_eggs` reste `derived` : règle maintenue par prudence hygiène alimentaire grossesse, mais la page Ameli consultée ne donne pas un libellé œufs crus aussi explicite que les items listériose ci-dessus.
+
+---
+
 ## ✅ grossesse_caffeine_per_day_max — EFSA 2015 (verified)
 
 - **Source PDF** : EFSA — Caffeine: EFSA explains risk assessment. 2015. TM-04-15-330-EN-N. ISBN 978-92-9199-677-3. doi:10.2805/618813.
@@ -101,4 +118,3 @@ L'ANSES Q/R Toxoplasmose précise explicitement : *"la consommation de poisson, 
 - **Action** : `source_url` → URL canonique WHO IRIS, `source_status: "verified"`, `verified_at: "2026-05-16"`, `pdf_page: 2`.
 
 ---
-
