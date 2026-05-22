@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <title>Corpus normatif — ALIM</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Liste exhaustive des règles cliniques activables d'ALIM, avec statut de vérification documentaire (verified / derived / to_verify), PDF source et verbatim.">
+<meta name="description" content="Corpus normatif d'ALIM : 27 règles cliniques activables sur 5 pathologies, avec statut de vérification documentaire (verified / derived / to_verify), PDF source et verbatim.">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#233872">
 <link rel="icon" href="/assets/alim-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --navy:#233872;
     --navy-deep:#172650;
     --gold:#f7da29;
     --gold-soft:#fff6b7;
+    --gold-deep:#b5901c;
     --paper:#f5f0e8;
     --paper-alt:#fcfaf5;
     --white:#fff;
@@ -24,15 +25,16 @@
     --ink-soft:#3f4860;
     --muted:#687083;
     --line:#ded8ca;
+    --line-strong:#c4bba6;
     --ok:#286c4d;
     --warn:#9a661f;
     --bad:#8a2a2a;
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth; scroll-padding-top:84px}
+  html{scroll-behavior:smooth; scroll-padding-top:108px}
   body{
     margin:0; color:var(--ink); background:var(--paper-alt);
-    font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing:antialiased;
   }
   a{color:var(--navy); text-decoration-thickness:1px; text-underline-offset:3px}
@@ -52,7 +54,7 @@
     background:rgba(252,250,245,.92); backdrop-filter:blur(14px);
   }
   .nav{
-    width:min(1120px, calc(100% - 40px)); margin:0 auto;
+    width:min(1200px, calc(100% - 40px)); margin:0 auto;
     height:92px; display:flex; align-items:center; justify-content:space-between; gap:24px;
   }
   .brand{
@@ -71,40 +73,275 @@
     font:700 13px/1.2 inherit;
   }
 
-  /* ---------- main ---------- */
+  /* ---------- main + hero ---------- */
   main{
-    width:min(980px, calc(100% - 40px)); margin:0 auto;
+    width:min(1200px, calc(100% - 40px)); margin:0 auto;
     padding-block:48px 96px;
   }
   .kicker{
     font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace;
     letter-spacing:.16em; text-transform:uppercase;
-    color:var(--muted);
+    color:var(--muted); margin-bottom:14px;
+  }
+  h1.h-display{
+    font-size:clamp(32px, 4.4vw, 48px);
     margin-bottom:14px;
   }
-  h1.h-display{font-size:clamp(30px, 4vw, 44px); letter-spacing:-0.02em; margin-bottom:14px}
-  .lede{font-size:15.5px; line-height:1.6; color:var(--ink-soft); max-width:62ch; margin-bottom:32px}
+  .lede{
+    font-size:16px; line-height:1.65; color:var(--ink-soft);
+    max-width:68ch; margin-bottom:36px;
+  }
+  .lede strong{color:var(--navy-deep); font-weight:600}
 
-  /* ---------- panels ---------- */
+  /* ---------- summary dashboard ---------- */
+  .summary{
+    display:grid;
+    grid-template-columns:1.4fr 1fr 1fr 1fr;
+    gap:16px;
+    margin-bottom:32px;
+  }
+  .summary-total{
+    background:linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+    color:#fff;
+    padding:24px 28px;
+    border-radius:14px;
+    position:relative;
+    overflow:hidden;
+  }
+  .summary-total::after{
+    content:''; position:absolute;
+    right:-30px; bottom:-30px;
+    width:140px; height:140px; border-radius:50%;
+    background:radial-gradient(circle, rgba(247,218,41,.20), transparent 70%);
+  }
+  .summary-total .big{
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size:56px; line-height:1;
+    color:var(--gold);
+    margin-bottom:6px;
+    letter-spacing:-0.02em;
+  }
+  .summary-total .lbl{
+    font:500 13px/1.4 Inter, sans-serif;
+    color:rgba(255,255,255,.85);
+    margin:0;
+  }
+  .summary-total .sub{
+    margin-top:14px;
+    font:500 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.12em;
+    color:var(--gold);
+    text-transform:uppercase;
+  }
+  .summary-cell{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 22px;
+    position:relative;
+    transition:border-color .2s ease, transform .25s ease, box-shadow .3s ease;
+  }
+  .summary-cell:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px -12px rgba(31,36,24,.10);
+  }
+  .summary-cell .big{
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size:48px; line-height:1;
+    margin-bottom:4px;
+    letter-spacing:-0.02em;
+  }
+  .summary-cell.verified .big{color:var(--ok)}
+  .summary-cell.derived .big{color:var(--warn)}
+  .summary-cell.to_verify .big{color:var(--muted)}
+  .summary-cell .lbl{
+    font:500 13px/1.4 Inter, sans-serif;
+    color:var(--ink);
+    margin:0;
+  }
+  .summary-cell .sub{
+    margin-top:10px;
+    font-size:12px; color:var(--muted); line-height:1.4;
+  }
+  .summary-cell.verified::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--ok); border-radius:14px 14px 0 0;
+  }
+  .summary-cell.derived::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--warn); border-radius:14px 14px 0 0;
+  }
+  .summary-cell.to_verify::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--line-strong); border-radius:14px 14px 0 0;
+  }
+  @media (max-width:880px){
+    .summary{grid-template-columns:1fr 1fr; gap:12px}
+    .summary-total{grid-column:1 / -1}
+  }
+  @media (max-width:480px){
+    .summary{grid-template-columns:1fr}
+  }
+
+  /* ---------- références mobilisées (logos) ---------- */
+  .refs-band{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 28px;
+    margin-bottom:32px;
+  }
+  .refs-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .refs-head h2{
+    font-size:20px;
+    margin:0;
+  }
+  .refs-head p{
+    font-size:13px; color:var(--muted); margin:0;
+  }
+  .refs-grid{
+    list-style:none; margin:0; padding:0;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+    gap:10px;
+  }
+  .ref-chip{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--paper-alt);
+    color:var(--navy-deep);
+    text-decoration:none;
+    transition:border-color .2s ease, transform .2s ease, box-shadow .25s ease;
+  }
+  .ref-chip:hover{
+    border-color:var(--navy);
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px -10px rgba(35,56,114,.18);
+    text-decoration:none;
+  }
+  .ref-mark{
+    flex:0 0 36px; width:36px; height:36px;
+    border-radius:8px;
+    background:var(--navy);
+    color:var(--gold);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .ref-mark svg{width:18px; height:18px}
+  .ref-meta{display:flex; flex-direction:column; gap:2px; min-width:0}
+  .ref-name{
+    font:700 13.5px/1.2 Inter, sans-serif;
+    color:var(--navy-deep);
+  }
+  .ref-sub{
+    font-size:11px; color:var(--muted);
+    line-height:1.35;
+  }
+
+  /* ---------- filters sticky ---------- */
+  .filters{
+    position:sticky; top:92px; z-index:20;
+    background:rgba(252,250,245,.94);
+    backdrop-filter:blur(14px);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:24px;
+    box-shadow:0 4px 16px -10px rgba(31,36,24,.06);
+  }
+  .filters-row{
+    display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center;
+  }
+  .filters-row + .filters-row{margin-top:10px}
+  .filter-label{
+    font: 600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted);
+    flex:0 0 auto;
+  }
+  .filter-chips{display:flex; flex-wrap:wrap; gap:6px}
+  .filter-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 11px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:#fff;
+    font:500 12.5px/1 Inter, sans-serif;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .filter-chip:hover{border-color:var(--navy); color:var(--navy)}
+  .filter-chip[aria-pressed=true]{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+  .filter-chip .count{
+    font: 500 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    opacity:.7;
+  }
+  .filter-chip[data-status=verified][aria-pressed=true]{background:var(--ok); border-color:var(--ok)}
+  .filter-chip[data-status=derived][aria-pressed=true]{background:var(--warn); border-color:var(--warn)}
+  .filter-chip[data-status=to_verify][aria-pressed=true]{background:var(--ink-soft); border-color:var(--ink-soft)}
+  .filter-search{
+    flex:1; min-width:200px;
+    padding:7px 12px;
+    border:1px solid var(--line); border-radius:8px;
+    background:#fff;
+    font: 13.5px/1.4 Inter, sans-serif;
+    color:var(--ink);
+  }
+  .filter-search:focus{
+    outline:none;
+    border-color:var(--navy);
+    box-shadow:0 0 0 3px rgba(35,56,114,.10);
+  }
+  .filter-count{
+    font:500 12px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--muted);
+    margin-left:auto;
+  }
+
+  /* ---------- panel & legend ---------- */
   .panel{
-    background:#fff; border:1px solid var(--line); border-radius:10px;
-    padding:26px 28px; margin:22px 0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px 28px;
+    margin-bottom:24px;
   }
   .panel h2{
-    font-size:22px; margin:0 0 16px;
+    font-size:22px;
+    margin:0 0 14px;
     display:flex; align-items:center; gap:10px;
   }
-  .panel h2 .num{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:28px; height:28px; border-radius:50%;
-    background:var(--navy); color:var(--gold);
-    font:600 13px/1 Inter, sans-serif; letter-spacing:0;
+  .legend-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:14px;
+    margin-top:8px;
   }
-  .panel p{font-size:14.5px; line-height:1.55; color:var(--ink-soft)}
+  .legend-card{
+    padding:14px 16px;
+    background:var(--paper-alt);
+    border-radius:10px;
+    border:1px solid var(--line);
+  }
+  .legend-card .badge{margin-bottom:8px}
+  .legend-card p{
+    font-size:13px; color:var(--ink-soft); line-height:1.55;
+    margin:0;
+  }
 
   /* ---------- badges ---------- */
   .badge{
-    display:inline-block; padding:2px 8px; border-radius:999px;
+    display:inline-block; padding:3px 9px; border-radius:999px;
     font:600 10.5px/1.4 Inter, sans-serif;
     letter-spacing:.06em; text-transform:uppercase;
   }
@@ -115,104 +352,178 @@
   .badge.evidence-medium{background:var(--gold-soft); color:#7a5816}
   .badge.evidence-low{background:#fbeaea; color:var(--bad)}
 
-  /* ---------- stats ---------- */
-  .corpus-stats{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
-    margin:14px 0 24px;
-  }
-  @media (max-width:640px){ .corpus-stats{grid-template-columns:1fr} }
-  .stat{
-    border:1px solid var(--line); border-radius:8px;
-    padding:18px 20px; background:var(--paper-alt);
-  }
-  .stat .n{
-    font-family:"Instrument Serif", Georgia, serif;
-    font-size:38px; line-height:1; color:var(--navy);
-  }
-  .stat.verified .n{color:var(--ok)}
-  .stat.derived .n{color:var(--warn)}
-  .stat.to_verify .n{color:var(--muted)}
-  .stat .lbl{
-    margin-top:8px;
-    font: 500 12px/1.4 Inter, sans-serif;
-    letter-spacing:.12em; text-transform:uppercase;
-    color:var(--muted);
-  }
-
-  /* ---------- legend ---------- */
-  .legend{
-    display:grid; gap:8px;
-    font-size:14px; color:var(--ink-soft);
-    background:var(--paper);
-    border-radius:8px; padding:14px 18px;
-    margin:6px 0 0;
-  }
-  .legend dt{
-    font-weight:600; color:var(--ink); display:inline-block; margin-right:6px;
-  }
-  .legend dd{margin:0 0 0 0; display:inline}
-  .legend > div{display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap}
-
   /* ---------- patho sections ---------- */
-  .patho-section{margin-top:32px}
-  .patho-section h3{
-    font-size:24px; margin:0 0 4px;
+  .patho-section{
+    margin-top:32px;
+  }
+  .patho-section:first-child{margin-top:0}
+  .patho-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+    margin-bottom:14px;
+    padding:0 4px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  .patho-head h3{
+    font-size:28px; margin:0;
     color:var(--navy-deep);
+    display:flex; align-items:center; gap:10px;
   }
-  .patho-section .ptag{
-    font-size:13px; color:var(--muted); margin:0 0 16px;
-    font-family:"JetBrains Mono", ui-monospace, monospace;
-    letter-spacing:.04em;
+  .patho-head .patho-icon{
+    width:32px; height:32px;
+    border-radius:8px;
+    background:var(--gold-soft);
+    color:var(--gold-deep);
+    display:inline-flex; align-items:center; justify-content:center;
   }
+  .patho-head .patho-icon svg{width:18px; height:18px}
+  .patho-stats{
+    display:flex; gap:14px;
+    font:500 12px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--muted); letter-spacing:.06em;
+  }
+  .patho-stats span{display:inline-flex; align-items:center; gap:6px}
+  .patho-stats .dot{width:6px; height:6px; border-radius:50%; display:inline-block}
+  .patho-stats .dot.verified{background:var(--ok)}
+  .patho-stats .dot.derived{background:var(--warn)}
+  .patho-stats .dot.to_verify{background:var(--line-strong)}
 
   /* ---------- rule cards ---------- */
   .rule{
-    border:1px solid var(--line); border-radius:8px;
-    padding:16px 18px; background:#fff;
-    margin-bottom:12px;
-    transition:border-color .15s, box-shadow .2s;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 22px;
+    margin-bottom:10px;
+    transition:border-color .2s, box-shadow .25s, transform .2s;
   }
-  .rule:hover{border-color:var(--navy); box-shadow:0 6px 18px rgba(35,56,114,.06)}
-  .rule .head{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px}
+  .rule:hover{
+    border-color:var(--navy);
+    box-shadow:0 8px 22px -10px rgba(35,56,114,.10);
+  }
+  .rule.hidden{display:none}
+  .rule .head{
+    display:flex; flex-wrap:wrap; gap:8px;
+    align-items:center;
+    margin-bottom:10px;
+  }
   .rule .id{
     font-family:"JetBrains Mono", ui-monospace, monospace;
-    font-size:12.5px; color:var(--navy-deep); font-weight:600;
+    font-size:12px; color:var(--navy-deep); font-weight:600;
+    background:var(--paper-alt);
+    padding:3px 8px; border-radius:5px;
+    border:1px solid var(--line);
   }
   .rule .threshold{
     margin-left:auto;
-    font: 500 13px/1.3 Inter, sans-serif;
+    font: 600 13px/1.3 "JetBrains Mono", ui-monospace, monospace;
     color:var(--navy-deep);
-    background:var(--paper-alt); padding:4px 10px; border-radius:6px;
+    background:var(--paper);
+    padding:5px 11px; border-radius:6px;
     border:1px solid var(--line);
   }
-  .rule .rationale{font-size:14.5px; margin:6px 0 4px; color:var(--ink); line-height:1.5}
-  .rule .source{font-size:13px; color:var(--muted); margin:6px 0 0}
+  .rule .rationale{
+    font-size:14.5px; line-height:1.55;
+    color:var(--ink);
+    margin:6px 0 8px;
+  }
+  .rule .source{
+    font-size:12.5px; color:var(--muted);
+    margin:0;
+    padding-top:8px;
+    border-top:1px dashed var(--line);
+  }
+  .rule .source a{color:var(--navy); text-decoration-color:rgba(35,56,114,.3)}
+  .rule .source .source-tag{
+    display:inline-block;
+    font: 600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--warn);
+    background:var(--gold-soft);
+    border:1px solid rgba(122, 88, 22, .25);
+    padding:2px 7px;
+    border-radius:4px;
+    margin-right:6px;
+    vertical-align:middle;
+  }
+  .rule .source .source-tag.warn{
+    color:var(--muted);
+    background:#eef0f5;
+    border-color:#d8dce3;
+  }
+  .patho-section.out-of-scope{
+    opacity:.65;
+    transition:opacity .25s ease;
+  }
+  .patho-section.out-of-scope:hover{opacity:.95}
+  .patho-section.out-of-scope .out-banner{
+    margin:0 0 16px;
+    padding:12px 16px;
+    background:#fef2f2;
+    border:1px solid #fca5a5;
+    border-left:3px solid var(--bad);
+    border-radius:0 8px 8px 0;
+    color:#7a1a1a;
+    font-size:13px;
+    line-height:1.5;
+  }
+  .patho-section.out-of-scope .out-banner strong{color:var(--bad)}
   .rule details{margin-top:8px}
   .rule details summary{
-    font: 500 13px/1 Inter, sans-serif;
+    font: 500 12.5px/1 Inter, sans-serif;
     color:var(--navy); cursor:pointer;
     padding:4px 0;
+    list-style:none;
+    display:inline-flex; align-items:center; gap:6px;
   }
+  .rule details summary::before{
+    content:'›'; color:var(--gold-deep);
+    transition:transform .2s;
+    display:inline-block;
+  }
+  .rule details[open] summary::before{transform:rotate(90deg)}
   .rule details summary:hover{text-decoration:underline}
   .rule .verbatim{
-    margin:8px 0 0; padding:12px 14px;
-    background:var(--paper); border-left:3px solid var(--ok);
+    margin:10px 0 0;
+    padding:14px 16px;
+    background:var(--paper);
+    border-left:3px solid var(--ok);
     border-radius:0 6px 6px 0;
-    font-size:13.5px; font-style:italic; color:var(--ink-soft);
-    line-height:1.55;
+    font-size:13.5px; font-style:italic; color:var(--ink);
+    line-height:1.6;
+    quotes:"« " " »";
   }
+  .rule .verbatim::before{content:open-quote; color:var(--ok); font-weight:600}
+  .rule .verbatim::after{content:close-quote; color:var(--ok); font-weight:600}
   .rule.to_verify .verbatim{border-left-color:var(--muted)}
   .rule.derived .verbatim{border-left-color:var(--warn)}
+  .rule.derived .verbatim::before, .rule.derived .verbatim::after{color:var(--warn)}
+  .rule.to_verify .verbatim::before, .rule.to_verify .verbatim::after{color:var(--muted)}
 
   /* ---------- states ---------- */
   .err{
     padding:14px 18px; background:#fef2f2; color:#991b1b;
-    border:1px solid #fca5a5; border-radius:6px;
+    border:1px solid #fca5a5; border-radius:8px;
     font-size:14px;
   }
   .loading{
-    padding:24px; text-align:center; color:var(--muted); font-size:14px;
+    padding:32px; text-align:center; color:var(--muted); font-size:14px;
     font-style:italic;
+  }
+  .empty-results{
+    padding:36px 24px;
+    text-align:center;
+    color:var(--muted);
+    background:var(--paper);
+    border:1px dashed var(--line);
+    border-radius:10px;
+  }
+  .empty-results strong{
+    display:block;
+    font-family:"Instrument Serif", Georgia, serif;
+    font-size:22px;
+    color:var(--ink);
+    margin-bottom:6px;
   }
 
   /* ---------- footer ---------- */
@@ -222,7 +533,7 @@
   }
   footer a{color:var(--gold)}
   footer .wrap{
-    width:min(1120px, calc(100% - 40px)); margin:0 auto;
+    width:min(1200px, calc(100% - 40px)); margin:0 auto;
   }
   footer .disclaimer{font-style:italic; margin:0 0 14px; line-height:1.5; max-width:80ch}
   footer .links{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px}
@@ -239,62 +550,152 @@
       <a href="/#install">Installer</a>
       <a href="/#piliers">Fonctions</a>
       <a href="/sources/">Corpus</a>
-      <a href="/#faq">FAQ</a>
+      <a href="/api-docs/">API</a>
       <a class="nav-cta" href="/configurer/">Rejoindre la bêta</a>
     </nav>
   </div>
 </header>
 
 <main>
-  <p class="kicker">Transparence · Corpus</p>
-  <h1 class="h-display">Corpus normatif d'ALIM.</h1>
+  <p class="kicker">Transparence · Corpus normatif</p>
+  <h1 class="h-display">Tout ce qu'ALIM applique — vérifiable, sourcé.</h1>
   <p class="lede">
-    Liste exhaustive des règles cliniques activables sur les 5 pathologies couvertes par ALIM&nbsp;v0.
-    Chaque règle indique son statut de vérification documentaire, sa source, et lorsque disponible le verbatim
-    cité du document de référence. Ce que vous voyez ici est ce qu'ALIM applique réellement aux sorties —
-    rien de plus, rien de moins.
+    27 règles cliniques activables sur 5 pathologies, chacune avec son statut de vérification documentaire, sa source officielle, et — quand disponible — le verbatim cité du document de référence. <strong>Ce que vous voyez ici est exactement ce qu'ALIM applique aux sorties</strong> — rien de plus, rien de moins.
   </p>
 
-  <section class="panel">
-    <h2><span class="num">A</span>État du corpus</h2>
-    <div class="corpus-stats" id="stats-area">
-      <div class="stat verified"><div class="n">—</div><div class="lbl">Vérifiées</div></div>
-      <div class="stat derived"><div class="n">—</div><div class="lbl">Dérivées</div></div>
-      <div class="stat to_verify"><div class="n">—</div><div class="lbl">À vérifier</div></div>
+  <!-- ===== Summary dashboard ===== -->
+  <section class="summary" aria-label="État du corpus">
+    <div class="summary-total">
+      <div class="big" id="total-n">—</div>
+      <p class="lbl">règles cliniques activables</p>
+      <p class="sub">5 pathologies couvertes</p>
     </div>
-    <dl class="legend">
-      <div>
-        <dt><span class="badge verified">verified</span></dt>
-        <dd>seuil/direction explicite dans le PDF source identifié (page citée + verbatim).</dd>
+    <article class="summary-cell verified">
+      <div class="big" id="verified-n">—</div>
+      <p class="lbl">Vérifiées</p>
+      <p class="sub">PDF source, page citée, verbatim attaché</p>
+    </article>
+    <article class="summary-cell derived">
+      <div class="big" id="derived-n">—</div>
+      <p class="lbl">Dérivées</p>
+      <p class="sub">Seuil convergent (pratique courante, référentiels internationaux)</p>
+    </article>
+    <article class="summary-cell to_verify">
+      <div class="big" id="to_verify-n">—</div>
+      <p class="lbl">À vérifier</p>
+      <p class="sub">Référence identifiée, vérification en cours</p>
+    </article>
+  </section>
+
+  <!-- ===== Références mobilisées (logos organismes) ===== -->
+  <section class="refs-band">
+    <div class="refs-head">
+      <h2>Organismes mobilisés</h2>
+      <p>Sources officielles citées dans le corpus — cliquables.</p>
+    </div>
+    <ul class="refs-grid">
+      <li><a class="ref-chip" href="https://ciqual.anses.fr/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 18c0-6 4-10 8-12 4 2 8 6 8 12-4 0-6-1-8-3-2 2-4 3-8 3Z"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">Ciqual 2025</span><span class="ref-sub">Table de composition · ANSES</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.anses.fr/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M8 6V4M16 6V4"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">ANSES</span><span class="ref-sub">Sécurité sanitaire</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.efsa.europa.eu/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3v18M5 6c4 3 10 3 14 0M5 18c4-3 10-3 14 0"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">EFSA</span><span class="ref-sub">European Food Safety Authority</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.has-sante.fr/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 5v7c0 4.5 3.5 8 8 10 4.5-2 8-5.5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">HAS</span><span class="ref-sub">Haute Autorité de Santé</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.who.int/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">OMS / WHO</span><span class="ref-sub">Organisation Mondiale de la Santé</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.mangerbouger.fr/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h3l3-7 5 14 3-7h4"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">PNNS</span><span class="ref-sub">Programme National Nutrition Santé</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.cngof.fr/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="9" r="4"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">CNGOF</span><span class="ref-sub">Gynécologues &amp; Obstétriciens</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.santepubliquefrance.fr/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4v16M10 4v16M14 4v16M18 4v16"/><path d="M3 9h18M3 15h18"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">SPF / INCA</span><span class="ref-sub">Santé Publique France</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.sfdiabete.org/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21a9 9 0 1 0-7-15 9 9 0 0 0 7 15Z"/><path d="M9 13l2 2 4-4M8 9h.01"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">SFD</span><span class="ref-sub">Société Francophone du Diabète</span></span>
+      </a></li>
+      <li><a class="ref-chip" href="https://www.ameli.fr/" rel="noopener" target="_blank">
+        <span class="ref-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h14v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V4Z"/><path d="M9 11h6M12 8v6"/></svg></span>
+        <span class="ref-meta"><span class="ref-name">Ameli</span><span class="ref-sub">Assurance Maladie</span></span>
+      </a></li>
+    </ul>
+  </section>
+
+  <!-- ===== Légende ===== -->
+  <section class="panel">
+    <h2>Comment lire un statut de vérification</h2>
+    <div class="legend-grid">
+      <div class="legend-card">
+        <span class="badge verified">verified</span>
+        <p>Seuil ou direction explicite dans le PDF source identifié. Page précise et verbatim cité.</p>
       </div>
-      <div>
-        <dt><span class="badge derived">derived</span></dt>
-        <dd>seuil dérivé de la pratique courante et/ou de référentiels internationaux convergents&nbsp;; le PDF cité ne pose pas de chiffre direct. Non présenté comme un seuil HAS direct.</dd>
+      <div class="legend-card">
+        <span class="badge derived">derived</span>
+        <p>Seuil dérivé de la pratique courante et/ou de référentiels internationaux convergents. Pas présenté comme un seuil HAS direct.</p>
       </div>
-      <div>
-        <dt><span class="badge to_verify">to_verify</span></dt>
-        <dd>référence identifiée, vérification documentaire en cours pendant la phase prototype.</dd>
+      <div class="legend-card">
+        <span class="badge to_verify">to_verify</span>
+        <p>Référence identifiée, vérification documentaire en cours pendant la phase prototype.</p>
       </div>
-    </dl>
-    <p style="font-size:13px; color:var(--muted); margin-top:14px; margin-bottom:0">
-      <strong>evidence_level</strong> reflète le consensus scientifique sous-jacent au seuil, indépendamment de l'état de notre vérification du verbatim. Une règle peut être <code>evidence_level: high</code> tout en restant <code>source_status: to_verify</code> de notre côté.
+    </div>
+    <p style="font-size:13px; color:var(--muted); margin-top:16px; margin-bottom:0">
+      <strong>evidence_level</strong> reflète le consensus scientifique sous-jacent, indépendamment de l'état de notre vérification. Une règle peut être <code>evidence_level: high</code> tout en restant <code>source_status: to_verify</code> côté ALIM.
     </p>
   </section>
 
-  <section class="panel">
-    <h2><span class="num">B</span>Règles par pathologie</h2>
-    <div id="patho-area" class="loading">Chargement du corpus…</div>
+  <!-- ===== Filtres sticky ===== -->
+  <section class="filters" aria-label="Filtres du corpus">
+    <div class="filters-row">
+      <span class="filter-label">Pathologie</span>
+      <div class="filter-chips" id="patho-filters" role="group" aria-label="Filtres par pathologie">
+        <button type="button" class="filter-chip" data-patho="all" aria-pressed="true">Toutes <span class="count" id="cnt-all">·</span></button>
+      </div>
+    </div>
+    <div class="filters-row">
+      <span class="filter-label">Statut</span>
+      <div class="filter-chips" role="group" aria-label="Filtres par statut">
+        <button type="button" class="filter-chip" data-status="all"       aria-pressed="true">Tous <span class="count" id="cnt-s-all">·</span></button>
+        <button type="button" class="filter-chip" data-status="verified"  aria-pressed="false">Vérifiées <span class="count" id="cnt-s-verified">·</span></button>
+        <button type="button" class="filter-chip" data-status="derived"   aria-pressed="false">Dérivées <span class="count" id="cnt-s-derived">·</span></button>
+        <button type="button" class="filter-chip" data-status="to_verify" aria-pressed="false">À vérifier <span class="count" id="cnt-s-to_verify">·</span></button>
+      </div>
+      <input type="search" class="filter-search" id="search-input" placeholder="Rechercher dans le corpus…" aria-label="Recherche">
+      <span class="filter-count" id="result-count">—</span>
+    </div>
+  </section>
+
+  <!-- ===== Liste des règles ===== -->
+  <section id="patho-area" aria-live="polite">
+    <div class="loading">Chargement du corpus…</div>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
     <p class="disclaimer">
-      ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO INVEST ni les organismes cités. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab&nbsp;2.0.
+      ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO ni les organismes cités. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab&nbsp;2.0.
     </p>
     <div class="links">
       <a href="/">Accueil</a>
       <a href="/configurer/">Rejoindre la bêta</a>
+      <a href="/api-docs/">API</a>
+      <a href="/mentions-legales/">Mentions légales</a>
       <a href="mailto:alim@holco.co">alim@holco.co</a>
       <a href="https://holco.co/">HOLCO</a>
       <span style="color:#9aa6c4">© 2026 HOLCO</span>
@@ -323,11 +724,31 @@
   function escapeAttr(s){ return String(s||'').replace(/"/g, '&quot;'); }
 
   const PATHO_LABELS = {
-    diabete_t2: { fr: 'Diabète de type 2', short: 'T2' },
-    hta: { fr: 'Hypertension artérielle (HTA)', short: 'HTA' },
-    diabete_gestationnel: { fr: 'Diabète gestationnel', short: 'DG' },
-    grossesse: { fr: 'Grossesse (hors DG)', short: 'Grossesse' },
-    dyslipidemie: { fr: 'Dyslipidémie', short: 'Dyslipidémie' }
+    diabete_t2: {
+      fr: 'Diabète de type 2',
+      short: 'T2',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+    },
+    hta: {
+      fr: 'Hypertension artérielle',
+      short: 'HTA',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-5-7-11a7 7 0 0 1 14 0c0 6-7 11-7 11Z"/><path d="M9 10l2 2 4-4"/></svg>'
+    },
+    diabete_gestationnel: {
+      fr: 'Diabète gestationnel',
+      short: 'DG',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9 12a3 3 0 0 1 6 0M12 9v6"/></svg>'
+    },
+    grossesse: {
+      fr: 'Grossesse',
+      short: 'Grossesse',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3"/><path d="M9 21V13a3 3 0 0 1 6 0v8"/><circle cx="14" cy="17" r="2.5"/></svg>'
+    },
+    dyslipidemie: {
+      fr: 'Dyslipidémie',
+      short: 'Dyslipidémie',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 18l5-5 4 3 8-9"/><path d="M14 7h6v6"/></svg>'
+    }
   };
 
   function renderThreshold(r){
@@ -335,19 +756,27 @@
     const v = r.value;
     const unit = r.unit || '';
     const scope = r.scope || '';
-    if (dir === 'forbidden') return `interdit (${scope})`;
-    if (v === undefined || v === null) return `${dir} (${scope})`;
+    if (dir === 'forbidden') return `interdit · ${escapeHtml(scope)}`;
+    if (v === undefined || v === null) return `${escapeHtml(dir)} · ${escapeHtml(scope)}`;
     const symbol = dir === 'max' ? '≤' : dir === 'min' ? '≥' : dir === 'warning' ? '⚠' : '=';
-    return `${symbol} ${v}&nbsp;${escapeHtml(unit)} (${escapeHtml(scope)})`;
+    return `${symbol} ${v}&nbsp;${escapeHtml(unit)} · ${escapeHtml(scope)}`;
   }
 
-  function renderRule(r){
+  function renderRule(r, pathoKey){
     const status = r.source_status || 'to_verify';
     const evidence = r.evidence_level || '';
     const url = safeSourceUrl(r.source_url);
+    // Contrat downstream Nora : seule une source verified peut être présentée comme officielle.
+    const STATUS_PREFIX = {
+      verified:  '',
+      derived:   '<span class="source-tag">Référence consultée — pratique convergente :</span> ',
+      to_verify: '<span class="source-tag warn">Référence identifiée, vérification en cours :</span> '
+    };
+    const prefix = STATUS_PREFIX[status] || '';
+    const sourceText = escapeHtml(r.source_fr || 'Source');
     const sourceLine = url
-      ? `<a href="${url}" rel="noopener noreferrer" target="_blank">${escapeHtml(r.source_fr || 'Source')}</a>`
-      : escapeHtml(r.source_fr || '');
+      ? `${prefix}<a href="${url}" rel="noopener noreferrer" target="_blank">${sourceText}</a>`
+      : `${prefix}${sourceText}`;
     const pageInfo = r.pdf_page ? ` — p.&nbsp;${r.pdf_page}` : '';
 
     const verbatim = r.verbatim
@@ -357,8 +786,12 @@
          </details>`
       : '';
 
+    const haystack = `${r.id||''} ${r.rationale_fr||''} ${r.source_fr||''} ${r.nutrient||''}`.toLowerCase();
     return `
-      <div class="rule ${status}">
+      <div class="rule ${status}"
+           data-status="${status}"
+           data-patho="${escapeAttr(pathoKey)}"
+           data-haystack="${escapeAttr(haystack)}">
         <div class="head">
           <span class="id">${escapeHtml(r.id || '')}</span>
           <span class="badge ${status}">${status}</span>
@@ -370,6 +803,45 @@
         ${verbatim}
       </div>
     `;
+  }
+
+  let allRules = []; // flatten { rule, patho }
+  let currentPatho = 'all';
+  let currentStatus = 'all';
+  let currentSearch = '';
+
+  function applyFilters(){
+    let visible = 0;
+    document.querySelectorAll('.rule').forEach(el => {
+      const matchPatho  = currentPatho === 'all' || el.dataset.patho === currentPatho;
+      const matchStatus = currentStatus === 'all' || el.dataset.status === currentStatus;
+      const matchSearch = !currentSearch || el.dataset.haystack.includes(currentSearch);
+      const show = matchPatho && matchStatus && matchSearch;
+      el.classList.toggle('hidden', !show);
+      if (show) visible++;
+    });
+    // hide section if all rules inside are hidden
+    document.querySelectorAll('.patho-section').forEach(sec => {
+      const anyVisible = sec.querySelectorAll('.rule:not(.hidden)').length > 0;
+      sec.style.display = anyVisible ? '' : 'none';
+    });
+    const total = allRules.length;
+    const cnt = document.getElementById('result-count');
+    cnt.textContent = visible === total ? `${total} règles` : `${visible} / ${total}`;
+    // empty state
+    let empty = document.getElementById('empty-results');
+    const area = document.getElementById('patho-area');
+    if (visible === 0) {
+      if (!empty) {
+        empty = document.createElement('div');
+        empty.id = 'empty-results';
+        empty.className = 'empty-results';
+        empty.innerHTML = `<strong>Aucune règle ne correspond.</strong>Modifiez les filtres ou effacez la recherche.`;
+        area.appendChild(empty);
+      }
+    } else if (empty) {
+      empty.remove();
+    }
   }
 
   async function load(){
@@ -386,40 +858,100 @@
 
   function render(data){
     const pathos = data.pathologies || {};
-    let v=0, d=0, t=0;
+    // Counts
+    let v = 0, d = 0, t = 0, total = 0;
     Object.values(pathos).forEach(p => (p.rules || []).forEach(r => {
+      total++;
       if (r.source_status === 'verified') v++;
       else if (r.source_status === 'derived') d++;
       else t++;
     }));
-    const stats = document.getElementById('stats-area');
-    stats.innerHTML = `
-      <div class="stat verified"><div class="n">${v}</div><div class="lbl">Vérifiées</div></div>
-      <div class="stat derived"><div class="n">${d}</div><div class="lbl">Dérivées</div></div>
-      <div class="stat to_verify"><div class="n">${t}</div><div class="lbl">À vérifier</div></div>
-    `;
+    document.getElementById('total-n').textContent      = total;
+    document.getElementById('verified-n').textContent   = v;
+    document.getElementById('derived-n').textContent    = d;
+    document.getElementById('to_verify-n').textContent  = t;
+    document.getElementById('cnt-all').textContent          = total;
+    document.getElementById('cnt-s-all').textContent        = total;
+    document.getElementById('cnt-s-verified').textContent   = v;
+    document.getElementById('cnt-s-derived').textContent    = d;
+    document.getElementById('cnt-s-to_verify').textContent  = t;
 
+    // Pathologies order
     const order = ['diabete_t2', 'hta', 'diabete_gestationnel', 'grossesse', 'dyslipidemie'];
+    const pathoFilters = document.getElementById('patho-filters');
+    order.forEach(k => {
+      if (!pathos[k]) return;
+      const lbl = PATHO_LABELS[k] || { fr: k, short: k };
+      const count = pathos[k].rules.length;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'filter-chip';
+      btn.dataset.patho = k;
+      btn.setAttribute('aria-pressed', 'false');
+      btn.innerHTML = `${escapeHtml(lbl.short)} <span class="count">${count}</span>`;
+      pathoFilters.appendChild(btn);
+    });
+
+    // Sections
+    const area = document.getElementById('patho-area');
+    const rank = { verified: 0, derived: 1, to_verify: 2 };
+    const OUT_OF_SCOPE_V0 = new Set(['dyslipidemie']);
     const html = order.filter(k => pathos[k]).map(k => {
       const p = pathos[k];
-      const lbl = PATHO_LABELS[k] || { fr: k, short: k };
+      const lbl = PATHO_LABELS[k] || { fr: k, short: k, icon: '' };
       const rules = p.rules || [];
-      const rank = { verified: 0, derived: 1, to_verify: 2 };
-      const sorted = rules.slice().sort((a,b) => (rank[a.source_status]||3) - (rank[b.source_status]||3));
-      const count = rules.length;
+      const sorted = rules.slice().sort((a, b) => (rank[a.source_status] || 3) - (rank[b.source_status] || 3));
       const vN = rules.filter(r => r.source_status === 'verified').length;
+      const dN = rules.filter(r => r.source_status === 'derived').length;
+      const tN = rules.filter(r => r.source_status === 'to_verify').length;
+      sorted.forEach(r => allRules.push({ rule: r, patho: k }));
+      const outOfScope = OUT_OF_SCOPE_V0.has(k);
+      const banner = outOfScope ? `
+        <div class="out-banner">
+          <strong>Hors périmètre v0 publique.</strong>
+          Les règles de cette pathologie sont identifiées mais en attente de revue documentaire dédiée. Elles ne sont pas utilisées par la démo Mirabelle ni par le Custom GPT ALIM. Affichées ici uniquement à des fins de transparence.
+        </div>` : '';
       return `
-        <div class="patho-section" id="${escapeAttr(k)}">
-          <h3>${escapeHtml(lbl.fr)}</h3>
-          <p class="ptag">${count} règle${count>1?'s':''} activable${count>1?'s':''} — ${vN} vérifiée${vN>1?'s':''}.</p>
-          ${sorted.map(renderRule).join('')}
-        </div>
+        <section class="patho-section ${outOfScope ? 'out-of-scope' : ''}" data-patho-section="${escapeAttr(k)}" id="${escapeAttr(k)}">
+          <header class="patho-head">
+            <h3><span class="patho-icon" aria-hidden="true">${lbl.icon || ''}</span>${escapeHtml(lbl.fr)}</h3>
+            <div class="patho-stats">
+              <span><span class="dot verified"></span>${vN} vérifiée${vN > 1 ? 's' : ''}</span>
+              <span><span class="dot derived"></span>${dN} dérivée${dN > 1 ? 's' : ''}</span>
+              <span><span class="dot to_verify"></span>${tN} à vérifier</span>
+            </div>
+          </header>
+          ${banner}
+          ${sorted.map(r => renderRule(r, k)).join('')}
+        </section>
       `;
     }).join('');
 
-    const area = document.getElementById('patho-area');
-    area.className = '';
     area.innerHTML = html;
+
+    // Wire filter chips
+    document.querySelectorAll('#patho-filters .filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#patho-filters .filter-chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        currentPatho = btn.dataset.patho;
+        applyFilters();
+      });
+    });
+    document.querySelectorAll('.filter-chip[data-status]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip[data-status]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        currentStatus = btn.dataset.status;
+        applyFilters();
+      });
+    });
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      currentSearch = e.target.value.trim().toLowerCase();
+      applyFilters();
+    });
+
+    applyFilters();
   }
 
   load();

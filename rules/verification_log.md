@@ -29,6 +29,75 @@ Last update: 2026-05-16 — Alan
 
 ---
 
+## ✅/🛈 diabete_gestationnel — SFD Paramédical nutrition DG 2021/2022
+
+- **Source PDF** : SFD Paramédical — Nutrition et diabète gestationnel. Recommandations de bonnes pratiques. Version 2021/2022.
+- **URL canonique** : https://www.sfdiabete.org/sites/www.sfdiabete.org/files/files/ressources/reco_nutrition_diabete_gestationnel_2022_v2.pdf
+- **Pages utilisées** :
+  - p.6 : besoins glucidiques, répartition et fractionnement
+  - p.8 : index glycémique, charge glycémique, produits sucrés, fibres
+- **Confirmations utiles** :
+  - le DG demande un contrôle quantitatif et qualitatif des glucides ;
+  - les apports glucidiques doivent être répartis en minimum 3 prises journalières ;
+  - privilégier les aliments à IG faible ou modéré en tenant compte des préférences alimentaires ;
+  - les aliments à IG élevé ne doivent pas être pris isolément et sont à associer à des aliments riches en fibres ;
+  - les produits sucrés ne sont pas interdits en quantité limitée, mais s'intègrent à la ration glucidique journalière.
+- **Actions 2026-05-22 Nora** :
+  - `dg_low_gi_required` → `source_status: "verified"`
+  - `dg_carb_per_meal_max` → `source_status: "derived"` : ALIM v0 garde 45 g/repas comme plafond de démonstration prudent, non présenté comme seuil SFD universel.
+  - `dg_added_sugar_per_meal_max` → `source_status: "derived"` : ALIM v0 génère zéro sucre ajouté pour la démo, mais ne présente plus cela comme une interdiction clinique générale.
+  - `dg_fiber_per_meal_min` → `source_status: "derived"` : 7 g/repas reste un seuil ALIM dérivé, justifié par l'association fibres + impact glycémique.
+
+---
+
+## 🛈 diabete_t2 / hta — sucres, fibres, acides gras saturés (repères journaliers → seuils ALIM dérivés)
+
+- **Sources web utilisées 2026-05-22 Nora** :
+  - WHO — Guideline: Sugars intake for adults and children, 2015 : https://www.ncbi.nlm.nih.gov/books/NBK285525/
+  - ANSES — Sucres dans l'alimentation : https://www.anses.fr/fr/content/sucres-dans-lalimentation
+  - Ameli — Alimentation de l'adulte : manger en forme : https://www.ameli.fr/assure/sante/themes/alimentation-adulte/alimentation-adulte-manger-forme
+  - ANSES — Les lipides : https://www.anses.fr/fr/content/les-lipides
+- **Actions** :
+  - `t2_added_sugar_per_meal_max` : reste `derived`. Le plafond 10 g/repas est un choix ALIM v0 dérivé de la recommandation OMS de réduction des sucres libres ; ne pas présenter comme un seuil HAS/SFD direct.
+  - `t2_total_sugar_per_meal_warning` : reste `derived`. Le warning 25 g/repas est dérivé du repère ANSES 100 g/jour de sucres totaux hors lactose/galactose.
+  - `t2_fiber_per_meal_min` : reste `derived`. Le seuil 7 g/repas est dérivé des repères adultes 25-30 g/jour.
+  - `hta_saturated_fat_per_meal_max` : reste `derived`. Le seuil 7 g/repas est dérivé de repères journaliers ANSES sur les AGS.
+- **Pourquoi pas `verified` ?** Les sources vérifient les repères journaliers et directions nutritionnelles, mais les seuils ALIM par repas sont des adaptations de démonstration. Ils ne doivent pas être cités comme seuils officiels directs.
+
+---
+
+## ✅/🛈 clôture sources v0 publique — T2 / HTA / grossesse-DG (2026-05-22 Nora)
+
+Objectif : fermer le périmètre public ALIM v0 sans surpromettre. Les règles activées par les démos publiques T2+HTA et grossesse+diabète gestationnel disposent désormais soit d'une source vérifiée directe, soit d'un statut `derived` documenté quand ALIM applique un seuil de prudence par repas dérivé d'un repère journalier.
+
+- **`t2_low_gi_preferred` → `verified`**
+  - Source : Ameli — Diabète : l'alimentation au quotidien.
+  - URL : https://www.ameli.fr/assure/sante/themes/diabete-adulte/diabete-vivre-quotidien/equilibre-alimentaire/diabete-alimentation-fondamentaux
+  - Confirme : privilégier des aliments à index glycémique bas ou modéré pour limiter l'élévation glycémique postprandiale.
+  - Note : règle qualitative, pas un seuil numérique.
+
+- **`hta_potassium_per_meal_min` → `derived`**
+  - Source : EFSA — Dietary Reference Values for potassium, EFSA Journal 2016;14(10):4592.
+  - URL : https://www.efsa.europa.eu/en/efsajournal/pub/4592
+  - Confirme : repère adulte journalier à 3 500 mg/jour.
+  - Décision ALIM : seuil 700 mg/repas maintenu comme dérivé prudent, non présenté comme seuil officiel par repas. Règle non activée comme promesse publique stricte si fonction rénale non documentée.
+
+- **`hta_no_alcohol` → `derived`**
+  - Source : Ameli — Alimentation et hypertension artérielle.
+  - URL : https://www.ameli.fr/assure/sante/themes/hypertension-arterielle-hta/alimentation-et-hta
+  - Confirme : alcool à limiter fortement dans l'HTA.
+  - Décision ALIM : zéro alcool dans les recettes générées est un choix de sécurité v0, pas une interdiction clinique générale équivalente à la grossesse.
+
+- **`grossesse_no_raw_eggs` → `derived`**
+  - Source : ANSES — Qu'est-ce que la salmonellose et comment s'en prémunir ?
+  - URL : https://www.anses.fr/fr/content/quest-ce-que-la-salmonellose-et-comment-sen-premunir
+  - Confirme : les oeufs et préparations à base d'oeufs crus figurent parmi les véhicules fréquents de salmonelles.
+  - Décision ALIM : règle maintenue pour hygiène grossesse avec statut `derived`, car la source confirme le risque alimentaire mais ne constitue pas une recommandation grossesse dédiée aussi directe que les sources Ameli/listériose ou ANSES/toxoplasmose.
+
+**Hors périmètre v0 publique** : les règles `dyslip_saturated_fat_per_meal_max` et `dyslip_cholesterol_per_day_max` restent `to_verify`. Elles ne doivent pas être affichées comme sources finalisées ni utilisées comme axe de démo publique avant revue dédiée dyslipidémie.
+
+---
+
 ## ✅ grossesse_caffeine_per_day_max — EFSA 2015 (verified)
 
 - **Source PDF** : EFSA — Caffeine: EFSA explains risk assessment. 2015. TM-04-15-330-EN-N. ISBN 978-92-9199-677-3. doi:10.2805/618813.

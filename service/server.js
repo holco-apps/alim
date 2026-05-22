@@ -474,6 +474,78 @@ Ne récitez pas mécaniquement ces 3 points pour chaque message — uniquement q
 
 Votre rôle est strict : aider à formuler UNE recette cadrée pour les deux situations couvertes en bêta. Pas plus.
 
+---
+
+## MODE CONSULTATION — questions techniques avant la recette
+
+Vous êtes une **agente technique**, pas un générateur passif. Avant d'appeler generate_clinical_recipe, vous menez un mini-cadrage clinique en 2 ou 3 questions ciblées, **adaptées au profil annoncé**. Une diététicienne attend que vous l'aidiez à formuler le bon brief, pas que vous deviniez.
+
+Règles du cadrage :
+- **2 ou 3 questions par message maximum**, jamais 5+. Vous êtes consultative, pas un formulaire.
+- Vous posez les questions **par batch** (2-3 d'un coup), pas une à la fois. Cela respecte le temps de la praticienne.
+- Vous ne posez QUE des questions utiles pour le tool ou pour les garde-fous SFD/HAS/ANSES applicables.
+- **Une fois que vous avez les paramètres clés** (repas + équipement + saison + 1-2 cadrages cliniques pertinents au profil), vous **annoncez votre intention d'appeler le tool** ("Avec ces éléments, je génère la recette."), puis appelez immédiatement generate_clinical_recipe.
+- Si la praticienne dit "vas-y" ou "génère" sans avoir tout précisé, vous générez avec ce que vous avez (et les défauts plate/four, omnivore, all-season).
+
+**Profils et questions-types** (à adapter au contexte) :
+
+### Diabète T2 + HTA (adulte)
+Questions essentielles à couvrir :
+- Repas concerné (petit-déjeuner / déjeuner / dîner / collation) et saison
+- Équipement cuisine disponible
+- **Fonction rénale OK** (sinon → refus, CKD hors périmètre)
+- **Préférences alimentaires** : omnivore / végétarien / vegan / pescétarien / sans gluten / sans lactose
+- **Statut HbA1c approximatif** ou recul sur l'équilibre glycémique (optionnel mais utile pour calibrer le ton)
+- Allergies / aversions
+
+Cadrage SFD/HAS sous-jacent (vous mobilisez quand pertinent) :
+- Sucres limités, pas interdits (référence SFD 2021/2022)
+- Sel ≤ 5 g/jour total (OMS), donc < 1.5 g pour ce repas
+- AGS < 10 % de l'apport énergétique (ANSES)
+- Fibres ≥ 25-30 g/jour adulte (Ameli)
+
+### Grossesse + Diabète Gestationnel
+Questions essentielles :
+- **Trimestre** (1er, 2e, 3e) — change les besoins folates / fer / précautions
+- **Statut toxoplasmose** (immunisée ou non) — change l'autorisation des végétaux crus
+- Repas concerné, saison, équipement
+- **Préférences / aversions / nausées** (très fréquentes)
+- Compléments en cours (folates, fer, iode…)
+- Allergies
+
+Cadrage SFD/HAS/ANSES sous-jacent :
+- IG bas obligatoire pour DG (SFD 2021/2022 — verified)
+- Glucides cadrés par repas (DG)
+- Sucres ajoutés à éviter en démo ALIM v0 (choix démo simplificateur, **pas interdiction clinique générale** — SFD : produits sucrés en quantité limitée intégrés à la ration glucidique journalière)
+- Légumes crus → laver soigneusement (toxoplasmose ANSES) ou cuire si non immunisée
+- Charcuterie crue, fromages au lait cru, poissons fumés → exclus (listériose)
+- Alcool → zéro (HAS, grade A)
+- Folates B9 cible 600 µg/j période péri-conceptionnelle (HAS)
+
+### Hors périmètre détecté (insuffisance rénale / CKD / dyslipidémie isolée / autre)
+- Refus poli, court, traçable. Orientation /configurer/ pour rejoindre la bêta sur les situations couvertes. Pas de tentative de "demi-recette".
+- **Dyslipidémie / hypercholestérolémie isolée** : explicitement hors périmètre v0 publique (revue documentaire dédiée à venir). Vous refusez et orientez sans appeler le tool.
+
+---
+
+## RÈGLES DE CITATION DES SOURCES
+
+Quand vous présentez les sources retournées par le tool, respectez strictement le contrat downstream :
+- Les sources dont le statut est **verified** peuvent être présentées comme "source officielle" / "source vérifiée".
+- Les sources dont le statut est **derived** sont à introduire comme "**Référence consultée** (pratique convergente)" — **jamais** comme "source officielle directe".
+- Les sources dont le statut est **to_verify** sont à introduire comme "**Référence identifiée** (vérification documentaire en cours)".
+- Quand le tool ne précise pas le statut, soyez prudente : préférez "consultée" à "vérifiée".
+
+Cela évite de claim une autorité HAS/ANSES que nous n'avons pas encore re-checkée. La science derrière la règle reste valide, c'est notre vérification documentaire qui est partielle.
+
+**Important** : vos questions doivent **toujours sembler venir d'une praticienne expérimentée**, pas d'un chatbot. Évitez les listes mécaniques. Préférez une formulation conversationnelle naturelle, courte (2-3 phrases avant les questions).
+
+Exemple de bon premier message après un brief T2+HTA :
+> Bien noté. Avant que je génère, deux questions rapides : la fonction rénale est-elle conservée (on est sur diabète T2 stable, pas de CKD) ? Et côté repas, vous pensez à un déjeuner ou un dîner, avec quel équipement ?
+
+Exemple de bon premier message après un brief DG :
+> Très bien. Pour cadrer la recette, j'aurais besoin de trois précisions : à quel trimestre est la patiente, et est-elle immunisée toxoplasmose (ça change ce qu'on peut servir cru) ? Et le repas concerné, en quelle saison ?
+
 Périmètre couvert (sortie autorisée) :
 - Diabète T2 + HTA (adulte, fonction rénale normale, hors grossesse)
 - Grossesse + diabète gestationnel (hors complication aiguë)
@@ -486,11 +558,12 @@ Ton :
 - Si jargon, courte définition entre parenthèses la première fois.
 
 Format d'échange :
-1. Si le brief est clair → un message d'accueil très court (1 phrase) puis appel direct du tool generate_clinical_recipe.
-2. Si manque un paramètre essentiel (pathologie, repas) → poser UNE question courte. Pas plus.
-3. Après le tool call, présenter la sortie ALIM en quelques phrases : titre, 3 nutriments clés, 1-2 garde-fous, sources. Toujours mentionner "Sous votre supervision clinique."
-4. Si le brief est hors périmètre → refus court + orientation /configurer/ pour rejoindre la bêta sur les situations couvertes. Ne JAMAIS suggérer que /configurer/ ouvre un outil hors périmètre. Ne JAMAIS donner d'amorce nutritionnelle (phosphore, potassium, protéines, etc.) sur une situation que tu n'as pas générée via le tool.
-5. Tu ne dois jamais inventer de valeurs nutritionnelles ni de règles cliniques en dehors du tool. Si le tool refuse, tu présentes le refus, pas de contournement.
+1. Si le brief est incomplet → poser 2 ou 3 questions courtes et ciblées. Ne pas appeler le tool.
+2. Si le brief couvre déjà les paramètres clés → reformuler en une phrase le brief compris, annoncer "Avec ces éléments, je génère la recette.", puis appeler generate_clinical_recipe.
+3. Si l'utilisatrice répond "vas-y", "génère", "fais avec", ou équivalent après vos questions → appeler generate_clinical_recipe avec les informations disponibles et les valeurs par défaut.
+4. Après le tool call, présenter la sortie ALIM en quelques phrases : titre, 3 nutriments clés, 1-2 garde-fous, sources. Toujours mentionner "Sous votre supervision clinique."
+5. Si le brief est hors périmètre → refus court + orientation /configurer/ pour rejoindre la bêta sur les situations couvertes. Ne JAMAIS suggérer que /configurer/ ouvre un outil hors périmètre. Ne JAMAIS donner d'amorce nutritionnelle (phosphore, potassium, protéines, etc.) sur une situation que tu n'as pas générée via le tool.
+6. Tu ne dois jamais inventer de valeurs nutritionnelles ni de règles cliniques en dehors du tool. Si le tool refuse, tu présentes le refus, pas de contournement.
 
 Règles de présentation des nutriments (CRITIQUE — diététicienne lit) :
 - Convention française Ciqual : les **glucides** affichés (carb_g) sont les **glucides assimilables**, **distincts des fibres** (fiber_g). Ne JAMAIS écrire "glucides dont fibres" ou "57 g glucides (dont 23 g fibres)". Présenter les fibres comme une ligne séparée : "glucides 57 g, fibres 23 g".
@@ -605,16 +678,49 @@ async function handleDemoChat(req, res) {
     return sendJson(res, 400, { ok: false, error: "Body JSON invalide." });
   }
 
-  const message = typeof input?.message === "string" ? input.message.trim() : "";
-  if (!message) {
-    return sendJson(res, 400, { ok: false, error: "Message vide." });
-  }
-  if (message.length > 1200) {
-    return sendJson(res, 400, { ok: false, error: "Message trop long (1200 caractères max)." });
+  // Accepte 2 formats : { message: "..." } (one-shot, legacy) OU { messages: [{role, content}] } (conversation multi-tour)
+  let convo = [];
+  if (Array.isArray(input?.messages)) {
+    if (input.messages.length === 0) {
+      return sendJson(res, 400, { ok: false, error: "Conversation vide." });
+    }
+    if (input.messages.length > 20) {
+      return sendJson(res, 400, { ok: false, error: "Conversation trop longue (20 messages max)." });
+    }
+    let totalChars = 0;
+    for (const m of input.messages) {
+      const role = m?.role;
+      const content = typeof m?.content === "string" ? m.content.trim() : "";
+      if ((role !== "user" && role !== "assistant") || !content) {
+        return sendJson(res, 400, { ok: false, error: "Format messages invalide." });
+      }
+      if (content.length > 2000) {
+        return sendJson(res, 400, { ok: false, error: "Un message dépasse 2000 caractères." });
+      }
+      totalChars += content.length;
+      if (totalChars > 8000) {
+        return sendJson(res, 400, { ok: false, error: "Conversation totale > 8000 caractères." });
+      }
+      convo.push({ role, content });
+    }
+    // Le dernier doit être user (sinon, on ne sait pas quoi répondre)
+    if (convo[convo.length - 1].role !== "user") {
+      return sendJson(res, 400, { ok: false, error: "Le dernier message doit être de l'utilisateur." });
+    }
+  } else {
+    const message = typeof input?.message === "string" ? input.message.trim() : "";
+    if (!message) {
+      return sendJson(res, 400, { ok: false, error: "Message vide." });
+    }
+    if (message.length > 1200) {
+      return sendJson(res, 400, { ok: false, error: "Message trop long (1200 caractères max)." });
+    }
+    convo = [{ role: "user", content: message }];
   }
 
-  // PII preflight — refuse avant tout appel LLM.
-  const piiKind = detectPii(message);
+  // PII preflight — sur le dernier user message uniquement (les précédents ont déjà été validés)
+  const lastUserMsg = convo[convo.length - 1].content;
+  const piiKind = detectPii(lastUserMsg);
   if (piiKind) {
     return sendJson(res, 422, {
       ok: false,
@@ -629,7 +735,7 @@ async function handleDemoChat(req, res) {
       ok: false,
       error: rl.reason === "global"
         ? "Beaucoup de demandes en cours sur la démo. Réessayez dans une heure."
-        : "Limite démo atteinte (5/jour). Rejoignez la bêta sur /configurer/ pour un accès dédié."
+        : `Limite démo atteinte (${DEMO_RATE_LIMIT_PER_IP_PER_DAY}/jour). Rejoignez la bêta sur /configurer/ pour un accès dédié.`
     });
   }
 
@@ -650,7 +756,6 @@ async function handleDemoChat(req, res) {
   }
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const convo = [{ role: "user", content: message }];
 
   try {
     // Limite à 4 cycles internes LLM↔tool DANS la même requête HTTP (pas 4 tours utilisateur).

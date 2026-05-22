@@ -474,6 +474,32 @@ Pierre a demandé d'améliorer ALIM avec plus de sources et d'études avant dép
 2. CNGOF/SFD diabète gestationnel : mieux sourcer les seuils glucidiques DG.
 3. HTA alcool / acides gras saturés : renforcer `hta_no_alcohol`, `hta_saturated_fat_per_meal_max`.
 
+### 2026-05-22 — Nora — Suite sources : SFD DG + repères sucres/fibres/AGS
+
+Pendant qu'Alan met à jour le site, travail limité aux fichiers de fond (`rules/`, `corpus/`) + sync data `/sources/`.
+
+**Diabète gestationnel — source SFD Paramédical ajoutée** :
+- Source : SFD Paramédical, `Nutrition et diabète gestationnel`, recommandations de bonnes pratiques 2021/2022.
+- URL : `https://www.sfdiabete.org/sites/www.sfdiabete.org/files/files/ressources/reco_nutrition_diabete_gestationnel_2022_v2.pdf`
+- `dg_low_gi_required` passe `verified`.
+- `dg_carb_per_meal_max`, `dg_added_sugar_per_meal_max`, `dg_fiber_per_meal_min` passent `derived` documentées : les directions sont sourcées, mais les seuils ALIM par repas restent des choix de démonstration, pas des seuils SFD universels.
+- Correction importante : la règle `dg_added_sugar_per_meal_max=0` est désormais présentée comme choix ALIM v0 pour génération publique, pas comme interdiction clinique générale. La SFD dit que les produits sucrés ne sont pas interdits en quantité limitée s'ils sont intégrés à la ration glucidique.
+
+**T2/HTA — repères journaliers mieux documentés** :
+- `t2_added_sugar_per_meal_max` : source OMS sucres libres 2015, statut `derived`.
+- `t2_total_sugar_per_meal_warning` : source ANSES sucres, statut `derived`.
+- `t2_fiber_per_meal_min` : source Ameli/repères fibres adulte, statut `derived`.
+- `hta_saturated_fat_per_meal_max` : source ANSES lipides, statut `derived`.
+- Raison : les sources confirment des repères journaliers et directions nutritionnelles ; les seuils par repas ALIM sont des adaptations, donc on ne les marque pas `verified`.
+
+**Sync et vérifs** :
+- JSON rules valide.
+- `clinical_rules.json` synchronisé vers `/opt/alim/rules/`, source web `/root/.openclaw/alim/web/sources/`, et prod `/var/www/alim/sources/`.
+- Redémarrage `alim.service` effectué.
+- `GET /api/health` OK.
+- `POST /api/generate` OK sur T2+HTA et grossesse+DG.
+- La sortie grossesse+DG inclut maintenant SFD + Ameli + ANSES + HAS + Ciqual dans `sources`.
+
 ### 2026-05-22 — Alan — Cycle 1 de la reco Nora "donner envie aux pros"
 
 Appliqué les 3 changements les plus impactants de la note Nora :
@@ -620,3 +646,70 @@ Tant que l'auth + quota ne sont pas en place, **mettre le bouton sur la home pub
 **Côté backend** : je ne touche pas — c'est ton terrain. Le seul truc côté Alan qui pourrait t'aider : si tu veux que `/configurer/` envoie automatiquement la clé `alim_live_xxx` dans le mail de validation (à la place du process manuel actuel), dis-moi l'API contract.
 
 À toi de pousser quand tu as un retour Pierre sur l'arbitrage diffusion vs prudence.
+
+### 2026-05-22 — Nora — Clôture sources ALIM v0 publique
+
+Objectif Pierre : “boucler les sources” avant diffusion plus large.
+
+**Fichiers touchés** :
+- `rules/clinical_rules.json`
+- `rules/verification_log.md`
+- `corpus/recipe_inspiration_index.json`
+- sync data vers `/opt/alim/rules/clinical_rules.json`, `web/sources/clinical_rules.json`, `/var/www/alim/sources/clinical_rules.json`
+
+**État des sources v0** :
+- T2 + HTA : citations vérifiées ou seuils explicitement `derived` quand ALIM transforme un repère journalier en garde-fou par repas.
+- Grossesse + diabète gestationnel : citations Ameli / ANSES / HAS / EFSA / SFD posées selon le cas.
+- Les sources `derived` ne doivent pas être affichées comme “source officielle directe” dans l’UI. Le contrat aval dans `_meta.downstream_consumer_contract` reste la règle : citation publique seulement quand `source_status === "verified"`.
+- Restent `to_verify` uniquement :
+  - `dyslip_saturated_fat_per_meal_max`
+  - `dyslip_cholesterol_per_day_max`
+  Ces deux règles sont hors périmètre v0 publique et ne doivent pas être utilisées dans la démo ou le marketing tant qu’une revue dyslipidémie dédiée n’est pas faite.
+
+**Sources ajoutées/renforcées** :
+- Ameli grossesse alimentation/listériose : fromages au lait cru, poissons crus/fumés, charcuteries à risque.
+- SFD Paramédical nutrition diabète gestationnel 2021/2022 : IG bas/modéré, répartition glucidique, produits sucrés, fibres.
+- Ameli diabète alimentation quotidienne : index glycémique et contrôle de la glycémie.
+- WHO sodium 2012, HAS T2 2024, HAS projet grossesse 2009, ANSES toxoplasmose, EFSA caféine, EFSA potassium, ANSES sucres/lipides, ANSES salmonellose.
+- Index d’inspiration recette créé côté corpus, avec règle copyright stricte : inspiration culinaire seulement, jamais de copie de recettes/ingrédients/étapes/photos.
+
+**Vérifications** :
+- JSON rules valide.
+- `alim.service` redémarré après sync.
+- `/api/health` OK.
+- `POST /api/generate` T2+HTA OK ; sources publiques retournées : Ciqual, WHO sodium, Ameli diabète.
+- `POST /api/generate` grossesse+DG OK ; sources publiques retournées : Ciqual, SFD, Ameli grossesse, ANSES toxoplasmose, HAS grossesse.
+
+Point d’attention non bloquant : la recette grossesse+DG déterministe actuelle peut nommer “salade d’été” même avec `season: printemps`. Ce n’est pas un sujet source mais à lisser dans un futur polish contenu.
+
+### 2026-05-22 — Nora — Brief guidé avant recette, Mirabelle + Custom GPT
+
+Décision Pierre : ALIM ne doit pas donner une recette trop vite ; l’agent doit poser les bonnes questions au professionnel avant génération. PDF/export utiles ensuite, mais priorité au cadrage clinique.
+
+**Mirabelle / backend** :
+- `service/server.js` contenait déjà une première passe multi-tour + prompt “mode consultation”.
+- Correction Nora : suppression de la contradiction interne qui disait encore “si brief clair → appel direct”.
+- Nouveau comportement attendu :
+  - brief incomplet → 2 ou 3 questions ciblées max ;
+  - paramètres clés présents → reformulation courte + “Avec ces éléments, je génère la recette.” + tool call ;
+  - “vas-y / génère / fais avec” → génération avec hypothèses et défauts.
+- Petit fix : message rate-limit utilise maintenant la constante réelle `DEMO_RATE_LIMIT_PER_IP_PER_DAY`.
+- Source copiée vers `/opt/alim/service/server.js`, `alim.service` redémarré, `/api/health` OK.
+- Test Mirabelle incomplet T2+HTA OK : l’agent pose fonction rénale / repas-saison / équipement-préférences avant génération.
+- Test multi-tour OK : avec réponses fonction rénale conservée + déjeuner printemps + plaque + omnivore, l’agent génère ensuite.
+
+**Custom GPT ChatGPT** :
+- Instructions publiées mises à jour :
+  - `/root/.openclaw/alim/integrations/chatgpt/instructions.md`
+  - `/var/www/alim/chatgpt/instructions.md`
+- OpenAPI publiée enrichie :
+  - `/root/.openclaw/alim/integrations/chatgpt/openapi.yaml`
+  - `/var/www/alim/chatgpt/openapi.yaml`
+- URL publiques :
+  - `https://alim.care/chatgpt/instructions.md`
+  - `https://alim.care/chatgpt/openapi.yaml`
+- Important : ChatGPT ne recharge pas automatiquement les instructions du GPT déjà créé. Pierre doit coller les nouvelles instructions dans le builder du GPT et, si besoin, réimporter le schéma OpenAPI depuis l’URL.
+
+**Export PDF** :
+- Pas implémenté maintenant.
+- Reco produit : d’abord brief guidé fiable, ensuite `copier fiche`, puis PDF simple, puis PDF brandable cabinet.

@@ -16,7 +16,9 @@ paths:
       description: >
         Génère une recette avec ingrédients en grammes, nutriments par portion,
         garde-fous appliqués, sources et avertissements. Refuse les cas hors
-        périmètre bêta.
+        périmètre bêta. À appeler seulement après un brief patient anonymisé
+        cadré par le GPT : pathologies, repas, préférences, équipement et
+        précautions clés selon le profil.
       requestBody:
         required: true
         content:
@@ -82,14 +84,22 @@ paths:
                       - vapeur
                       - micro_ondes
                       - blender
+                  description: >
+                    Équipement réellement disponible chez le patient. Si inconnu
+                    et si le praticien demande de faire avec, utiliser plaque et
+                    four par défaut.
                 notes:
                   type: string
                   maxLength: 600
                   description: >
                     Brief anonymisé : goûts, saison, contraintes culinaires,
-                    budget, temps disponible, préférences. Ne jamais inclure
-                    nom, prénom, date de naissance, téléphone, e-mail, NIR ou
-                    tout identifiant patient.
+                    budget, temps disponible, préférences, allergies non
+                    complexes, hypothèses utilisées. Pour T2+HTA, préciser si
+                    fonction rénale conservée ; si insuffisance rénale/CKD/MRC,
+                    ne pas appeler cette action. Pour grossesse+DG, préciser
+                    trimestre et statut toxoplasmose si connus. Ne jamais
+                    inclure nom, prénom, date de naissance, téléphone, e-mail,
+                    NIR ou tout identifiant patient.
               required:
                 - pathologies
                 - meal_slot
