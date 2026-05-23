@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Mon compte ALIM — profil praticien & cabinet</title>
+<title>Mon compte ALIM — espace praticien</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Espace praticien ALIM : statut, clé d'accès, profil de pratique et identité cabinet pour vos fiches imprimables.">
+<meta name="description" content="Espace praticien ALIM : statut compte, clé d'accès, profil de pratique et identité cabinet pour vos fiches imprimables.">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#233872">
+<meta name="theme-color" content="#172650">
 <link rel="icon" href="/assets/alim-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,470 +17,925 @@
     --navy-deep:#172650;
     --gold:#f7da29;
     --gold-soft:#fff6b7;
-    --paper:#f5f0e8;
-    --paper-alt:#fcfaf5;
-    --white:#fff;
-    --ink:#111827;
-    --ink-soft:#3f4860;
-    --muted:#687083;
-    --line:#ded8ca;
-    --line-strong:#c4bba6;
-    --ok:#286c4d;
-    --warn:#9a661f;
-    --bad:#8a2a2a;
+    --canvas:#f7f8fa;
+    --surface:#ffffff;
+    --surface-2:#fbfbfc;
+    --ink:#0f1115;
+    --ink-soft:#3b4252;
+    --muted:#6b7280;
+    --muted-2:#9aa0aa;
+    --line:#e6e8ec;
+    --line-strong:#d6d9df;
+    --ok:#1f7a52;
+    --ok-soft:#e6f5ec;
+    --warn:#94590f;
+    --warn-soft:#fff5e0;
+    --bad:#9b1c1c;
+    --bad-soft:#fdecec;
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth; scroll-padding-top:84px}
+  html{scroll-behavior:smooth; scroll-padding-top:96px}
   body{
     margin:0;
     color:var(--ink);
-    background:var(--paper-alt);
-    font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:var(--canvas);
+    font: 15px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     -webkit-font-smoothing:antialiased;
     text-rendering:optimizeLegibility;
   }
-  a{color:var(--navy); text-decoration-thickness:1px; text-underline-offset:3px}
-  h1,h2,h3,h4{
-    margin:0;
-    font-family:"Instrument Serif", Georgia, "Times New Roman", serif;
-    font-weight:400;
-    letter-spacing:-0.01em;
-    line-height:1.1;
-    color:var(--navy-deep);
-  }
-  p{margin:0}
-  .wrap{width:min(820px, calc(100% - 40px)); margin:0 auto}
-  @media (max-width:640px){.wrap{width:min(100% - 28px, 820px)}}
+  body.is-connected .connect-page{display:none}
+  body:not(.is-connected) .app-layout{display:none}
 
-  .site-header{
-    position:sticky; top:0; z-index:30;
-    border-bottom:1px solid rgba(35,56,114,.10);
-    background:rgba(252,250,245,.92);
-    backdrop-filter:blur(14px);
+  a{color:var(--navy); text-decoration-thickness:1px; text-underline-offset:3px}
+  h1,h2,h3,h4,h5{margin:0; font-family:Inter, ui-sans-serif, system-ui, sans-serif; font-weight:600; color:var(--ink); letter-spacing:-0.005em}
+  h1{font-size:24px; line-height:1.2}
+  h2{font-size:17px; line-height:1.3}
+  h3{font-size:14px; line-height:1.35}
+  p{margin:0}
+
+  /* ============== App header ============== */
+  .app-header{
+    position:sticky; top:0; z-index:40;
+    background:var(--navy-deep);
+    color:#fff;
+    border-bottom:1px solid rgba(255,255,255,.04);
   }
-  .nav{
-    width:min(1120px, calc(100% - 40px));
-    margin:0 auto;
-    height:92px;
+  .app-header-inner{
+    max-width:1280px; margin:0 auto;
+    height:60px; padding:0 24px;
     display:flex; align-items:center; justify-content:space-between;
     gap:24px;
   }
-  .brand{
-    display:inline-flex; align-items:center; gap:10px;
-    color:var(--navy); text-decoration:none; font-weight:700;
+  .ah-left{display:flex; align-items:center; gap:18px}
+  .ah-brand{display:inline-flex; align-items:center; gap:9px; color:#fff; text-decoration:none}
+  .ah-brand svg text{fill:#fff}
+  .ah-brand svg circle{fill:var(--gold)}
+  .ah-divider{width:1px; height:20px; background:rgba(255,255,255,.18)}
+  .ah-breadcrumb{
+    display:flex; align-items:center; gap:8px;
+    font:500 13px/1 Inter, sans-serif; color:rgba(255,255,255,.85);
   }
-  .brand-svg{height:38px; width:auto; transition:transform .25s ease}
-  .brand:hover .brand-svg{transform:scale(1.03)}
-  .nav-links{display:flex; align-items:center; gap:22px; font-size:14px}
-  .nav-links a{color:#4b5567; text-decoration:none}
-  .nav-links a:hover{color:var(--navy)}
+  .ah-breadcrumb a{color:rgba(255,255,255,.6); text-decoration:none}
+  .ah-breadcrumb a:hover{color:#fff}
+  .ah-breadcrumb .sep{color:rgba(255,255,255,.3); font-size:11px}
+  .ah-breadcrumb .current{color:#fff; font-weight:600}
 
-  main{padding-block: 56px 96px; background:var(--paper)}
-  .kicker{
-    font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace;
-    letter-spacing:.16em; text-transform:uppercase;
-    color:var(--muted);
-    margin-bottom:14px;
+  .ah-right{display:flex; align-items:center; gap:16px}
+  .ah-link{
+    font:500 13px/1 Inter, sans-serif;
+    color:rgba(255,255,255,.7); text-decoration:none;
+    padding:6px 0;
   }
-  h1.h-display{font-size: clamp(30px, 4vw, 44px); letter-spacing:-0.02em}
-  h1.h-display em{font-style:italic; color:var(--navy)}
-  .lede{margin-top:14px; font-size:15.5px; line-height:1.6; color:var(--ink-soft); max-width:60ch}
+  .ah-link:hover{color:#fff}
+  .ah-user{
+    display:none;
+    align-items:center; gap:10px;
+    padding:6px 10px 6px 6px;
+    border:1px solid rgba(255,255,255,.12); border-radius:999px;
+    background:rgba(255,255,255,.04);
+  }
+  body.is-connected .ah-user{display:inline-flex}
+  .ah-user-avatar{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--gold); color:var(--navy-deep);
+    display:inline-flex; align-items:center; justify-content:center;
+    font:600 11px/1 Inter, sans-serif; letter-spacing:.04em;
+  }
+  .ah-user-email{font:500 12.5px/1 Inter, sans-serif; color:#fff; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
-  /* Connect card */
-  .connect-card{
-    margin-top:36px;
-    background:#fff;
-    border:1px solid var(--line); border-left:4px solid var(--navy);
-    border-radius:10px;
-    padding:26px 28px;
+  /* ============== Connect page (déconnecté) ============== */
+  .connect-page{
+    min-height:calc(100vh - 60px);
+    display:flex; align-items:center; justify-content:center;
+    padding:48px 20px;
   }
-  .connect-card h2{font-size:22px; margin-bottom:8px}
-  .connect-card p{color:var(--ink-soft); font-size:14px}
-  .connect-row{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap}
+  .connect-wrap{
+    width:100%; max-width:480px;
+    background:var(--surface);
+    border:1px solid var(--line); border-radius:14px;
+    box-shadow:0 8px 24px -16px rgba(15,17,21,.12);
+    padding:36px 36px;
+  }
+  .connect-eyebrow{
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.18em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:14px;
+  }
+  .connect-wrap h1{font-size:26px; line-height:1.2; margin-bottom:8px}
+  .connect-wrap > p{font-size:14px; color:var(--ink-soft); line-height:1.6}
+  .connect-row{margin-top:24px; display:flex; gap:8px; flex-direction:column}
   .connect-row input{
-    flex:1 1 360px; min-width:0; padding:11px 13px;
-    font: 14px/1.4 "JetBrains Mono", ui-monospace, monospace;
-    color:var(--ink); background:#fffdf6;
-    border:1px solid var(--line); border-radius:6px;
+    padding:11px 13px;
+    font: 13.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--ink); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:8px;
+    transition:border-color .15s, box-shadow .15s;
   }
-  .connect-row input:focus{outline:none; border-color:var(--navy); box-shadow:0 0 0 3px rgba(35,56,114,.12)}
+  .connect-row input:focus{outline:none; border-color:var(--navy); box-shadow:0 0 0 3px rgba(35,56,114,.12); background:#fff}
+  .connect-row-buttons{display:flex; gap:8px; flex-wrap:wrap}
+  .btn{
+    padding:11px 18px;
+    background:var(--navy); color:#fff; border:0; border-radius:8px;
+    font:600 13.5px/1 Inter, sans-serif; cursor:pointer;
+    transition:background .15s, transform .05s;
+  }
+  .btn:hover{background:var(--navy-deep)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{background:#9ca3af; cursor:not-allowed}
+  .btn-secondary{
+    background:var(--surface); color:var(--ink-soft);
+    border:1px solid var(--line);
+  }
+  .btn-secondary:hover{background:var(--surface-2); border-color:var(--line-strong); color:var(--ink)}
+  .btn-danger{
+    background:var(--surface); color:var(--bad);
+    border:1px solid #f3c1c1;
+  }
+  .btn-danger:hover{background:var(--bad-soft)}
+  .btn-icon{padding:7px 12px; font-size:12px}
+  .connect-foot{
+    margin-top:18px; padding-top:18px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); line-height:1.55;
+  }
+  .connect-foot a{color:var(--navy)}
 
-  /* Status panel */
-  .status-grid{
-    margin-top:36px;
-    display:grid; grid-template-columns:1.2fr 1fr; gap:14px;
+  /* ============== App layout (connecté) ============== */
+  .app-layout{
+    max-width:1280px; margin:0 auto;
+    padding:24px;
+    display:grid;
+    grid-template-columns:240px 1fr;
+    gap:32px;
+    align-items:start;
   }
-  @media (max-width:720px){.status-grid{grid-template-columns:1fr}}
-  .status-card{
-    background:#fff; border:1px solid var(--line); border-radius:10px;
-    padding:22px 24px;
+  @media (max-width:880px){.app-layout{grid-template-columns:1fr; gap:18px; padding:18px}}
+
+  /* --- Sidebar --- */
+  .app-sidebar{
+    position:sticky; top:84px;
+    padding:14px 14px;
+    background:var(--surface);
+    border:1px solid var(--line); border-radius:12px;
   }
-  .status-card h3{font:600 11.5px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:14px}
-  .status-card .big{font:400 28px/1.2 "Instrument Serif", Georgia, serif; color:var(--navy-deep)}
-  .status-card .sub{margin-top:6px; font-size:13px; color:var(--ink-soft)}
+  @media (max-width:880px){.app-sidebar{position:static}}
+  .app-sidebar h4{
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); padding:8px 10px 12px;
+  }
+  .app-nav{display:grid; gap:2px}
+  .app-nav a{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 12px; border-radius:7px;
+    text-decoration:none;
+    font:500 13.5px/1.2 Inter, sans-serif; color:var(--ink-soft);
+    transition:background .15s, color .15s;
+  }
+  .app-nav a:hover{background:var(--surface-2); color:var(--ink)}
+  .app-nav a.is-active{background:var(--gold-soft); color:var(--navy-deep); font-weight:600}
+  .app-nav a svg{flex-shrink:0; opacity:.7}
+  .app-nav a.is-active svg{opacity:1; color:var(--navy)}
+  .app-nav-sep{height:1px; background:var(--line); margin:10px 0}
+  .app-nav-external{font-size:12.5px; color:var(--muted); padding:9px 12px; display:flex; align-items:center; gap:8px; text-decoration:none}
+  .app-nav-external:hover{color:var(--navy)}
+
+  /* --- Main --- */
+  .app-main{
+    display:grid; gap:18px;
+    min-width:0;
+  }
+  .section-card{
+    background:var(--surface);
+    border:1px solid var(--line); border-radius:12px;
+    overflow:hidden;
+  }
+  .section-head{
+    padding:18px 22px;
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:18px;
+    border-bottom:1px solid var(--line);
+  }
+  .section-head .sh-titles h2{margin-bottom:4px}
+  .section-head .sh-titles p{font-size:13px; color:var(--muted); line-height:1.5}
+  .section-head .sh-actions{display:flex; gap:8px; flex-shrink:0}
+  .section-body{padding:20px 22px}
+
+  /* Page title */
+  .page-title{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:18px; flex-wrap:wrap;
+    padding:6px 0 8px;
+  }
+  .page-title .pt-eyebrow{
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.18em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:6px;
+  }
+  .page-title h1{font-size:24px}
+  .page-title .pt-actions{display:flex; gap:8px}
+
+  /* --- Stat grid (overview) --- */
+  .stat-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;
+  }
+  @media (max-width:760px){.stat-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:520px){.stat-grid{grid-template-columns:1fr}}
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--line); border-radius:10px;
+    padding:16px 18px;
+  }
+  .stat-card .sc-label{
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:12px;
+  }
+  .stat-card .sc-value{font:600 26px/1.15 Inter, sans-serif; color:var(--ink); letter-spacing:-0.01em}
+  .stat-card .sc-value small{font:500 13px/1 Inter, sans-serif; color:var(--muted); margin-left:4px}
+  .stat-card .sc-foot{margin-top:8px; font-size:12.5px; color:var(--muted); line-height:1.5}
+  .stat-card .sc-foot strong{color:var(--ink-soft); font-weight:600}
+
+  /* Quota bar */
+  .quota-track{
+    margin-top:12px; height:6px; border-radius:99px;
+    background:var(--line); overflow:hidden;
+  }
+  .quota-fill{height:100%; background:var(--navy); border-radius:99px; transition:width .3s}
+  .quota-fill.is-warn{background:#d4a429}
+  .quota-fill.is-danger{background:var(--bad)}
+
+  /* Status pill */
   .status-pill{
     display:inline-flex; align-items:center; gap:6px;
-    padding:4px 10px; border-radius:999px;
-    font:600 12px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.05em;
+    padding:3px 9px; border-radius:99px;
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.05em;
   }
-  .status-pill.is-active{background:#e6f5ec; color:var(--ok); border:1px solid #bfe2cd}
-  .status-pill.is-inactive{background:#fdecec; color:var(--bad); border:1px solid #f3c1c1}
-  .status-pill.is-unknown{background:var(--paper); color:var(--muted); border:1px solid var(--line)}
-  .status-pill .dot{width:7px; height:7px; border-radius:50%; background:currentColor}
+  .status-pill.is-active{background:var(--ok-soft); color:var(--ok); border:1px solid #bfe2cd}
+  .status-pill.is-inactive{background:var(--bad-soft); color:var(--bad); border:1px solid #f3c1c1}
+  .status-pill.is-unknown{background:var(--canvas); color:var(--muted); border:1px solid var(--line)}
+  .status-pill .dot{width:6px; height:6px; border-radius:50%; background:currentColor}
 
-  .key-card{
-    margin-top:14px;
-    background:#fff; border:1px solid var(--line); border-radius:10px;
-    padding:22px 24px;
-  }
-  .key-card h3{font:600 11.5px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:14px}
-  .key-display{
-    padding:11px 14px;
-    background:var(--paper-alt); border:1px dashed var(--line); border-radius:6px;
-    font: 13px/1.4 "JetBrains Mono", ui-monospace, monospace;
-    color:var(--ink); word-break:break-all;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-  }
-  .key-display button{
-    flex:0 0 auto;
-    padding:6px 12px; border:1px solid var(--line); background:#fff;
-    border-radius:5px; cursor:pointer; font:500 12px/1 Inter, sans-serif; color:var(--ink-soft);
-  }
-  .key-display button:hover{border-color:var(--navy); color:var(--navy)}
-  .key-actions{margin-top:14px; display:flex; flex-wrap:wrap; gap:10px}
-  .btn-ghost{
-    padding:8px 14px; background:#fff; border:1px solid var(--line);
-    border-radius:6px; cursor:pointer;
-    font:500 13px/1 Inter, sans-serif; color:var(--ink-soft);
-  }
-  .btn-ghost:hover{border-color:var(--navy); color:var(--navy)}
-  .btn-danger{
-    padding:8px 14px; background:#fff; border:1px solid #f3c1c1;
-    border-radius:6px; cursor:pointer;
-    font:500 13px/1 Inter, sans-serif; color:var(--bad);
-  }
-  .btn-danger:hover{background:#fef2f2}
-
-  /* Forms */
-  form{margin-top:36px; display:grid; gap:28px}
-  fieldset{
-    border:0; padding:24px 26px; margin:0;
-    background:#fff; border:1px solid var(--line); border-radius:10px;
-    display:grid; gap:14px;
-  }
-  legend{
-    float:left; width:100%;
-    font:400 22px/1.2 "Instrument Serif", Georgia, serif; color:var(--navy-deep);
-    margin-bottom:8px; padding:0;
-  }
-  legend + p{font-size:13px; color:var(--muted); margin-top:-6px; margin-bottom:8px}
-  label{display:block; font:500 13px/1.4 Inter, sans-serif; color:var(--ink); margin-bottom:6px}
+  /* --- Forms --- */
+  fieldset{border:0; padding:0; margin:0; display:grid; gap:18px}
+  legend{display:none}
+  label{display:block; font:500 12.5px/1.4 Inter, sans-serif; color:var(--ink-soft); margin-bottom:6px}
+  label.label-block{margin-bottom:8px; color:var(--ink); font-weight:600; font-size:13px}
   input[type=text], input[type=email], select, textarea{
-    width:100%; padding:10px 12px;
-    font: 14.5px/1.4 Inter, sans-serif;
-    color:var(--ink); background:var(--paper-alt);
-    border:1px solid var(--line); border-radius:6px;
+    width:100%; padding:9px 12px;
+    font: 14px/1.4 Inter, sans-serif;
+    color:var(--ink); background:var(--surface);
+    border:1px solid var(--line); border-radius:7px;
     transition:border-color .15s, box-shadow .15s;
   }
   input:focus, select:focus, textarea:focus{
     outline:none; border-color:var(--navy); box-shadow:0 0 0 3px rgba(35, 56, 114, .12);
   }
-  textarea{min-height:80px; resize:vertical; font-family:inherit}
+  textarea{min-height:70px; resize:vertical; font-family:inherit}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
   @media (max-width:520px){.grid2{grid-template-columns:1fr}}
+  .field{display:block}
+  .field-hint{margin-top:5px; font-size:12px; color:var(--muted); line-height:1.5}
 
-  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
   .chip{
     display:inline-flex; align-items:center;
-    padding:8px 14px; border-radius:999px;
-    border:1px solid var(--line); background:var(--paper-alt);
-    font:500 13px/1 Inter, sans-serif; color:var(--ink-soft); cursor:pointer;
-    transition:all .15s;
+    padding:7px 13px; border-radius:99px;
+    border:1px solid var(--line); background:var(--surface);
+    font:500 12.5px/1 Inter, sans-serif; color:var(--ink-soft); cursor:pointer;
+    transition:all .12s;
   }
   .chip[aria-pressed=true]{background:var(--navy); border-color:var(--navy); color:#fff}
-  .chip:hover{border-color:var(--navy)}
+  .chip:hover{border-color:var(--line-strong)}
+  .chip[aria-pressed=true]:hover{background:var(--navy-deep); border-color:var(--navy-deep)}
 
-  .btn{
-    width:100%; padding:13px 18px;
-    background:var(--navy); color:#fff; border:0; border-radius:6px;
-    font:600 14.5px/1 Inter, sans-serif; cursor:pointer;
-    transition: background .15s;
+  /* Pref ranges */
+  .pref-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;
   }
-  .btn:hover{background:var(--navy-deep)}
-  .btn:disabled{background:#9ca3af; cursor:not-allowed}
-
-  .save-bar{
-    position:sticky; bottom:0; z-index:5;
-    margin-top:28px;
-    padding:16px 18px;
-    background:rgba(245,240,232,.97); backdrop-filter:blur(8px);
-    border:1px solid var(--line); border-radius:10px;
-    box-shadow:0 -4px 20px rgba(0,0,0,0.06);
-    display:flex; align-items:center; justify-content:space-between; gap:14px;
-    flex-wrap:wrap;
+  @media (max-width:720px){.pref-grid{grid-template-columns:1fr}}
+  .pref-card{
+    background:var(--surface-2);
+    border:1px solid var(--line); border-radius:9px;
+    padding:14px 16px;
   }
-  .save-bar .save-status{font-size:13px; color:var(--muted)}
-  .save-bar .save-status.is-dirty{color:var(--warn)}
-  .save-bar .save-status.is-saved{color:var(--ok)}
-  .save-bar button{width:auto; padding:11px 22px}
+  .pref-card label{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .pref-card label > span:first-child{font-weight:600; color:var(--ink); font-size:13px}
+  .pref-card .range-value{
+    font:600 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--navy); background:#fff; padding:2px 6px; border-radius:4px;
+    border:1px solid var(--line);
+  }
+  .pref-card input[type=range]{
+    width:100%; height:4px; background:var(--line);
+    -webkit-appearance:none; appearance:none; border-radius:99px;
+    outline:none;
+  }
+  .pref-card input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--navy); cursor:pointer;
+    border:2px solid #fff; box-shadow:0 1px 3px rgba(15,17,21,.18);
+  }
+  .pref-card input[type=range]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%;
+    background:var(--navy); cursor:pointer;
+    border:2px solid #fff; box-shadow:0 1px 3px rgba(15,17,21,.18);
+  }
+  .range-scale{
+    margin-top:6px;
+    display:flex; justify-content:space-between;
+    font-size:11px; color:var(--muted); font-weight:500;
+  }
 
-  .alert{padding:12px 16px; border-radius:8px; font-size:13.5px; line-height:1.55; margin-top:18px}
-  .alert-info{background:#eef3fb; border:1px solid #c8d4ee; color:#1a2750}
-  .alert-warn{background:#fff5e6; border:1px solid #f4d199; color:#7a4d10}
-  .alert-error{background:#fef2f2; border:1px solid #fca5a5; color:#991b1b}
-  .alert-success{background:#e6f5ec; border:1px solid #bfe2cd; color:var(--ok)}
+  /* Segmented radios */
+  .segmented{display:grid; gap:6px}
+  .segment{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:10px 12px;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:8px; cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .segment:hover{border-color:var(--line-strong)}
+  .segment input[type=radio]{margin-top:3px; accent-color:var(--navy); flex-shrink:0}
+  .segment span{display:block; font-size:12.5px; color:var(--ink-soft); line-height:1.5}
+  .segment span strong{display:block; color:var(--ink); font-weight:600; font-size:13px; margin-bottom:2px}
+  .segment:has(input:checked){border-color:var(--navy); background:rgba(35,56,114,.04)}
 
-  .hide{display:none !important}
+  /* Examples */
+  .example-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px}
+  @media (max-width:720px){.example-grid{grid-template-columns:1fr}}
+  .example-card{
+    background:var(--surface-2);
+    border:1px solid var(--line); border-radius:9px;
+    padding:12px 14px;
+  }
+  .example-title{
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:8px;
+  }
+  .example-card textarea{min-height:60px; font-size:13px}
+
+  /* Key block */
+  .key-display-pro{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 14px;
+    background:var(--surface-2); border:1px dashed var(--line-strong); border-radius:8px;
+  }
+  .key-display-pro .key-mono{
+    flex:1 1 auto; min-width:0;
+    font: 13px/1.4 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--ink); word-break:break-all;
+  }
+  .key-display-pro .key-tag{
+    font:600 10px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); padding:3px 7px; border-radius:4px;
+    background:#fff; border:1px solid var(--line); flex-shrink:0;
+  }
+  .key-actions{margin-top:14px; display:flex; flex-wrap:wrap; gap:8px}
+
+  /* Branding preview */
   .branding-preview{
-    margin-top:14px; padding:18px 20px;
-    background:#fffdf6; border:1px solid var(--line); border-radius:8px;
+    margin-top:10px; padding:16px 18px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:9px;
     display:flex; align-items:center; gap:14px;
   }
   .branding-mono{
-    width:56px; height:56px; border-radius:50%;
+    width:52px; height:52px; border-radius:50%;
     background:var(--navy); color:var(--gold);
     display:inline-flex; align-items:center; justify-content:center;
-    font:600 22px/1 "Instrument Serif", Georgia, serif;
-    letter-spacing:0;
+    font:600 20px/1 Inter, sans-serif; letter-spacing:0;
     flex:0 0 auto;
   }
-  .branding-meta strong{display:block; font:500 16px/1.2 "Instrument Serif", Georgia, serif; color:var(--navy-deep)}
-  .branding-meta small{display:block; margin-top:3px; font-size:12.5px; color:var(--muted)}
+  .branding-meta strong{display:block; font:600 15px/1.2 Inter, sans-serif; color:var(--ink)}
+  .branding-meta small{display:block; margin-top:3px; font-size:12px; color:var(--muted)}
 
-  footer{background:var(--navy-deep); color:#d6dded; padding:32px 0 48px; font-size:13px}
+  /* Activity (placeholder) */
+  .activity-empty{
+    padding:36px 22px; text-align:center;
+    color:var(--muted); font-size:13.5px; line-height:1.6;
+  }
+  .activity-empty svg{margin-bottom:12px; opacity:.4}
+  .activity-empty strong{display:block; color:var(--ink-soft); font-weight:600; margin-bottom:6px; font-size:14px}
+
+  /* Save bar */
+  .save-bar{
+    position:sticky; bottom:14px; z-index:20;
+    margin-top:10px;
+    padding:14px 18px;
+    background:rgba(255,255,255,.98); backdrop-filter:blur(10px);
+    border:1px solid var(--line); border-radius:10px;
+    box-shadow:0 12px 28px -16px rgba(15,17,21,.16);
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    flex-wrap:wrap;
+  }
+  .save-status{font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:8px}
+  .save-status.is-dirty{color:var(--warn)}
+  .save-status.is-saved{color:var(--ok)}
+  .save-status::before{
+    content:""; width:8px; height:8px; border-radius:50%;
+    background:var(--muted);
+  }
+  .save-status.is-dirty::before{background:var(--warn); box-shadow:0 0 0 4px rgba(148,89,15,.16)}
+  .save-status.is-saved::before{background:var(--ok)}
+
+  /* Alerts */
+  .alert{padding:11px 16px; border-radius:8px; font-size:13.5px; line-height:1.55}
+  .alert-info{background:#eef3fb; border:1px solid #c8d4ee; color:#1a2750}
+  .alert-warn{background:var(--warn-soft); border:1px solid #f4d199; color:#7a4d10}
+  .alert-error{background:var(--bad-soft); border:1px solid #fca5a5; color:#7f1d1d}
+  .alert-success{background:var(--ok-soft); border:1px solid #bfe2cd; color:var(--ok)}
+  #connectAlert .alert, #globalAlert .alert{margin-top:14px}
+
+  footer{background:var(--navy-deep); color:#d6dded; padding:36px 0 54px; font-size:13px}
   footer a{color:var(--gold)}
-  footer .wrap{width:min(1120px, calc(100% - 40px))}
-  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px}
+  footer .wrap{width:min(1120px, calc(100% - 40px)); margin:0 auto}
+  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:16px}
+
+  /* utility */
+  .hide{display:none !important}
+  .row-between{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap}
+  .text-small{font-size:12.5px; color:var(--muted); line-height:1.55}
+
+  /* Print */
+  @media print{
+    .app-header, .app-sidebar, .save-bar, .key-actions, .ah-user, footer{display:none}
+    .app-layout{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+  }
 </style>
 </head>
-<body>
+<body class="not-connected">
 
-<header class="site-header">
-  <div class="nav">
-    <a class="brand" href="/" aria-label="ALIM — accueil">
-      <svg class="brand-svg" viewBox="0 0 130 44" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALIM"><text x="0" y="34" font-family="Instrument Serif, Georgia, serif" font-size="36" font-weight="500" fill="currentColor" letter-spacing="0.5">ALIM</text><circle cx="120" cy="24" r="6" fill="#f7da29"/></svg>
-    </a>
-    <nav class="nav-links">
-      <a href="/#install">Installer</a>
-      <a href="/#piliers">Fonctions</a>
-      <a href="/sources/">Corpus</a>
-      <a href="/#faq">FAQ</a>
-    </nav>
+<!-- ============== APP HEADER ============== -->
+
+</div>
+
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="ah-left">
+      <a class="ah-brand" href="/" aria-label="ALIM">
+        <svg viewBox="0 0 130 44" height="22" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALIM"><text x="0" y="34" font-family="Instrument Serif, Georgia, serif" font-size="36" font-weight="500" letter-spacing="0.5">ALIM</text><circle cx="120" cy="24" r="6"/></svg>
+      </a>
+      <span class="ah-divider"></span>
+      <nav class="ah-breadcrumb" aria-label="Fil d'ariane">
+        <a href="/">Accueil</a>
+        <span class="sep">/</span>
+        <span class="current">Mon compte</span>
+      </nav>
+    </div>
+    <div class="ah-right">
+      <a href="/sources/" class="ah-link">Corpus</a>
+      <a href="/install/claude/" class="ah-link">Installer</a>
+      <a href="mailto:alim@holco.co" class="ah-link">Support</a>
+      <span class="ah-user" id="ahUser">
+        <span class="ah-user-avatar" id="ahAvatar">P</span>
+        <span class="ah-user-email" id="ahEmail">—</span>
+      </span>
+    </div>
   </div>
 </header>
 
-<main>
-  <div class="wrap">
-    <p class="kicker">Espace praticien</p>
-    <h1 class="h-display">Votre <em>compte ALIM</em>.</h1>
-    <p class="lede">
-      Votre clé d'accès personnelle <strong>est votre compte</strong>. Pas de mot de passe, pas de SaaS à apprendre. Cette page lit votre profil de pratique et l'identité de votre cabinet, telle que ChatGPT et Claude les utiliseront pour adapter ton, formats et fiches PDF.
-    </p>
-
-    <!-- ============ CONNEXION (clé) ============ -->
-    <section class="connect-card" id="connect" aria-labelledby="connect-title">
-      <h2 id="connect-title">Connexion par clé</h2>
-      <p>Collez votre clé <code>alim_live_…</code> reçue par e-mail. Elle reste dans votre navigateur (stockage local) et n'est jamais transmise à un tiers.</p>
-      <div class="connect-row">
-        <input id="keyInput" type="text" placeholder="alim_live_…" autocomplete="off" spellcheck="false">
-        <button class="btn-ghost" id="connectBtn" type="button" style="padding:11px 18px">Se connecter</button>
-        <button class="btn-ghost" id="forgetBtn" type="button" style="padding:11px 14px; display:none">Oublier la clé</button>
+<!-- ============== CONNECT PAGE (déconnecté) ============== -->
+<section class="connect-page" id="connect">
+  <div class="connect-wrap">
+    <p class="connect-eyebrow">Espace praticien · authentification</p>
+    <h1>Se connecter à ALIM</h1>
+    <p>Votre clé d'accès <strong>est</strong> votre compte. Pas de mot de passe, pas de SaaS à apprendre. Collez la clé reçue par e-mail&nbsp;: elle reste sur cet appareil (stockage local) et n'est jamais transmise à un tiers.</p>
+    <div class="connect-row">
+      <input id="keyInput" type="text" placeholder="alim_live_…" autocomplete="off" spellcheck="false" aria-label="Clé d'accès ALIM">
+      <div class="connect-row-buttons">
+        <button class="btn" id="connectBtn" type="button">Se connecter</button>
+        <button class="btn btn-secondary" id="forgetBtn" type="button" style="display:none">Oublier la clé</button>
       </div>
-      <div id="connectAlert"></div>
+    </div>
+    <div id="connectAlert"></div>
+    <div class="connect-foot">
+      Pas encore de clé&nbsp;? <a href="/configurer/">Rejoindre la bêta</a> (gratuit, sans engagement) — vous recevez votre clé sous 24&nbsp;h ouvrées.
+    </div>
+  </div>
+</section>
+
+<!-- ============== APP LAYOUT (connecté) ============== -->
+<div class="app-layout" id="appLayout">
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar">
+    <h4>Navigation</h4>
+    <nav class="app-nav" id="appNav">
+      <a href="#overview" class="is-active" data-section="overview">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/></svg>
+        Vue d'ensemble
+      </a>
+      <a href="#profile" data-section="profile">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        Profil de pratique
+      </a>
+      <a href="#cabinet" data-section="cabinet">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>
+        Identité cabinet
+      </a>
+      <a href="#security" data-section="security">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Clé & sécurité
+      </a>
+      <a href="#activity" data-section="activity">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+        Activité
+      </a>
+      <div class="app-nav-sep"></div>
+      <a href="/install/claude/" class="app-nav-external">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-10 10"/><path d="M14 21H5a2 2 0 0 1-2-2v-9"/></svg>
+        Installer dans Claude
+      </a>
+      <a href="/install/chatgpt/" class="app-nav-external">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-10 10"/><path d="M14 21H5a2 2 0 0 1-2-2v-9"/></svg>
+        Installer dans ChatGPT
+      </a>
+      <a href="/mock-pdf/" target="_blank" rel="noopener" class="app-nav-external">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-10 10"/><path d="M14 21H5a2 2 0 0 1-2-2v-9"/></svg>
+        Aperçu fiche PDF
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="app-main">
+
+    <div class="page-title">
+      <div>
+        <p class="pt-eyebrow">Espace praticien</p>
+        <h1>Mon compte ALIM</h1>
+      </div>
+      <div class="pt-actions">
+        <button class="btn btn-secondary btn-icon" id="forgetBtnTop" type="button">Se déconnecter</button>
+      </div>
+    </div>
+
+    <!-- ============== VUE D'ENSEMBLE ============== -->
+    <section class="section-card" id="overview">
+      <div class="section-head">
+        <div class="sh-titles">
+          <h2>Vue d'ensemble</h2>
+          <p>État de votre compte, quota du jour, plan en cours.</p>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="stat-grid" id="accountPanel">
+          <div class="stat-card">
+            <p class="sc-label">Statut compte</p>
+            <p class="sc-value" id="statusBig">—</p>
+            <p class="sc-foot">
+              <span class="status-pill is-unknown" id="statusPill"><span class="dot"></span><span id="statusPillText">inconnu</span></span>
+              <br>
+              <span id="statusSub" style="display:inline-block; margin-top:6px;">—</span>
+            </p>
+          </div>
+          <div class="stat-card">
+            <p class="sc-label">Quota du jour</p>
+            <p class="sc-value"><span id="usageMonth">—</span><small>/ <span id="quotaMonth">—</span> appels</small></p>
+            <div class="quota-track"><div class="quota-fill" id="quotaFill" style="width:0%"></div></div>
+            <p class="sc-foot">Compteur remis à zéro chaque jour à minuit (Europe/Paris).</p>
+          </div>
+          <div class="stat-card">
+            <p class="sc-label">Plan</p>
+            <p class="sc-value" id="planValue">—</p>
+            <p class="sc-foot" id="planLabel">—</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- ============ STATUT ============ -->
-    <div class="status-grid hide" id="accountPanel">
-      <div class="status-card">
-        <h3>Statut du compte</h3>
-        <div class="big" id="statusBig">—</div>
-        <p class="sub" id="statusSub">—</p>
-        <p style="margin-top:14px"><span class="status-pill is-unknown" id="statusPill"><span class="dot"></span><span id="statusPillText">inconnu</span></span></p>
-      </div>
-      <div class="status-card">
-        <h3>Quota du mois</h3>
-        <div class="big"><span id="usageMonth">—</span> <span style="color:var(--muted); font-size:15px">/ <span id="quotaMonth">—</span></span></div>
-        <p class="sub">Compteur remis à zéro le 1ᵉʳ de chaque mois.</p>
-        <p class="sub" style="margin-top:6px" id="planLabel">—</p>
-      </div>
-    </div>
+    <!-- ============== PROFIL & CABINET (form) ============== -->
+    <form id="accountForm" novalidate>
 
-    <div class="key-card hide" id="keyCard">
-      <h3>Votre clé d'accès</h3>
-      <div class="key-display">
-        <span id="keyDisplay">—</span>
-        <button type="button" id="copyKeyBtn">Copier</button>
-      </div>
-      <div class="key-actions">
-        <button type="button" class="btn-ghost" id="revealKeyBtn">Afficher en clair</button>
-        <button type="button" class="btn-danger" id="rotateKeyBtn">Régénérer</button>
-      </div>
-      <p class="sub" style="margin-top:10px; color:var(--muted); font-size:12.5px">
-        En cas de fuite, régénérez la clé — l'ancienne sera invalidée immédiatement. Pensez à la mettre à jour dans votre Custom GPT et dans le Connector Claude.
-      </p>
-    </div>
-
-    <!-- ============ FORMULAIRES ============ -->
-    <form id="accountForm" class="hide" novalidate>
-      <fieldset>
-        <legend>Profil de pratique</legend>
-        <p>Sert à adapter le ton de Mirabelle, les formats proposés, et les contraintes par défaut. Modifiable à tout moment.</p>
-
-        <div class="grid2">
-          <div>
-            <label for="f_metier">Métier</label>
-            <select id="f_metier" name="metier">
-              <option value="dieteticienne_liberale">Diététicienne libérale</option>
-              <option value="dieteticien_hospitalier">Diététicien hospitalier</option>
-              <option value="nutritionniste_medecin">Médecin nutritionniste</option>
-              <option value="naturopathe_nutrition">Naturopathe orienté nutrition</option>
-              <option value="autre">Autre profession nutrition</option>
-            </select>
-          </div>
-          <div>
-            <label for="f_cadre">Cadre d'exercice</label>
-            <select id="f_cadre" name="cadre_exercice">
-              <option value="cabinet_solo">Cabinet solo</option>
-              <option value="cabinet_groupe">Cabinet de groupe</option>
-              <option value="maison_sante">Maison de santé</option>
-              <option value="hopital">Hôpital / service</option>
-              <option value="domicile">Visites à domicile</option>
-              <option value="teleconsultation">Téléconsultation</option>
-            </select>
+      <section class="section-card" id="profile">
+        <div class="section-head">
+          <div class="sh-titles">
+            <h2>Profil de pratique</h2>
+            <p>Sert à adapter le ton de Mirabelle, les formats proposés et les contraintes par défaut. Modifiable à tout moment.</p>
           </div>
         </div>
+        <div class="section-body">
+          <fieldset>
+            <legend>Profil de pratique</legend>
 
-        <div>
-          <label>Patientèles fréquentes</label>
-          <div class="chips" id="chips_patienteles" role="group" aria-label="Patientèles fréquentes">
-            <span class="chip" data-key="DT2" aria-pressed="false" tabindex="0">Diabète type 2</span>
-            <span class="chip" data-key="HTA" aria-pressed="false" tabindex="0">HTA</span>
-            <span class="chip" data-key="grossesse" aria-pressed="false" tabindex="0">Grossesse</span>
-            <span class="chip" data-key="DG" aria-pressed="false" tabindex="0">Diabète gestationnel</span>
-            <span class="chip" data-key="surpoids" aria-pressed="false" tabindex="0">Surpoids / TCA léger</span>
-            <span class="chip" data-key="senior" aria-pressed="false" tabindex="0">Seniors</span>
-            <span class="chip" data-key="pediatrie" aria-pressed="false" tabindex="0">Pédiatrie</span>
-            <span class="chip" data-key="sport" aria-pressed="false" tabindex="0">Sport</span>
-          </div>
-        </div>
-
-        <div class="grid2">
-          <div>
-            <label for="f_tone">Style de support préféré</label>
-            <select id="f_tone" name="tone">
-              <option value="pedagogique">Pédagogique (explique au patient)</option>
-              <option value="clinique">Clinique (concis, terrain)</option>
-              <option value="motivationnel">Motivationnel (encourage)</option>
-              <option value="bienveillant">Bienveillant et neutre</option>
-            </select>
-          </div>
-          <div>
-            <label for="f_detail">Niveau de détail attendu</label>
-            <select id="f_detail" name="detail_level">
-              <option value="synthese">Synthèse courte</option>
-              <option value="standard">Standard</option>
-              <option value="exhaustif">Exhaustif (toutes valeurs + sources)</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label>Formats utiles</label>
-          <div class="chips" id="chips_formats" role="group" aria-label="Formats utiles">
-            <span class="chip" data-key="fiche_patient_pdf" aria-pressed="false" tabindex="0">Fiche patient PDF</span>
-            <span class="chip" data-key="variantes" aria-pressed="false" tabindex="0">Variantes de la recette</span>
-            <span class="chip" data-key="liste_courses" aria-pressed="false" tabindex="0">Liste de courses</span>
-            <span class="chip" data-key="tableau_nutritionnel" aria-pressed="false" tabindex="0">Tableau nutritionnel</span>
-            <span class="chip" data-key="message_patient" aria-pressed="false" tabindex="0">Message court patient</span>
-            <span class="chip" data-key="substitutions" aria-pressed="false" tabindex="0">Substitutions</span>
-          </div>
-        </div>
-
-        <div>
-          <label>Contraintes de terrain récurrentes</label>
-          <div class="chips" id="chips_contraintes" role="group" aria-label="Contraintes de terrain">
-            <span class="chip" data-key="petit_budget" aria-pressed="false" tabindex="0">Petit budget</span>
-            <span class="chip" data-key="repas_familial" aria-pressed="false" tabindex="0">Repas familial</span>
-            <span class="chip" data-key="cuisine_minimale" aria-pressed="false" tabindex="0">Cuisine minimale</span>
-            <span class="chip" data-key="batch_cooking" aria-pressed="false" tabindex="0">Batch cooking</span>
-            <span class="chip" data-key="halal" aria-pressed="false" tabindex="0">Halal</span>
-            <span class="chip" data-key="casher" aria-pressed="false" tabindex="0">Casher</span>
-            <span class="chip" data-key="vegetarien" aria-pressed="false" tabindex="0">Végétarien</span>
-            <span class="chip" data-key="vegan" aria-pressed="false" tabindex="0">Végan</span>
-          </div>
-        </div>
-
-        <div>
-          <label for="f_notes">Notes libres pour Mirabelle (facultatif)</label>
-          <textarea id="f_notes" name="practitioner_notes" placeholder="Ex : je travaille beaucoup avec des couples seniors, je préfère les recettes prêtes en 30 min, j'évite les substituts ultra-transformés."></textarea>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Identité cabinet (fiches PDF)</legend>
-        <p>Ces informations apparaissent en en-tête des fiches imprimables transmises à vos patients. Aucune n'est obligatoire — laissez vide pour conserver un en-tête générique.</p>
-
-        <div class="grid2">
-          <div>
-            <label for="b_name">Nom du cabinet</label>
-            <input id="b_name" type="text" name="cabinet_name" placeholder="Ex : Cabinet Gaëlle Coquard">
-          </div>
-          <div>
-            <label for="b_qual">Qualification affichée</label>
-            <input id="b_qual" type="text" name="qualification" placeholder="Ex : Diététicienne-nutritionniste DE">
-          </div>
-        </div>
-
-        <div class="grid2">
-          <div>
-            <label for="b_adeli">Numéro ADELI (facultatif)</label>
-            <input id="b_adeli" type="text" name="adeli" placeholder="9 chiffres">
-          </div>
-          <div>
-            <label for="b_city">Ville</label>
-            <input id="b_city" type="text" name="city" placeholder="Ex : Vaux-sur-Seine">
-          </div>
-        </div>
-
-        <div>
-          <label for="b_contact">Ligne de contact en pied de fiche</label>
-          <input id="b_contact" type="text" name="contact" placeholder="Ex : 06 ZZ ZZ ZZ ZZ · gaelle@cabinet-coquard.fr">
-        </div>
-
-        <div>
-          <label>Aperçu en-tête PDF</label>
-          <div class="branding-preview">
-            <div class="branding-mono" id="bPreviewMono">GC</div>
-            <div class="branding-meta">
-              <strong id="bPreviewName">Cabinet ALIM</strong>
-              <small id="bPreviewQual">Praticien de la nutrition</small>
-              <small id="bPreviewCity">— · —</small>
+            <div class="grid2">
+              <div class="field">
+                <label for="f_metier">Métier</label>
+                <select id="f_metier" name="metier">
+                  <option value="dieteticienne_liberale">Diététicienne libérale</option>
+                  <option value="dieteticien_hospitalier">Diététicien hospitalier</option>
+                  <option value="nutritionniste_medecin">Médecin nutritionniste</option>
+                  <option value="naturopathe_nutrition">Naturopathe orienté nutrition</option>
+                  <option value="autre">Autre profession nutrition</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f_cadre">Cadre d'exercice</label>
+                <select id="f_cadre" name="cadre_exercice">
+                  <option value="cabinet_solo">Cabinet solo</option>
+                  <option value="cabinet_groupe">Cabinet de groupe</option>
+                  <option value="maison_sante">Maison de santé</option>
+                  <option value="hopital">Hôpital / service</option>
+                  <option value="domicile">Visites à domicile</option>
+                  <option value="teleconsultation">Téléconsultation</option>
+                </select>
+              </div>
             </div>
+
+            <div class="field">
+              <label class="label-block">Patientèles fréquentes</label>
+              <div class="chips" id="chips_patienteles" role="group" aria-label="Patientèles fréquentes">
+                <span class="chip" data-key="DT2" aria-pressed="false" tabindex="0">Diabète type 2</span>
+                <span class="chip" data-key="HTA" aria-pressed="false" tabindex="0">HTA</span>
+                <span class="chip" data-key="grossesse" aria-pressed="false" tabindex="0">Grossesse</span>
+                <span class="chip" data-key="DG" aria-pressed="false" tabindex="0">Diabète gestationnel</span>
+                <span class="chip" data-key="surpoids" aria-pressed="false" tabindex="0">Surpoids / TCA léger</span>
+                <span class="chip" data-key="senior" aria-pressed="false" tabindex="0">Seniors</span>
+                <span class="chip" data-key="pediatrie" aria-pressed="false" tabindex="0">Pédiatrie</span>
+                <span class="chip" data-key="sport" aria-pressed="false" tabindex="0">Sport</span>
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label for="f_tone">Style de support préféré</label>
+                <select id="f_tone" name="tone">
+                  <option value="pedagogique">Pédagogique (explique au patient)</option>
+                  <option value="clinique">Clinique (concis, terrain)</option>
+                  <option value="motivationnel">Motivationnel (encourage)</option>
+                  <option value="bienveillant">Bienveillant et neutre</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f_detail">Niveau de détail attendu</label>
+                <select id="f_detail" name="detail_level">
+                  <option value="synthese">Synthèse courte</option>
+                  <option value="standard">Standard</option>
+                  <option value="exhaustif">Exhaustif (toutes valeurs + sources)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label-block">Formats utiles</label>
+              <div class="chips" id="chips_formats" role="group" aria-label="Formats utiles">
+                <span class="chip" data-key="fiche_patient_pdf" aria-pressed="false" tabindex="0">Fiche patient PDF</span>
+                <span class="chip" data-key="variantes" aria-pressed="false" tabindex="0">Variantes de la recette</span>
+                <span class="chip" data-key="liste_courses" aria-pressed="false" tabindex="0">Liste de courses</span>
+                <span class="chip" data-key="tableau_nutritionnel" aria-pressed="false" tabindex="0">Tableau nutritionnel</span>
+                <span class="chip" data-key="message_patient" aria-pressed="false" tabindex="0">Message court patient</span>
+                <span class="chip" data-key="substitutions" aria-pressed="false" tabindex="0">Substitutions</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label-block">Contraintes de terrain récurrentes</label>
+              <div class="chips" id="chips_contraintes" role="group" aria-label="Contraintes de terrain">
+                <span class="chip" data-key="petit_budget" aria-pressed="false" tabindex="0">Petit budget</span>
+                <span class="chip" data-key="repas_familial" aria-pressed="false" tabindex="0">Repas familial</span>
+                <span class="chip" data-key="cuisine_minimale" aria-pressed="false" tabindex="0">Cuisine minimale</span>
+                <span class="chip" data-key="batch_cooking" aria-pressed="false" tabindex="0">Batch cooking</span>
+                <span class="chip" data-key="halal" aria-pressed="false" tabindex="0">Halal</span>
+                <span class="chip" data-key="casher" aria-pressed="false" tabindex="0">Casher</span>
+                <span class="chip" data-key="vegetarien" aria-pressed="false" tabindex="0">Végétarien</span>
+                <span class="chip" data-key="vegan" aria-pressed="false" tabindex="0">Végan</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label-block">Réglages ALIM par défaut</label>
+              <div class="pref-grid">
+                <div class="pref-card">
+                  <label for="r_clinical">
+                    <span>Rigueur clinique</span>
+                    <span class="range-value" id="r_clinical_value">4/5</span>
+                  </label>
+                  <input id="r_clinical" type="range" min="1" max="5" step="1" value="4">
+                  <div class="range-scale"><span>souple</span><span>strict</span></div>
+                </div>
+                <div class="pref-card">
+                  <label for="r_creativity">
+                    <span>Créativité culinaire</span>
+                    <span class="range-value" id="r_creativity_value">3/5</span>
+                  </label>
+                  <input id="r_creativity" type="range" min="1" max="5" step="1" value="3">
+                  <div class="range-scale"><span>classique</span><span>original</span></div>
+                </div>
+                <div class="pref-card">
+                  <label for="r_patient_detail">
+                    <span>Détail côté patient</span>
+                    <span class="range-value" id="r_patient_detail_value">3/5</span>
+                  </label>
+                  <input id="r_patient_detail" type="range" min="1" max="5" step="1" value="3">
+                  <div class="range-scale"><span>court</span><span>guidé</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label class="label-block">Affichage des sources</label>
+                <div class="segmented" role="radiogroup" aria-label="Affichage des sources">
+                  <label class="segment">
+                    <input type="radio" name="source_display" value="patient_discreet" checked>
+                    <span><strong>Discret côté patient</strong>Sources complètes gardées pour vous, résumé court sur la fiche.</span>
+                  </label>
+                  <label class="segment">
+                    <input type="radio" name="source_display" value="patient_visible">
+                    <span><strong>Visible patient</strong>Les sources principales apparaissent dans la fiche remise.</span>
+                  </label>
+                  <label class="segment">
+                    <input type="radio" name="source_display" value="appendix">
+                    <span><strong>Annexe</strong>Sources détaillées en fin de document.</span>
+                  </label>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label-block">Seuil documentaire</label>
+                <div class="segmented" role="radiogroup" aria-label="Seuil documentaire">
+                  <label class="segment">
+                    <input type="radio" name="source_threshold" value="verified_only" checked>
+                    <span><strong>Sources vérifiées seulement</strong>Affichage prudent pour supports patients.</span>
+                  </label>
+                  <label class="segment">
+                    <input type="radio" name="source_threshold" value="verified_plus_consulted">
+                    <span><strong>+ références consultées</strong>Utile pour votre lecture clinique.</span>
+                  </label>
+                  <label class="segment">
+                    <input type="radio" name="source_threshold" value="research_mode">
+                    <span><strong>Mode recherche</strong>Plus de contexte, à valider avant transmission.</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label-block">Exemples de patients fréquents</label>
+              <p class="field-hint" style="margin-top:0; margin-bottom:10px;">Briefs anonymisés type, utilisés par Mirabelle pour pré-cadrer ses questions. Sans données nominatives.</p>
+              <div class="example-grid">
+                <div class="example-card">
+                  <div class="example-title">Cas type 1</div>
+                  <textarea id="ex_patient_1" placeholder="Ex : femme 55 ans, DT2 + HTA, budget serré, cuisine simple, repas familial."></textarea>
+                </div>
+                <div class="example-card">
+                  <div class="example-title">Cas type 2</div>
+                  <textarea id="ex_patient_2" placeholder="Ex : grossesse + DG, nausées, végétarienne, peu de temps le soir."></textarea>
+                </div>
+                <div class="example-card">
+                  <div class="example-title">Cas type 3</div>
+                  <textarea id="ex_patient_3" placeholder="Ex : senior, appétit variable, textures faciles, batch cooking."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="f_notes">Notes libres pour Mirabelle <span style="color:var(--muted); font-weight:400">(facultatif)</span></label>
+              <textarea id="f_notes" name="practitioner_notes" placeholder="Ex : je travaille beaucoup avec des couples seniors, je préfère les recettes prêtes en 30 min, j'évite les substituts ultra-transformés."></textarea>
+            </div>
+
+          </fieldset>
+        </div>
+      </section>
+
+      <section class="section-card" id="cabinet">
+        <div class="section-head">
+          <div class="sh-titles">
+            <h2>Identité cabinet</h2>
+            <p>Ces informations apparaissent en en-tête des fiches imprimables transmises à vos patients. Aucune n'est obligatoire.</p>
           </div>
         </div>
-      </fieldset>
+        <div class="section-body">
+          <fieldset>
+            <legend>Identité cabinet (fiches PDF)</legend>
 
+            <div class="grid2">
+              <div class="field">
+                <label for="b_name">Nom du cabinet</label>
+                <input id="b_name" type="text" name="cabinet_name" placeholder="Ex : Cabinet Gaëlle Coquard">
+              </div>
+              <div class="field">
+                <label for="b_qual">Qualification affichée</label>
+                <input id="b_qual" type="text" name="qualification" placeholder="Ex : Diététicienne-nutritionniste DE">
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="field">
+                <label for="b_adeli">Numéro ADELI <span style="color:var(--muted); font-weight:400">(facultatif)</span></label>
+                <input id="b_adeli" type="text" name="adeli" placeholder="9 chiffres">
+              </div>
+              <div class="field">
+                <label for="b_city">Ville</label>
+                <input id="b_city" type="text" name="city" placeholder="Ex : Vaux-sur-Seine">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="b_contact">Ligne de contact en pied de fiche</label>
+              <input id="b_contact" type="text" name="contact" placeholder="Ex : 06 ZZ ZZ ZZ ZZ · gaelle@cabinet-coquard.fr">
+            </div>
+
+            <div class="field">
+              <label class="label-block">Aperçu en-tête PDF</label>
+              <div class="branding-preview">
+                <div class="branding-mono" id="bPreviewMono">GC</div>
+                <div class="branding-meta">
+                  <strong id="bPreviewName">Cabinet ALIM</strong>
+                  <small id="bPreviewQual">Praticien de la nutrition</small>
+                  <small id="bPreviewCity">— · —</small>
+                </div>
+              </div>
+              <p class="field-hint">Pour voir un aperçu complet d'une fiche : <a href="/mock-pdf/" target="_blank" rel="noopener">/mock-pdf/</a></p>
+            </div>
+
+          </fieldset>
+        </div>
+      </section>
+
+      <!-- save bar -->
       <div class="save-bar" id="saveBar">
         <span class="save-status" id="saveStatus">Aucune modification non sauvegardée.</span>
         <button type="submit" class="btn" id="saveBtn">Enregistrer mes préférences</button>
       </div>
     </form>
 
+    <!-- ============== CLÉ & SÉCURITÉ ============== -->
+    <section class="section-card" id="security">
+      <div class="section-head">
+        <div class="sh-titles">
+          <h2>Clé d'accès & sécurité</h2>
+          <p>Votre clé est votre identifiant unique. Ne la partagez avec personne. Une clé compromise se régénère en un clic — l'ancienne est invalidée immédiatement.</p>
+        </div>
+      </div>
+      <div class="section-body" id="keyCard">
+        <label class="label-block">Clé d'accès personnelle</label>
+        <div class="key-display-pro">
+          <span class="key-mono" id="keyDisplay">—</span>
+          <span class="key-tag">bearer</span>
+          <button type="button" class="btn btn-secondary btn-icon" id="copyKeyBtn">Copier</button>
+        </div>
+        <div class="key-actions">
+          <button type="button" class="btn btn-secondary btn-icon" id="revealKeyBtn">Afficher en clair</button>
+          <button type="button" class="btn btn-danger btn-icon" id="rotateKeyBtn">Régénérer la clé</button>
+        </div>
+        <p class="field-hint" style="margin-top:16px;">
+          <strong style="color:var(--ink-soft); font-weight:600">Bonnes pratiques.</strong> Conservez votre clé dans un gestionnaire de mots de passe. Régénérez-la si vous suspectez une fuite (employé qui quitte, ordinateur perdu, partage par mégarde). Après régénération, pensez à mettre à jour votre Custom GPT (ChatGPT) et votre Connector ALIM (Claude).
+        </p>
+      </div>
+    </section>
+
+    <!-- ============== ACTIVITÉ ============== -->
+    <section class="section-card" id="activity">
+      <div class="section-head">
+        <div class="sh-titles">
+          <h2>Activité récente</h2>
+          <p>Vos dernières générations cadrées (ChatGPT, Claude, Cursor). Anonymisé.</p>
+        </div>
+      </div>
+      <div class="section-body" style="padding:0">
+        <div class="activity-empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg>
+          <strong>Suivi d'usage bientôt</strong>
+          Le journal de vos générations s'affichera ici en V1 : date, pathologie, statut (succès / refus traçable), canal (ChatGPT / Claude / Cursor).<br>
+          Aucune donnée patient n'est ni stockée ni affichée.
+        </div>
+      </div>
+    </section>
+
     <div id="globalAlert"></div>
 
   </div>
-</main>
+</div>
 
 <footer>
   <div class="wrap">
-    <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien. Aucune donnée patient n'est collectée.</p>
+    <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO INVEST ni les organismes cités. Aucune donnée patient n'est collectée. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab 2.0.</p>
     <div class="footer-links">
       <a href="/configurer/">Rejoindre la bêta</a>
+      <a href="/compte/">Mon compte</a>
       <a href="/sources/">Corpus</a>
       <a href="/mentions-legales/">Mentions légales</a>
       <a href="mailto:alim@holco.co">alim@holco.co</a>
       <a href="https://holco.co/">HOLCO</a>
       <span>© 2026 HOLCO</span>
+    </div>
+      <div class="footer-dev-links" style="display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:14px; font:11px/1.4 JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.02em; color:rgba(104,112,131,.82)">
+      <span style="text-transform:uppercase; letter-spacing:.16em; color:rgba(104,112,131,.62)">dev</span>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/humans.txt">humans.txt</a>
+      <a href="/robots.txt">robots.txt</a>
+      <a href="/sitemap.xml">sitemap.xml</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <a href="/.well-known/ai-plugin.json">ai-plugin.json</a>
+      <a href="https://github.com/holco-apps/alim">github.com/holco-apps/alim</a>
     </div>
   </div>
 </footer>
@@ -555,6 +1010,29 @@
     })
   );
 
+  function setRadio(name, value){
+    const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    if (input) input.checked = true;
+  }
+  function getRadio(name){
+    return document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+  }
+  function setRange(id, value, fallback){
+    const input = $('#'+id);
+    if (!input) return;
+    input.value = String(value || fallback);
+    updateRangeLabel(id);
+  }
+  function updateRangeLabel(id){
+    const input = $('#'+id);
+    const label = $('#'+id+'_value');
+    if (input && label) label.textContent = `${input.value}/5`;
+  }
+  ['r_clinical','r_creativity','r_patient_detail'].forEach(id => {
+    $('#'+id).addEventListener('input', () => updateRangeLabel(id));
+    updateRangeLabel(id);
+  });
+
   /* ---------- key handling ---------- */
   function getStoredKey(){ try { return localStorage.getItem(KEY_STORAGE) || ''; } catch(_) { return ''; } }
   function setStoredKey(k){ try { localStorage.setItem(KEY_STORAGE, k); } catch(_) {} }
@@ -601,6 +1079,16 @@
     setChips('chips_patienteles', p.patienteles);
     setChips('chips_formats', p.formats);
     setChips('chips_contraintes', p.contraintes);
+    const prefs = p.preferences || {};
+    setRange('r_clinical', prefs.clinical_strictness, 4);
+    setRange('r_creativity', prefs.culinary_creativity, 3);
+    setRange('r_patient_detail', prefs.patient_detail_level, 3);
+    setRadio('source_display', prefs.source_display || 'patient_discreet');
+    setRadio('source_threshold', prefs.source_threshold || 'verified_only');
+    const examples = Array.isArray(p.patient_examples) ? p.patient_examples : [];
+    $('#ex_patient_1').value = examples[0] || '';
+    $('#ex_patient_2').value = examples[1] || '';
+    $('#ex_patient_3').value = examples[2] || '';
     $('#f_notes').value = p.notes || '';
 
     $('#b_name').value = b.name || '';
@@ -621,7 +1109,19 @@
         patienteles:    getChips('chips_patienteles'),
         formats:        getChips('chips_formats'),
         contraintes:    getChips('chips_contraintes'),
-        notes:          $('#f_notes').value.trim(),
+        preferences: {
+          clinical_strictness: Number($('#r_clinical').value || 4),
+          culinary_creativity: Number($('#r_creativity').value || 3),
+          patient_detail_level: Number($('#r_patient_detail').value || 3),
+          source_display: getRadio('source_display') || 'patient_discreet',
+          source_threshold: getRadio('source_threshold') || 'verified_only',
+        },
+        patient_examples: [
+          $('#ex_patient_1').value.trim(),
+          $('#ex_patient_2').value.trim(),
+          $('#ex_patient_3').value.trim(),
+        ].filter(Boolean),
+        notes: $('#f_notes').value.trim(),
       },
       cabinet_branding: {
         name:          $('#b_name').value.trim(),
@@ -633,12 +1133,19 @@
     };
   }
 
+  /* ---------- header user pill ---------- */
+  function setHeaderUser(account){
+    const email = account.email || '';
+    const name = account.display_name || account.cabinet_name || email || 'Praticien';
+    const initials = name.split(/\s+/).filter(Boolean).slice(0,2).map(s => s[0]?.toUpperCase() || '').join('') || 'A';
+    $('#ahAvatar').textContent = initials;
+    $('#ahEmail').textContent = email || name;
+  }
+
   /* ---------- render account state ---------- */
   function renderAccount(account){
-    $('#accountPanel').classList.remove('hide');
-    $('#keyCard').classList.remove('hide');
-    $('#accountForm').classList.remove('hide');
-    $('#forgetBtn').style.display = '';
+    document.body.classList.remove('not-connected');
+    document.body.classList.add('is-connected');
 
     const status = account.status || 'unknown';
     const pill = $('#statusPill'), pillText = $('#statusPillText');
@@ -646,25 +1153,38 @@
     if (status === 'active'){
       pill.classList.add('is-active'); pillText.textContent = 'actif';
       $('#statusBig').textContent = 'Actif';
-      $('#statusSub').textContent = 'Votre clé fonctionne. Bonne pratique.';
+      $('#statusSub').textContent = 'Tout fonctionne.';
     } else if (status === 'inactive' || status === 'revoked' || status === 'suspended'){
       pill.classList.add('is-inactive'); pillText.textContent = status;
       $('#statusBig').textContent = 'Inactif';
-      $('#statusSub').textContent = 'Contactez alim@holco.co pour réactiver.';
+      $('#statusSub').textContent = 'Contactez alim@holco.co.';
     } else {
       pill.classList.add('is-unknown'); pillText.textContent = status;
       $('#statusBig').textContent = '—';
       $('#statusSub').textContent = 'Statut inconnu.';
     }
 
-    $('#usageMonth').textContent = (account.usage_month ?? 0);
-    $('#quotaMonth').textContent = (account.quota_month ?? '—');
-    $('#planLabel').textContent  = account.plan ? `Plan : ${account.plan}` : 'Plan bêta — accès gratuit';
+    const used = Number(account.used_today ?? account.usage_month ?? 0);
+    const quota = Number(account.quota_daily ?? account.quota_month ?? 0);
+    $('#usageMonth').textContent = used;
+    $('#quotaMonth').textContent = quota || '—';
+    const pct = quota > 0 ? Math.min(100, Math.round((used / quota) * 100)) : 0;
+    const fill = $('#quotaFill');
+    fill.style.width = pct + '%';
+    fill.classList.remove('is-warn','is-danger');
+    if (pct >= 90) fill.classList.add('is-danger');
+    else if (pct >= 70) fill.classList.add('is-warn');
+
+    $('#planValue').textContent = account.plan ? account.plan.replace(/_/g,' ') : 'bêta';
+    $('#planLabel').textContent = account.plan === 'beta_free'
+      ? 'Accès gratuit pendant la bêta — sans engagement.'
+      : (account.plan ? '' : 'Plan bêta — accès gratuit');
 
     const k = getStoredKey();
     $('#keyDisplay').dataset.raw = k;
     $('#keyDisplay').textContent = maskKey(k);
 
+    setHeaderUser(account);
     populate(account);
     markClean();
   }
@@ -681,11 +1201,8 @@
     try {
       const res = await apiFetch(ENDPOINTS.me);
       if (res.status === 404){
-        showAlert('#globalAlert', 'warn',
-          '<strong>L\'espace praticien en ligne n\'est pas encore activé.</strong> ' +
-          'Votre clé est enregistrée localement. Cette page s\'allumera dès que le service compte sera publié — vous n\'avez rien à faire d\'ici là. ' +
-          'En attendant, vous pouvez utiliser votre clé directement dans ChatGPT et Claude depuis <a href="/configurer/">/configurer/</a>.');
-        showAlert('#connectAlert', '', '');
+        showAlert('#connectAlert', 'warn',
+          'L\'espace praticien en ligne n\'est pas encore activé. Votre clé est enregistrée localement. Cette page s\'allumera dès que le service compte sera publié.');
         return;
       }
       if (res.status === 401){
@@ -704,8 +1221,7 @@
       const data = await res.json();
       const account = data.account || data;
       renderAccount(account);
-      showAlert('#connectAlert', 'success', 'Connecté.');
-      setTimeout(() => showAlert('#connectAlert', '', ''), 2000);
+      showAlert('#connectAlert', '', '');
     } catch (err){
       showAlert('#connectAlert', 'error', `Connexion impossible : ${err.message || err}`);
     }
@@ -713,17 +1229,24 @@
 
   $('#connectBtn').addEventListener('click', () => connectWith($('#keyInput').value));
   $('#keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') connectWith($('#keyInput').value); });
-  $('#forgetBtn').addEventListener('click', () => {
-    if (!confirm('Oublier votre clé sur cet appareil ? Vous pourrez la recoller ensuite.')) return;
+  function disconnect(){
+    if (!confirm('Vous déconnecter ? Votre clé sera oubliée sur cet appareil — vous pourrez la recoller.')) return;
     clearStoredKey();
     location.reload();
-  });
+  }
+  $('#forgetBtn').addEventListener('click', disconnect);
+  $('#forgetBtnTop').addEventListener('click', disconnect);
 
   /* ---------- key utils ---------- */
   $('#copyKeyBtn').addEventListener('click', async () => {
     const raw = $('#keyDisplay').dataset.raw || getStoredKey();
     if (!raw) return;
-    try { await navigator.clipboard.writeText(raw); $('#copyKeyBtn').textContent = 'Copiée'; setTimeout(() => $('#copyKeyBtn').textContent = 'Copier', 1500); } catch(_) {}
+    try {
+      await navigator.clipboard.writeText(raw);
+      const btn = $('#copyKeyBtn');
+      btn.textContent = 'Copiée';
+      setTimeout(() => btn.textContent = 'Copier', 1500);
+    } catch(_) {}
   });
   $('#revealKeyBtn').addEventListener('click', () => {
     const raw = $('#keyDisplay').dataset.raw || getStoredKey();
@@ -786,6 +1309,20 @@
       btn.disabled = false;
     }
   });
+
+  /* ---------- sidebar nav highlight ---------- */
+  const navLinks = $$('#appNav a[data-section]');
+  const navTargets = navLinks.map(a => ({ link: a, target: document.getElementById(a.dataset.section) })).filter(x => x.target);
+  if ('IntersectionObserver' in window && navTargets.length){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting){
+          navTargets.forEach(t => t.link.classList.toggle('is-active', t.target === en.target));
+        }
+      });
+    }, { rootMargin: '-30% 0px -55% 0px' });
+    navTargets.forEach(t => io.observe(t.target));
+  }
 
   /* ---------- boot ---------- */
   const queryKey = new URLSearchParams(location.search).get('key');

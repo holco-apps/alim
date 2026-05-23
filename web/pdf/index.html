@@ -373,7 +373,7 @@ function render(payload, brief){
 async function main(){
   const brief = briefFromQuery();
   try {
-    const response = await fetch("/api/generate", {
+    const response = await fetch("/api/demo-generate", {
       method:"POST",
       headers:{ "content-type":"application/json" },
       body: JSON.stringify(brief)

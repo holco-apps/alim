@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /
+Allow: /llms.txt
+Allow: /humans.txt
+Allow: /robots.txt
+Allow: /sitemap.xml
+Allow: /.well-known/security.txt
+
+Sitemap: https://alim.care/sitemap.xml
+

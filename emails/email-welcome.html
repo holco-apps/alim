@@ -34,8 +34,8 @@
               <h1 style="margin:0; font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size:30px; line-height:1.15; letter-spacing:-0.5px; color:#172650;">
                 Bienvenue dans la bêta ALIM, {{first_name}}.
               </h1>
-              <p style="margin:10px 0 0; font-size:14px; color:#687083;">
-                Votre accès <strong style="color:#3f4860;">{{cabinet_name}}</strong> a été validé. Tout est prêt pour vos premières recettes.
+              <p style="margin:10px 0 0; font-size:14px; color:#687083; line-height:1.55;">
+                Votre accès <strong style="color:#3f4860;">{{cabinet_name}}</strong> a été validé. ALIM s'invite dans <strong style="color:#3f4860;">votre ChatGPT ou votre Claude habituel</strong> comme une couche métier cadrée (Ciqual&nbsp;2025, HAS, ANSES) — vous gardez votre IA, vous gagnez la rigueur clinique.
               </p>
             </td>
           </tr>
@@ -98,11 +98,11 @@
                             </tr>
                           </table>
                           <p style="margin:12px 0 0; font-size:12.5px; line-height:1.5; color:#3f4860;">
-                            Ouvrez le Custom GPT, collez votre clé une fois, demandez vos recettes dans votre conversation habituelle.
+                            Connectez ALIM en OAuth à votre ChatGPT habituel. Une fois autorisé, ALIM apparaît comme un outil que ChatGPT appelle pour cadrer la nutrition.
                           </p>
                           <p style="margin:14px 0 0;">
-                            <a href="https://chat.openai.com/g/g-alim" style="display:inline-block; padding:8px 14px; background:#fff6b7; color:#172650; text-decoration:none; border-radius:6px; font-size:13px; font-weight:600;">
-                              Ouvrir ALIM dans ChatGPT →
+                            <a href="https://alim.care/install/chatgpt/?key={{api_key}}" style="display:inline-block; padding:9px 16px; background:#10a37f; color:#ffffff; text-decoration:none; border-radius:6px; font-size:13px; font-weight:600;">
+                              Activer dans ChatGPT →
                             </a>
                           </p>
                         </td>
@@ -126,10 +126,12 @@
                             </tr>
                           </table>
                           <p style="margin:12px 0 0; font-size:12.5px; line-height:1.5; color:#3f4860;">
-                            Ajoutez le Connector ALIM dans Claude.ai (Settings → Connectors), autorisez avec votre clé.
+                            Ajoutez le Custom Connector ALIM dans Claude.ai (plans Pro, Team ou Enterprise). ALIM apparaît dans Claude comme un outil que vous pouvez invoquer dans la conversation.
                           </p>
-                          <p style="margin:14px 0 0; font-size:12px; line-height:1.5; color:#3f4860;">
-                            URL&nbsp;: <code style="font-family:'Courier New',monospace; font-size:11.5px; background:#f5f0e8; padding:1px 5px; border-radius:3px;">https://alim.care/mcp/v1</code>
+                          <p style="margin:14px 0 0;">
+                            <a href="https://alim.care/install/claude/?key={{api_key}}" style="display:inline-block; padding:9px 16px; background:#cc785c; color:#ffffff; text-decoration:none; border-radius:6px; font-size:13px; font-weight:600;">
+                              Activer dans Claude →
+                            </a>
                           </p>
                         </td>
                       </tr>

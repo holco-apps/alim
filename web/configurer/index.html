@@ -92,7 +92,7 @@
   }
   .back-link:hover{color:var(--navy); text-decoration:underline}
 
-  form{margin-top:32px; display:grid; gap:28px}
+  form{margin-top:28px; display:grid; gap:20px}
   fieldset{border:0; padding:0; margin:0; display:grid; gap:14px}
   legend{font:400 19px/1.2 "Instrument Serif", Georgia, serif; color:var(--navy-deep); margin-bottom:6px}
   label{display:block; font:500 13px/1.4 Inter, sans-serif; color:var(--ink); margin-bottom:6px}
@@ -131,10 +131,119 @@
   .btn:disabled{background:#9ca3af; cursor:not-allowed}
 
   .form-note{margin-top:6px; font-size:12.5px; color:var(--muted); text-align:center}
+  .quick-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 24px;
+    box-shadow:0 12px 32px -24px rgba(23,38,80,.24);
+  }
+  .quick-card + .quick-card{margin-top:0}
+  .quick-title{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:12px;
+  }
+  .quick-title legend{margin:0}
+  .quick-badge{
+    flex:0 0 auto;
+    padding:5px 8px;
+    border-radius:999px;
+    background:var(--gold-soft);
+    color:#6f5700;
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .helper-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:22px;
+  }
+  .helper-pill{
+    min-height:58px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fffdf6;
+    padding:10px 12px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    line-height:1.35;
+  }
+  .helper-pill strong{display:block; color:var(--navy-deep); font-size:13px; margin-bottom:2px}
+  @media (max-width:640px){.helper-row{grid-template-columns:1fr}}
+  .optional-details{
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#fff;
+    overflow:hidden;
+  }
+  .optional-details summary{
+    cursor:pointer;
+    list-style:none;
+    padding:18px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    color:var(--navy-deep);
+    font:600 14px/1.3 Inter, sans-serif;
+  }
+  .optional-details summary::-webkit-details-marker{display:none}
+  .optional-details summary::after{
+    content:"+";
+    width:24px; height:24px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--paper);
+    color:var(--navy);
+    font:600 18px/1 Inter, sans-serif;
+  }
+  .optional-details[open] summary::after{content:"–"}
+  .optional-content{
+    border-top:1px solid var(--line);
+    padding:20px 22px 22px;
+    display:grid;
+    gap:14px;
+  }
 
   .alert{padding:12px 16px; border-radius:6px; font-size:13.5px; line-height:1.5}
   .alert-error{background:#fef2f2; border:1px solid #fca5a5; color:#991b1b}
 
+  .conditions-summary{
+    margin-top:24px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 24px;
+  }
+  .conditions-summary h2{font-size:24px;margin-bottom:10px}
+  .conditions-list{
+    margin:14px 0 0;
+    padding:0;
+    list-style:none;
+    display:grid;
+    gap:10px;
+  }
+  .conditions-list li{
+    position:relative;
+    padding-left:24px;
+    color:var(--ink-soft);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .conditions-list li::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:.55em;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:var(--gold);
+  }
   .cgu-scroll{
     margin-top:24px;
     max-height:340px; overflow-y:auto;
@@ -301,13 +410,18 @@
   }
   .channels-note a{color:var(--navy)}
 
-  footer{background:var(--navy-deep); color:#d6dded; padding:32px 0 48px; font-size:13px}
+  footer{background:var(--navy-deep); color:#d6dded; padding:36px 0 54px; font-size:13px}
   footer a{color:var(--gold)}
   footer .wrap{width:min(1120px, calc(100% - 40px))}
-  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px}
+  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:16px}
+  @media (max-width:640px){
+  }
 </style>
 </head>
 <body>
+
+
+</div>
 
 <header class="site-header">
   <div class="nav">
@@ -327,146 +441,157 @@
   <div class="wrap">
     <!-- ===== STEP 1 ===== -->
     <section data-step="1">
-      <p class="kicker">Bêta restreinte · Étape 1/2</p>
+      <p class="kicker">Bêta restreinte · Étape 1/2 · 3 minutes</p>
       <h1 class="h-display">Rejoindre la <em>bêta ALIM</em>.</h1>
       <p class="lede">
-        Groupe restreint pendant la validation documentaire. <strong>Accès gratuit</strong> pendant toute la bêta — aucune carte, aucun engagement. Chaque demande est validée manuellement&nbsp;: vous recevez votre clé d'installation par e-mail sous 24&nbsp;h. Les bêta-testeurs garderont un tarif privilégié quand la version publique sortira.
+        Remplissez uniquement les informations utiles pour créer votre accès. <strong>Accès gratuit</strong> pendant la bêta — aucune carte, aucun engagement. Vous recevez votre clé personnelle par e-mail après validation manuelle.
       </p>
+      <div class="helper-row" aria-label="Résumé bêta">
+        <div class="helper-pill"><strong>1. Demande</strong>Vos coordonnées et votre IA habituelle.</div>
+        <div class="helper-pill"><strong>2. Validation</strong>Nous créons votre clé bêta manuellement.</div>
+        <div class="helper-pill"><strong>3. Test</strong>Vous lancez ALIM dans ChatGPT ou Claude.</div>
+      </div>
 
       <form id="form1" noValidate>
-        <fieldset>
-          <legend>Votre exercice</legend>
-          <div>
-            <label for="cabinet_name">Nom du cabinet (ou exercice)</label>
-            <input id="cabinet_name" name="cabinet_name" type="text" required>
+        <fieldset class="quick-card">
+          <div class="quick-title">
+            <legend>Vos informations</legend>
+            <span class="quick-badge">obligatoire</span>
           </div>
-          <div class="grid2">
-            <div>
-              <label for="ville">Ville d'exercice</label>
-              <input id="ville" name="ville" type="text" placeholder="Paris, Lyon…" required>
-            </div>
-            <div>
-              <label for="exercice">Format d'exercice</label>
-              <select id="exercice" name="exercice" required>
-                <option value="">Choisir…</option>
-                <option value="liberal_solo">Libéral, en solo</option>
-                <option value="liberal_partage">Libéral en cabinet partagé</option>
-                <option value="multi_praticien">Multi-praticien</option>
-                <option value="salarie">Salarié(e) hospitalier ou autre</option>
-                <option value="autre">Autre</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label for="annees">Années de pratique</label>
-            <select id="annees" name="annees" required>
-              <option value="">Choisir…</option>
-              <option value="0-2">Moins de 2 ans</option>
-              <option value="2-5">2 à 5 ans</option>
-              <option value="5-10">5 à 10 ans</option>
-              <option value="10+">10 ans et plus</option>
-            </select>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Vous</legend>
           <div class="grid2">
             <div>
               <label for="prenom">Prénom</label>
-              <input id="prenom" name="prenom" type="text" required>
+              <input id="prenom" name="prenom" type="text" autocomplete="given-name" required>
             </div>
             <div>
               <label for="nom">Nom</label>
-              <input id="nom" name="nom" type="text" required>
+              <input id="nom" name="nom" type="text" autocomplete="family-name" required>
             </div>
           </div>
           <div>
-            <label for="email">E-mail</label>
-            <input id="email" name="email" type="email" required>
+            <label for="email">E-mail de réception de la clé</label>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="vous@cabinet.fr" required>
+          </div>
+          <div class="grid2">
+            <div>
+              <label for="cabinet_name">Cabinet ou nom d'exercice</label>
+              <input id="cabinet_name" name="cabinet_name" type="text" placeholder="Cabinet, MSP, exercice individuel…" required>
+            </div>
+            <div>
+              <label for="ville">Ville</label>
+              <input id="ville" name="ville" type="text" placeholder="Paris, Lyon…" required>
+            </div>
+          </div>
+          <div class="grid2">
+            <div>
+              <label for="exercice">Profession</label>
+              <select id="exercice" name="exercice" required>
+                <option value="">Choisir…</option>
+                <option value="dieteticien_nutritionniste">Diététicien(ne)-nutritionniste</option>
+                <option value="medecin_nutritionniste">Médecin nutritionniste</option>
+                <option value="nutritionniste">Nutritionniste</option>
+                <option value="sage_femme">Sage-femme</option>
+                <option value="infirmier_education_therapeutique">Infirmier(ère) / éducation thérapeutique</option>
+                <option value="coach_sport_sante">Coach sport-santé encadré</option>
+                <option value="autre_profession_nutrition">Autre professionnel de la nutrition</option>
+              </select>
+            </div>
+            <div>
+              <label for="annees">Années de pratique</label>
+              <select id="annees" name="annees" required>
+                <option value="">Choisir…</option>
+                <option value="0-2">Moins de 2 ans</option>
+                <option value="2-5">2 à 5 ans</option>
+                <option value="5-10">5 à 10 ans</option>
+                <option value="10+">10 ans et plus</option>
+              </select>
+            </div>
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend>Votre IA habituelle</legend>
-          <label>Quel client allez-vous brancher en priorité ?</label>
+        <fieldset class="quick-card">
+          <div class="quick-title">
+            <legend>Votre test ALIM</legend>
+            <span class="quick-badge">obligatoire</span>
+          </div>
+          <label>Où voulez-vous tester ALIM en premier ?</label>
           <div class="chips" id="chips-ia" role="group" aria-label="IA habituelle">
             <button type="button" class="chip" data-key="chatgpt" aria-pressed="false">ChatGPT</button>
             <button type="button" class="chip" data-key="claude" aria-pressed="false">Claude</button>
             <button type="button" class="chip" data-key="cursor" aria-pressed="false">Cursor</button>
-            <button type="button" class="chip" data-key="autre" aria-pressed="false">Autre / pas encore</button>
+            <button type="button" class="chip" data-key="autre" aria-pressed="false">Je ne sais pas encore</button>
           </div>
           <div style="margin-top:14px">
-            <label for="motif">Que voulez-vous tester en priorité ? (optionnel)</label>
-            <textarea id="motif" name="motif" placeholder="Ex. : un déjeuner pour patiente avec diabète gestationnel à 28 SA, équipement plaque uniquement."></textarea>
+            <label for="motif">Premier cas que vous voulez essayer (optionnel)</label>
+            <textarea id="motif" name="motif" placeholder="Ex. : dîner végétarien pour diabète T2 + HTA, fonction rénale conservée, patient peu équipé."></textarea>
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend>Welcome ALIM — votre pratique</legend>
-          <p style="font-size:13.5px; color:var(--muted); margin:-4px 0 4px">
-            Ces réponses permettent à ALIM d'adapter son dialogue, ses fiches et ses PDF à votre façon de travailler.
-          </p>
-          <div>
-            <label for="specialites">Patientèles et sujets fréquents</label>
-            <textarea id="specialites" name="specialites" placeholder="Ex. : diabète T2, HTA, grossesse, perte de poids, végétarien, sportifs, familles, petit budget…"></textarea>
-          </div>
-          <div class="grid2">
+        <details class="optional-details">
+          <summary>
+            <span>Personnaliser mon profil ALIM maintenant <small style="display:block;color:var(--muted);font-weight:400;margin-top:3px">Facultatif, modifiable plus tard dans votre compte</small></span>
+          </summary>
+          <div class="optional-content">
             <div>
-              <label for="style_support">Style de support préféré</label>
-              <select id="style_support" name="style_support">
-                <option value="">Choisir…</option>
-                <option value="pedagogique_chaleureux">Pédagogique et chaleureux</option>
-                <option value="clinique_synthetique">Clinique et synthétique</option>
-                <option value="tres_pratique">Très pratique, orienté action</option>
-                <option value="motivationnel">Motivationnel, non culpabilisant</option>
-              </select>
+              <label for="specialites">Patientèles et sujets fréquents</label>
+              <textarea id="specialites" name="specialites" placeholder="Ex. : diabète T2, HTA, grossesse, perte de poids, végétarien, sportifs, familles, petit budget…"></textarea>
+            </div>
+            <div class="grid2">
+              <div>
+                <label for="style_support">Style de support préféré</label>
+                <select id="style_support" name="style_support">
+                  <option value="">Choisir…</option>
+                  <option value="pedagogique_chaleureux">Pédagogique et chaleureux</option>
+                  <option value="clinique_synthetique">Clinique et synthétique</option>
+                  <option value="tres_pratique">Très pratique, orienté action</option>
+                  <option value="motivationnel">Motivationnel, non culpabilisant</option>
+                </select>
+              </div>
+              <div>
+                <label for="niveau_detail">Niveau de détail attendu</label>
+                <select id="niveau_detail" name="niveau_detail">
+                  <option value="">Choisir…</option>
+                  <option value="court_patient">Court côté patient</option>
+                  <option value="equilibre">Équilibré patient + praticien</option>
+                  <option value="detaille_clinique">Détaillé côté clinique</option>
+                </select>
+              </div>
             </div>
             <div>
-              <label for="niveau_detail">Niveau de détail attendu</label>
-              <select id="niveau_detail" name="niveau_detail">
-                <option value="">Choisir…</option>
-                <option value="court_patient">Court côté patient</option>
-                <option value="equilibre">Équilibré patient + praticien</option>
-                <option value="detaille_clinique">Détaillé côté clinique</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label for="formats_utiles">Formats utiles au quotidien</label>
-            <textarea id="formats_utiles" name="formats_utiles" placeholder="Ex. : fiche PDF patient, variantes, liste de courses, message de suivi WhatsApp, courrier médecin, version batch cooking…"></textarea>
-          </div>
-          <div>
-            <label for="contextes_patients">Contraintes de terrain récurrentes</label>
-            <textarea id="contextes_patients" name="contextes_patients" placeholder="Ex. : peu de temps, petit budget, repas familial, patients peu équipés, cuisine méditerranéenne, cuisine maghrébine, aversions fréquentes…"></textarea>
-          </div>
-          <div class="grid2">
-            <div>
-              <label for="sources_pref">Affichage des sources</label>
-              <select id="sources_pref" name="sources_pref">
-                <option value="">Choisir…</option>
-                <option value="detaillees_praticien_discretes_patient">Détaillées praticien, discrètes patient</option>
-                <option value="visibles_patient">Visibles aussi côté patient</option>
-                <option value="annexe">En annexe uniquement</option>
-              </select>
+              <label for="formats_utiles">Formats utiles au quotidien</label>
+              <textarea id="formats_utiles" name="formats_utiles" placeholder="Ex. : fiche PDF patient, variantes, liste de courses, message de suivi WhatsApp, courrier médecin, version batch cooking…"></textarea>
             </div>
             <div>
-              <label for="branding_pdf">Identité PDF</label>
-              <input id="branding_pdf" name="branding_pdf" type="text" placeholder="Nom, titre, ADELI/RPPS, ville…">
+              <label for="contextes_patients">Contraintes de terrain récurrentes</label>
+              <textarea id="contextes_patients" name="contextes_patients" placeholder="Ex. : peu de temps, petit budget, repas familial, patients peu équipés, cuisine méditerranéenne, cuisine maghrébine…"></textarea>
+            </div>
+            <div class="grid2">
+              <div>
+                <label for="sources_pref">Affichage des sources</label>
+                <select id="sources_pref" name="sources_pref">
+                  <option value="">Choisir…</option>
+                  <option value="detaillees_praticien_discretes_patient">Détaillées praticien, discrètes patient</option>
+                  <option value="visibles_patient">Visibles aussi côté patient</option>
+                  <option value="annexe">En annexe uniquement</option>
+                </select>
+              </div>
+              <div>
+                <label for="branding_pdf">Identité PDF</label>
+                <input id="branding_pdf" name="branding_pdf" type="text" placeholder="Nom, titre, ADELI/RPPS, ville…">
+              </div>
+            </div>
+            <div>
+              <label for="documents_note">Documents à intégrer plus tard</label>
+              <textarea id="documents_note" name="documents_note" placeholder="Ex. : fiches Word, trames Canva, modèle de compte-rendu. Upload sécurisé à venir."></textarea>
             </div>
           </div>
-          <div>
-            <label for="documents_note">Documents à intégrer plus tard (optionnel)</label>
-            <textarea id="documents_note" name="documents_note" placeholder="Ex. : mes fiches recettes Word, trames Canva, modèle de compte-rendu, liste d'équivalences. Upload sécurisé à venir."></textarea>
-          </div>
-        </fieldset>
+        </details>
 
         <div id="error-1" class="alert alert-error" hidden></div>
 
-        <button type="button" class="btn" id="btn-step2">Continuer vers les conditions →</button>
+        <button type="button" class="btn" id="btn-step2">Continuer →</button>
         <p class="form-note">
-          Étape suivante : lecture obligatoire des conditions + cases d'engagement.
-          Aucun envoi sans validation explicite de votre part.
+          Vous pourrez compléter le profil ALIM après réception de votre clé.
         </p>
       </form>
     </section>
@@ -477,11 +602,24 @@
       <p class="kicker">Bêta restreinte · Étape 2/2 · Conditions &amp; engagement</p>
       <h1 class="h-display">Conditions de la <em>bêta</em>.</h1>
       <p class="lede">
-        Lecture obligatoire avant soumission. Faites défiler jusqu'en bas du texte
-        pour activer les cases d'acceptation.
+        Vérifiez les points clés, puis confirmez votre accord. Le texte complet reste disponible juste en dessous.
       </p>
 
-      <div class="cgu-scroll" id="cgu-content" tabindex="0">
+      <div class="conditions-summary">
+        <h2>À retenir</h2>
+        <ul class="conditions-list">
+          <li>ALIM est un outil d'aide à la formulation : vous gardez la validation clinique.</li>
+          <li>La bêta couvre seulement diabète T2 + HTA et grossesse + diabète gestationnel.</li>
+          <li>Aucune donnée patient nominative ne doit être envoyée.</li>
+          <li>L'accès bêta est gratuit, sans carte bancaire, avec retour demandé à J+7 et J+14.</li>
+        </ul>
+      </div>
+
+      <details class="optional-details" style="margin-top:16px">
+        <summary>
+          <span>Lire les conditions complètes <small style="display:block;color:var(--muted);font-weight:400;margin-top:3px">Objet, périmètre, responsabilité, données, résiliation</small></span>
+        </summary>
+        <div class="cgu-scroll" id="cgu-content" tabindex="0">
         <h3>1. Objet</h3>
         <p>ALIM est un outil d'aide à la formulation nutritionnelle pour diététiciens et diététiciennes en exercice libéral. Il s'installe dans votre client IA (ChatGPT, Claude, Cursor, ou tout autre client MCP-compatible) et fournit&nbsp;: <strong>formulation de recettes, calcul nutritionnel basé sur Ciqual 2025, activation de garde-fous cliniques, citation des sources.</strong></p>
 
@@ -518,22 +656,23 @@
         <p>Vous pouvez quitter la bêta à tout moment par simple e-mail à <a href="mailto:alim@holco.co">alim@holco.co</a>. Votre clé sera révoquée et vos données supprimées.</p>
 
         <div id="cgu-sentinel" style="height:1px"></div>
-      </div>
+        </div>
+      </details>
 
       <div class="cgu-bar">
         <p class="cgu-status" id="cgu-status">
           <span class="dot" aria-hidden="true"></span>
-          <span id="cgu-status-text">Faites défiler les conditions jusqu'en bas pour activer les cases.</span>
+          <span id="cgu-status-text">Cochez les deux cases pour soumettre votre demande.</span>
         </p>
-        <label class="cgu-check" id="check1-label">
-          <input type="checkbox" id="check1" disabled>
+        <label class="cgu-check is-enabled" id="check1-label">
+          <input type="checkbox" id="check1">
           <span>
             J'ai lu et j'accepte les <strong>conditions de la bêta ALIM</strong>
             (incluant l'article 9 — limitation de responsabilité).
           </span>
         </label>
-        <label class="cgu-check" id="check2-label">
-          <input type="checkbox" id="check2" disabled>
+        <label class="cgu-check is-enabled" id="check2-label">
+          <input type="checkbox" id="check2">
           <span>
             Je m'engage à fournir un <strong>retour structuré à J+7 et J+14</strong>
             pendant la bêta.
@@ -566,52 +705,6 @@
         <div class="ref-token" id="ref-token">—</div>
       </div>
 
-      <p class="channels-intro">Au choix — 1 clic depuis votre mail dans les deux cas&nbsp;:</p>
-
-      <div class="channels-grid">
-        <article class="channel-card channel-chatgpt">
-          <div class="channel-head">
-            <span class="channel-logo" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.84a5.94 5.94 0 0 0-.51-4.88 6 6 0 0 0-6.47-2.88 6 6 0 0 0-10.18 2.18A5.96 5.96 0 0 0 1.71 7.4a6 6 0 0 0 .74 7.04 5.94 5.94 0 0 0 .51 4.88 6 6 0 0 0 6.47 2.88 6 6 0 0 0 10.18-2.18 5.96 5.96 0 0 0 3.41-3.14 6 6 0 0 0-.74-7.04Zm-8.97 12.55a4.44 4.44 0 0 1-2.86-1.04l.14-.08 4.78-2.76a.78.78 0 0 0 .4-.68v-6.75l2.02 1.17a.07.07 0 0 1 .04.05v5.59a4.46 4.46 0 0 1-4.52 4.5Z"/></svg>
-            </span>
-            <div>
-              <h3>ChatGPT</h3>
-              <p class="channel-tag">Custom GPT ALIM</p>
-            </div>
-          </div>
-          <p class="channel-desc">Ouvrez le Custom GPT ALIM, collez votre clé une fois, demandez vos recettes dans votre conversation habituelle.</p>
-          <ol class="channel-steps">
-            <li>Cliquez sur le lien <em>Ouvrir ALIM dans ChatGPT</em> reçu par e-mail</li>
-            <li>Collez votre clé <code>alim_live_…</code> quand le GPT le demande</li>
-            <li>C'est prêt — chaque génération est cadrée Ciqual + HAS</li>
-          </ol>
-          <span class="channel-cta-placeholder">Lien transmis après validation</span>
-        </article>
-
-        <article class="channel-card channel-claude">
-          <div class="channel-head">
-            <span class="channel-logo claude-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.5 17.5 9 7h2l3.5 10.5h-2L11.7 15H8.3l-.8 2.5h-2Zm3.3-4h2.4L10 9.7l-1.2 3.8Zm10.7 4V7h-2v10.5h2Z"/></svg>
-            </span>
-            <div>
-              <h3>Claude</h3>
-              <p class="channel-tag">Connector ALIM</p>
-            </div>
-          </div>
-          <p class="channel-desc">Ajoutez le Connector ALIM dans Claude.ai (web ou Desktop), autorisez avec votre clé, utilisez ALIM directement dans Claude.</p>
-          <ol class="channel-steps">
-            <li>Dans Claude → Settings → Connectors → <em>Add custom connector</em></li>
-            <li>Collez l'URL <code>https://alim.care/mcp/v1</code> et votre clé <code>alim_live_…</code></li>
-            <li>L'outil <code>generate_clinical_recipe</code> apparaît dans Claude</li>
-          </ol>
-          <span class="channel-cta-placeholder">Lien transmis après validation</span>
-        </article>
-      </div>
-
-      <p class="channels-note">
-        Vous utilisez Cursor ou un autre client MCP avancé&nbsp;? Documentation technique sur <a href="/api-docs/">alim.care/api-docs</a>.
-      </p>
-
       <div class="access-card" style="margin-top:28px; border-left-color:var(--navy)">
         <h2>Votre espace praticien</h2>
         <p style="font-size:14.5px; color:var(--ink-soft); line-height:1.6">
@@ -631,14 +724,25 @@
 
 <footer>
   <div class="wrap">
-    <p><strong style="color:#fff">ALIM</strong> · outil d'aide à la formulation pour diététiciens libéraux.</p>
-    <p style="margin-top:8px; color:#9aa6c4">Ne remplace pas le jugement clinique. Prototype en validation documentaire.</p>
+    <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO INVEST ni les organismes cités. Aucune donnée patient n'est collectée. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab 2.0.</p>
     <div class="footer-links">
-      <a href="/">Accueil</a>
-      <a href="/#install">Installer</a>
-      <a href="/#corpus">Corpus</a>
-      <a href="/sources/">Sources</a>
+      <a href="/configurer/">Rejoindre la bêta</a>
+      <a href="/compte/">Mon compte</a>
+      <a href="/sources/">Corpus</a>
+      <a href="/mentions-legales/">Mentions légales</a>
       <a href="mailto:alim@holco.co">alim@holco.co</a>
+      <a href="https://holco.co/">HOLCO</a>
+      <span>© 2026 HOLCO</span>
+    </div>
+      <div class="footer-dev-links" style="display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:14px; font:11px/1.4 JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.02em; color:rgba(104,112,131,.82)">
+      <span style="text-transform:uppercase; letter-spacing:.16em; color:rgba(104,112,131,.62)">dev</span>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/humans.txt">humans.txt</a>
+      <a href="/robots.txt">robots.txt</a>
+      <a href="/sitemap.xml">sitemap.xml</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <a href="/.well-known/ai-plugin.json">ai-plugin.json</a>
+      <a href="https://github.com/holco-apps/alim">github.com/holco-apps/alim</a>
     </div>
   </div>
 </footer>
@@ -707,8 +811,12 @@
       return;
     }
     hideError($('#error-1'));
+    state.cguScrolled = true;
+    $('#cgu-status')?.classList.add('is-ready');
+    $('#check1').disabled = false;
+    $('#check2').disabled = false;
     go(2);
-    setupCguObserver();
+    updateSubmitState();
   });
 
   $('#back-to-1').addEventListener('click', (e) => { e.preventDefault(); go(1); });

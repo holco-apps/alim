@@ -1,8 +1,10 @@
 import { createServer } from "node:http";
+import { lookup } from "node:dns/promises";
 import { readFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
+import { isIP } from "node:net";
 import { DatabaseSync } from "node:sqlite";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -26,7 +28,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = process.env.ALIM_ROOT || resolve(__dirname, "..");
 const PORT = Number(process.env.ALIM_PORT || 3012);
 const HOST = process.env.ALIM_HOST || "127.0.0.1";
-const MAX_BODY_BYTES = 16 * 1024;
+const MAX_BODY_BYTES = 128 * 1024;
 const DISCLAIMER =
   "Outil d'aide à la formulation, réservé aux professionnels — ne remplace pas le jugement clinique.";
 
@@ -198,6 +200,44 @@ const demoRecipes = {
   grossesse_dg: {
     profile_id: "grossesse_dg",
     match: (brief) => hasAll(brief.pathologies, ["diabete_gestationnel", "grossesse"]),
+    recipes_by_meal: {
+      collation: {
+        name_fr: "Bol doux fromage blanc, fraises lavées et amandes moulues",
+        portion_g: 260,
+        prep_time_min: 7,
+        cooking_time_min: 0,
+        difficulty_fr: "Très simple",
+        ingredients: [
+          { name_fr: "Fromage blanc nature pasteurisé 2-3% MG", quantity_g: 130, ciqual_code: "19646" },
+          { name_fr: "Fraises crues soigneusement lavées", quantity_g: 100, ciqual_code: "13014" },
+          { name_fr: "Amandes sans sel finement moulues", quantity_g: 10, ciqual_code: "15000" },
+          { name_fr: "Pain complet ou intégral", quantity_g: 20, ciqual_code: "7110" }
+        ],
+        steps_fr: [
+          "Laver soigneusement les fraises sous eau courante, les équeuter après lavage, puis les couper en petits morceaux.",
+          "Verser le fromage blanc dans un bol froid. Ajouter les fraises et les amandes finement moulues pour garder une texture douce.",
+          "Servir avec une petite tranche de pain complet ou intégral, nature, sans confiture ni miel.",
+          "En cas de nausées, proposer une prise lente, froide ou à température ambiante, avec odeur limitée et assaisonnement neutre."
+        ],
+        patient_note_fr: "Collation douce et peu odorante, pensée pour le premier trimestre avec nausées, tout en gardant une portion glucidique mesurée.",
+        shopping_list_fr: [
+          "Fromage blanc nature pasteurisé 2-3% MG",
+          "Fraises fraîches",
+          "Amandes sans sel",
+          "Pain complet ou intégral"
+        ],
+        substitutions_fr: [
+          "Fraises → framboises ou myrtilles en portion comparable, toujours soigneusement lavées.",
+          "Fromage blanc → yaourt nature pasteurisé non sucré si mieux toléré.",
+          "Amandes moulues → purée d'amande sans sucre ajouté, en petite quantité, si la texture sèche gêne."
+        ],
+        serving_tips_fr: [
+          "Éviter cannelle forte, ail, herbes puissantes et odeurs chaudes en cas de nausées.",
+          "Garder une texture simple : bol froid, peu d'ingrédients, prise fractionnée si nécessaire.",
+          "Ne pas ajouter de miel, confiture, sirop ou sucre."
+        ]
+      }
+    },
     recipe: {
       name_fr: "Salade d'été pois chiches, quinoa, épinards lavés et tofu",
       portion_g: 493,
@@ -297,6 +337,16 @@ function cleanText(value, max) {
     .slice(0, max);
 }
 
+function cleanMultilineText(value, max) {
+  return String(value || "")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{4,}/g, "\n\n\n")
+    .trim()
+    .slice(0, max);
+}
+
 function clampInt(value, min, max, fallback) {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed)) return fallback;
@@ -357,6 +407,502 @@ function computeNutrients(recipe) {
       overall_confidence: unmatched === 0 && missingKeys.length === 0 ? "high" : "medium"
     }
   };
+}
+
+function normalizeForMatch(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function findCiqualFoodByName(name) {
+  const normalized = normalizeForMatch(name);
+  if (!normalized || normalized.length < 3) return null;
+
+  const aliases = [
+    [/riz blanc/, "riz blanc cuit"],
+    [/riz basmati/, "riz basmati cuit"],
+    [/quinoa/, "quinoa cuit"],
+    [/pates? completes?/, "pates completes cuites"],
+    [/pates?/, "pates cuites"],
+    [/lentilles? corail/, "lentille corail cuite"],
+    [/lentilles? vertes?/, "lentille verte cuite"],
+    [/lentilles?/, "lentille cuite"],
+    [/pois chiches?/, "pois chiches cuits"],
+    [/courgettes?/, "courgette cuite"],
+    [/aubergines?/, "aubergine cuite"],
+    [/brocolis?/, "brocoli cuit"],
+    [/carottes?/, "carotte cuite"],
+    [/epinards?/, "epinards cuits"],
+    [/tofu/, "tofu nature"],
+    [/fromage blanc/, "fromage blanc nature"],
+    [/yaourts? nature/, "yaourt nature"],
+    [/(farine|froment)/, "farine ble t45"],
+    [/beurres?/, "beurre doux"],
+    [/(oeufs?|œufs?)/, "oeuf cru"],
+    [/sucre vanill[eé]/, "sucre vanille"],
+    [/sucres?/, "sucre blanc"],
+    [/chocolat noir/, "chocolat noir"],
+    [/levure chimique|poudre a lever/, "levure chimique"],
+    [/pinc[ée]e?s? de sel|sel\b/, "sel blanc alimentaire"],
+    [/fraises?/, "fraise crue"],
+    [/myrtilles?/, "myrtille crue"],
+    [/amandes?/, "amande sans sel"],
+    [/huile d olive/, "huile olive"]
+  ];
+
+  const query = aliases.find(([pattern]) => pattern.test(normalized))?.[1] || normalized;
+  const qTokens = normalizeForMatch(query).split(" ").filter((token) => token.length > 2);
+  const normalizedQuery = normalizeForMatch(query);
+  let best = null;
+
+  for (const [code, food] of Object.entries(ciqual.foods)) {
+    const foodName = normalizeForMatch(food.name_fr);
+    if (!foodName) continue;
+    let score = 0;
+    if (foodName.includes(normalizedQuery)) score += 6;
+    for (const token of qTokens) {
+      if (new RegExp(`(^| )${token}( |$)`).test(foodName)) score += 2;
+    }
+    if (foodName.includes("cuit") || foodName.includes("bouilli")) score += /\bcuit|bouilli|r[ôo]ti|vapeur/.test(query) ? 2 : 0.6;
+    if (foodName.includes("sans sel")) score += 0.8;
+    if (foodName.includes("sucre") && !normalized.includes("sucre")) score -= 2;
+    if (foodName.includes("sale") && !normalized.includes("sale")) score -= 2;
+    if (!best || score > best.score) best = { code, food, score };
+  }
+
+  if (!best || best.score < Math.max(2, qTokens.length)) return null;
+  return { ciqual_code: best.code, name_fr: best.food.name_fr, score: round(best.score, 1) };
+}
+
+function parseRecipeText(recipeText) {
+  const text = cleanMultilineText(recipeText, 5000);
+  if (/^https?:\/\//i.test(text) && text.length < 300) {
+    return {
+      ok: false,
+      reason_fr: "Scanner V0 : collez le texte de la recette et ses quantités. L'analyse directe d'URL web n'est pas encore activée."
+    };
+  }
+
+  const lines = normalizeRecipeIngredientLines(text)
+    .split(/\n|;/)
+    .map((line) => line.trim())
+    .filter((line) => line.length >= 4)
+    .slice(0, 80);
+
+  const ingredients = [];
+  const unmatched_lines = [];
+
+  for (const line of lines) {
+    const match = line.match(/(?:^|[\s:-])(\d{1,4}(?:[,.]\d{1,2})?)\s*(g|grammes?|kg|ml|cl)\b/i);
+    if (!match) continue;
+    const rawQuantity = Number.parseFloat(match[1].replace(",", "."));
+    if (!Number.isFinite(rawQuantity) || rawQuantity <= 0) continue;
+    const unit = match[2].toLowerCase();
+    let quantity_g = rawQuantity;
+    if (unit === "kg") quantity_g *= 1000;
+    if (unit === "cl") quantity_g *= 10;
+    // Approximation V0 : ml = g. Suffisant pour scanner, à affiner par densité plus tard.
+
+    const name = line
+      .replace(match[0], " ")
+      .replace(/\b(cuit|cuite|cru|crue|rinc[eé]s?|lav[eé]s?|sans sel|nature|bio)\b/gi, " $1 ")
+      .replace(/[-–—:,()]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    const matched = findCiqualFoodByName(name);
+    if (!matched) {
+      unmatched_lines.push(line);
+      continue;
+    }
+    ingredients.push({
+      name_fr: matched.name_fr,
+      input_label_fr: line,
+      quantity_g: round(quantity_g, 1),
+      ciqual_code: matched.ciqual_code,
+      match_score: matched.score
+    });
+  }
+
+  if (ingredients.length === 0) {
+    return {
+      ok: false,
+      reason_fr: "Aucun ingrédient quantifié en grammes n'a pu être extrait. Exemple attendu : `Riz basmati cuit — 120 g`."
+    };
+  }
+
+  return { ok: true, recipe_text: text, ingredients, unmatched_lines };
+}
+
+function normalizeRecipeIngredientLines(text) {
+  const defaults = [
+    { pattern: /\b(\d+(?:[,.]\d+)?)\s*(?:oeufs?|œufs?)\b/gi, replace: "$1 oeuf — 50 g" },
+    { pattern: /\b(\d+(?:[,.]\d+)?)\s*bonnes?\s+pinc[ée]es?\s+de\s+sel\b/gi, replace: "$1 pincée de sel — 1 g" },
+    { pattern: /\b(\d+(?:[,.]\d+)?)\s*pinc[ée]es?\s+de\s+sel\b/gi, replace: "$1 pincée de sel — 1 g" },
+    { pattern: /\b(\d+(?:[,.]\d+)?)\s*cuill[èe]res?\s+[àa]\s+caf[ée]\s+de\s+levure\s+chimique\b/gi, replace: "$1 cuillère à café de levure chimique — 5 g" },
+    { pattern: /\b(\d+(?:[,.]\d+)?)\s*sachets?\s+de\s+sucre\s+vanill[ée]\b/gi, replace: "$1 sachet de sucre vanillé — 7.5 g" }
+  ];
+  return String(text || "")
+    .split("\n")
+    .map((line) => {
+      let output = line;
+      for (const item of defaults) {
+        if (/(?:^|[\s:-])\d{1,4}(?:[,.]\d{1,2})?\s*(?:g|grammes?|kg|ml|cl)\b/i.test(output)) break;
+        output = output.replace(item.pattern, item.replace);
+      }
+      return output;
+    })
+    .join("\n");
+}
+
+function isPrivateIp(address) {
+  if (!address) return true;
+  if (address === "::1" || address === "0:0:0:0:0:0:0:1") return true;
+  if (address.startsWith("fc") || address.startsWith("fd") || address.startsWith("fe80:")) return true;
+  const parts = address.split(".").map((part) => Number.parseInt(part, 10));
+  if (parts.length !== 4 || parts.some((part) => !Number.isFinite(part))) return false;
+  const [a, b] = parts;
+  return (
+    a === 10 ||
+    a === 127 ||
+    a === 0 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168)
+  );
+}
+
+async function assertSafePublicUrl(rawUrl) {
+  let url;
+  try {
+    url = new URL(String(rawUrl || "").trim());
+  } catch {
+    return { ok: false, reason_fr: "URL invalide." };
+  }
+  if (!["http:", "https:"].includes(url.protocol)) {
+    return { ok: false, reason_fr: "Seules les URLs http/https sont acceptées." };
+  }
+  if (url.username || url.password) {
+    return { ok: false, reason_fr: "URL avec identifiants refusée." };
+  }
+  const hostname = url.hostname.toLowerCase();
+  if (hostname === "localhost" || hostname.endsWith(".local") || hostname.endsWith(".internal")) {
+    return { ok: false, reason_fr: "URL locale ou interne refusée." };
+  }
+  if (isIP(hostname) && isPrivateIp(hostname)) {
+    return { ok: false, reason_fr: "Adresse IP privée refusée." };
+  }
+  try {
+    const records = await lookup(hostname, { all: true, verbatim: true });
+    if (!records.length || records.some((record) => isPrivateIp(record.address))) {
+      return { ok: false, reason_fr: "Résolution DNS privée ou non sûre refusée." };
+    }
+  } catch {
+    return { ok: false, reason_fr: "Impossible de résoudre le domaine de la recette." };
+  }
+  return { ok: true, url };
+}
+
+function htmlDecode(value) {
+  return String(value || "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(Number.parseInt(n, 16)));
+}
+
+function stripHtml(value) {
+  return htmlDecode(String(value || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim());
+}
+
+function findRecipeJsonLd(value) {
+  if (!value || typeof value !== "object") return null;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findRecipeJsonLd(item);
+      if (found) return found;
+    }
+    return null;
+  }
+  const type = value["@type"];
+  const types = Array.isArray(type) ? type : [type];
+  if (types.some((item) => String(item).toLowerCase() === "recipe")) return value;
+  if (value["@graph"]) return findRecipeJsonLd(value["@graph"]);
+  if (value.mainEntity) return findRecipeJsonLd(value.mainEntity);
+  return null;
+}
+
+function extractRecipeFromHtml(html) {
+  const scripts = [...String(html || "").matchAll(/<script[^>]+type=["'](?:application\/ld\+json|application&#x2F;ld&#x2B;json)["'][^>]*>([\s\S]*?)<\/script>/gi)];
+  for (const match of scripts) {
+    const raw = htmlDecode(match[1]).trim();
+    try {
+      const parsed = JSON.parse(raw);
+      const recipe = findRecipeJsonLd(parsed);
+      if (!recipe) continue;
+      const ingredients = Array.isArray(recipe.recipeIngredient)
+        ? recipe.recipeIngredient.map((item) => stripHtml(item)).filter(Boolean)
+        : [];
+      const instructionsRaw = Array.isArray(recipe.recipeInstructions) ? recipe.recipeInstructions : [];
+      const instructions = instructionsRaw.map((item) => {
+        if (typeof item === "string") return stripHtml(item);
+        if (item?.text) return stripHtml(item.text);
+        if (item?.itemListElement) {
+          return item.itemListElement.map((step) => stripHtml(step.text || step.name || step)).filter(Boolean).join(" ");
+        }
+        return stripHtml(item?.name || "");
+      }).filter(Boolean);
+      if (ingredients.length) {
+        return {
+          ok: true,
+          title_fr: stripHtml(recipe.name || "Recette scannée depuis URL"),
+          recipe_text: ingredients.join("\n"),
+          instructions_preview: instructions.slice(0, 8),
+          extraction_method: "json_ld_recipe",
+          ingredients_count: ingredients.length
+        };
+      }
+    } catch {}
+  }
+
+  const ingredientBlock = String(html || "").match(/(?:ingredient|ingredients|ingr[eé]dients?)[\s\S]{0,12000}?(?:preparation|préparation|instructions?|étapes?)/i)?.[0] || "";
+  const items = [...ingredientBlock.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+    .map((match) => stripHtml(match[1]))
+    .filter((line) => /\d/.test(line))
+    .slice(0, 40);
+  if (items.length) {
+    return {
+      ok: true,
+      title_fr: stripHtml(String(html).match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "Recette scannée depuis URL"),
+      recipe_text: items.join("\n"),
+      extraction_method: "html_li_fallback",
+      ingredients_count: items.length
+    };
+  }
+  return {
+    ok: false,
+    reason_fr: "Impossible d'extraire automatiquement les ingrédients. Collez le texte de la recette avec les quantités."
+  };
+}
+
+async function fetchRecipeFromUrl(rawUrl) {
+  const safe = await assertSafePublicUrl(rawUrl);
+  if (!safe.ok) return safe;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(safe.url.toString(), {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "user-agent": "ALIM recipe scanner (+https://alim.care/robots.txt)",
+        "accept": "text/html,application/xhtml+xml"
+      }
+    });
+    if (!response.ok) {
+      return { ok: false, reason_fr: `La page recette répond ${response.status}.` };
+    }
+    const contentType = String(response.headers.get("content-type") || "").toLowerCase();
+    if (!contentType.includes("text/html") && !contentType.includes("application/xhtml")) {
+      return { ok: false, reason_fr: "Le contenu récupéré n'est pas une page HTML de recette." };
+    }
+    const html = (await response.text()).slice(0, 650000);
+    return {
+      ...extractRecipeFromHtml(html),
+      url: safe.url.toString(),
+      final_url: response.url
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      reason_fr: error.name === "AbortError"
+        ? "Temps de chargement de la recette dépassé."
+        : "Impossible de récupérer la page recette."
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function buildScanSuggestions(brief, nutrients, failures, ingredients) {
+  const suggestions = [];
+  const carb = nutrientValue(nutrients, "carb_g") || 0;
+  const fiber = nutrientValue(nutrients, "fiber_g") || 0;
+  const salt = nutrientValue(nutrients, "salt_g") || 0;
+  const energy = nutrientValue(nutrients, "energy_kcal") || 0;
+  const hasRice = ingredients.some((ingredient) => /riz blanc|riz tha|riz basmati/i.test(ingredient.name_fr));
+  const hasSaltedCue = ingredients.some((ingredient) => /sel|sauce soja|bouillon|fromage|charcuterie/i.test(ingredient.input_label_fr || ingredient.name_fr));
+
+  if (failures.some((failure) => /glucides/i.test(failure)) || carb > 45) {
+    if (hasRice) {
+      suggestions.push("Réduire la portion de riz blanc/basmati cuit et tester une base quinoa, lentilles ou légumes supplémentaires, puis recalculer.");
+    } else {
+      suggestions.push("Réduire la portion de féculent ou la répartir sur un autre moment alimentaire, puis recalculer la fiche.");
+    }
+  }
+  if (failures.some((failure) => /fibres/i.test(failure)) || fiber < 7) {
+    suggestions.push("Ajouter une source de fibres compatible : légumineuse en petite portion, légumes cuits, céréale complète ou fruit entier selon tolérance.");
+  }
+  if (salt > 1.6 || hasSaltedCue) {
+    suggestions.push("Supprimer sel ajouté, bouillon cube, sauce soja ou ingrédient très salé ; renforcer citron, herbes et épices douces.");
+  }
+  if (brief.meal_slot === "collation" && energy > 250) {
+    suggestions.push("Recalibrer en vraie collation : viser une portion plus petite, moins d'ingrédients, texture simple et 150-250 kcal.");
+  }
+  if (brief.pathologies.includes("grossesse")) {
+    suggestions.push("Vérifier lavage soigneux des végétaux crus et exclure fromage au lait cru, oeuf cru, poisson cru, viande crue et alcool.");
+  }
+  return suggestions.slice(0, 5);
+}
+
+function buildScanMarkdown(payload) {
+  const n = payload.nutrients_per_portion;
+  const lines = [
+    `## Analyse ALIM — ${payload.verdict.label_fr}`,
+    "",
+    `**Statut : ${payload.verdict.status.toUpperCase()}** · ${payload.verdict.summary_fr}`,
+    "",
+    "### Valeurs estimées",
+    "",
+    "| Énergie | Protéines | Glucides | Lipides | Fibres | Sel |",
+    "|---:|---:|---:|---:|---:|---:|",
+    `| ${formatMacro(n.energy_kcal?.value, "kcal")} | ${formatMacro(n.protein_g?.value)} | ${formatMacro(n.carb_g?.value)} | ${formatMacro(n.fat_g?.value)} | ${formatMacro(n.fiber_g?.value)} | ${formatMacro(n.salt_g?.value)} |`,
+    "",
+    "### Ingrédients reconnus",
+    "",
+    ...payload.ingredients_matched.map((ingredient) => `- ${ingredient.input_label_fr} → ${ingredient.name_fr} (${ingredient.quantity_g} g)`),
+    "",
+    "### Points à corriger",
+    "",
+    ...(payload.failures.length ? payload.failures.map((failure) => `- ${failure}`) : ["- Aucun blocage déterministe sur le périmètre couvert."]),
+    "",
+    "### Ajustements proposés",
+    "",
+    ...(payload.suggestions_fr.length ? payload.suggestions_fr.map((item) => `- ${item}`) : ["- Recette compatible avec les garde-fous v0. À valider selon le contexte clinique complet."]),
+    "",
+    "### Sources",
+    "",
+    ...payload.sources.map((source) => `- ${source.citation}`),
+    "",
+    "**Sous votre validation clinique.**"
+  ];
+  if (payload.unmatched_lines.length) {
+    lines.splice(lines.indexOf("### Points à corriger"), 0, "### À vérifier manuellement", "", ...payload.unmatched_lines.map((line) => `- ${line}`), "");
+  }
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+function scanRecipe(input) {
+  const normalized = normalizeBrief(input.brief || input);
+  if (!normalized.ok) return { status: normalized.status, payload: normalized.payload };
+  const brief = normalized.brief;
+  const config = selectScanConfig(brief);
+  if (!config) {
+    return refused("Scanner V0 couvre seulement : diabète T2, diabète T2 + HTA, ou grossesse + diabète gestationnel.", 422);
+  }
+
+  const parsed = parseRecipeText(input.recipe_text || input.text || "");
+  if (!parsed.ok) {
+    return refused(parsed.reason_fr, 422);
+  }
+
+  const scannedRecipe = {
+    name_fr: cleanText(input.title_fr || "Recette scannée", 160),
+    portion_g: round(parsed.ingredients.reduce((sum, ingredient) => sum + ingredient.quantity_g, 0), 1),
+    ingredients: parsed.ingredients,
+    steps_fr: []
+  };
+  const { nutrients, coverage_summary } = computeNutrients(scannedRecipe);
+  const scanConfig = { ...config, recipe: scannedRecipe };
+  const { failures, warnings } = validateRecipe(scanConfig, nutrients, brief);
+  const suggestions_fr = buildScanSuggestions(brief, nutrients, failures, parsed.ingredients);
+  const status = failures.length ? "red" : (suggestions_fr.length || parsed.unmatched_lines.length ? "orange" : "green");
+  const labels = {
+    green: "Compatible avec les garde-fous ALIM v0",
+    orange: "Compatible sous réserve d'ajustements",
+    red: "À corriger avant validation"
+  };
+  const payload = {
+    ok: true,
+    scan_type: "recipe_text",
+    verdict: {
+      status,
+      label_fr: labels[status],
+      summary_fr: failures.length
+        ? "La recette dépasse au moins un garde-fou déterministe du profil choisi."
+        : "Aucun blocage déterministe détecté sur le périmètre couvert."
+    },
+    brief,
+    title_fr: scannedRecipe.name_fr,
+    portion_g: scannedRecipe.portion_g,
+    ingredients_matched: parsed.ingredients,
+    unmatched_lines: parsed.unmatched_lines,
+    nutrients_per_portion: nutrients,
+    coverage_summary,
+    failures,
+    suggestions_fr,
+    rules_applied: config.rules_applied,
+    sources: buildSources(config.rules_applied),
+    references_consulted: buildReferencesConsulted(config.rules_applied),
+    warnings: [...warnings, DISCLAIMER]
+  };
+  payload.presentation_markdown_fr = buildScanMarkdown(payload);
+  return { status: 200, payload };
+}
+
+function selectScanConfig(brief) {
+  const generationConfig = selectRecipe(brief);
+  if (generationConfig) return generationConfig;
+  if (brief.pathologies.includes("diabete_t2")) {
+    return {
+      profile_id: "t2_scan",
+      rules_applied: [
+        "t2_carb_per_meal_max",
+        "t2_carb_per_meal_min",
+        "t2_added_sugar_per_meal_max",
+        "t2_total_sugar_per_meal_warning",
+        "t2_fiber_per_meal_min",
+        "t2_low_gi_preferred"
+      ],
+      warnings: [
+        "Scanner diabète T2 seul : analyse glucides, sucres ajoutés et fibres. Les garde-fous HTA ne sont pas appliqués sans mention HTA.",
+        DISCLAIMER
+      ]
+    };
+  }
+  return null;
+}
+
+async function scanRecipeUrl(input) {
+  const fetched = await fetchRecipeFromUrl(input.url || input.recipe_url || "");
+  if (!fetched.ok) return refused(fetched.reason_fr, 422);
+  const result = scanRecipe({
+    title_fr: input.title_fr || fetched.title_fr,
+    recipe_text: fetched.recipe_text,
+    brief: input.brief || input
+  });
+  if (result.payload && !result.payload.refused) {
+    result.payload.url_scan = {
+      url: fetched.url,
+      final_url: fetched.final_url,
+      extraction_method: fetched.extraction_method,
+      ingredients_count: fetched.ingredients_count,
+      title_fr: fetched.title_fr
+    };
+  }
+  return result;
 }
 
 function detectAddedSugar(recipe) {
@@ -450,7 +996,7 @@ function buildNutritionPanel(nutrients) {
     }));
 }
 
-function buildClinicalAdaptations(config, nutrients) {
+function buildClinicalAdaptations(config, nutrients, brief) {
   if (config.profile_id === "t2_hta") {
     return [
       `Glucides par portion : ${nutrientValue(nutrients, "carb_g")} g, dans la plage moteur v0 T2.`,
@@ -461,6 +1007,16 @@ function buildClinicalAdaptations(config, nutrients) {
     ];
   }
   if (config.profile_id === "grossesse_dg") {
+    if (brief.meal_slot === "collation") {
+      return [
+        `Glucides par portion : ${nutrientValue(nutrients, "carb_g")} g, dans la plage moteur v0 collation DG.`,
+        `Énergie : ${nutrientValue(nutrients, "energy_kcal")} kcal, calibrée comme collation et non comme repas complet.`,
+        `Fibres : ${nutrientValue(nutrients, "fiber_g")} g par portion, sans charge digestive excessive pour une collation.`,
+        "Texture douce, odeur limitée et prise froide ou tiède : adaptation terrain en cas de nausées du premier trimestre.",
+        "Aucun alcool, aliment cru à risque, fromage au lait cru, poisson cru, viande crue ou oeuf cru dans la formulation.",
+        "Les fruits crus doivent être lavés soigneusement avant découpe."
+      ];
+    }
     return [
       `Glucides par portion : ${nutrientValue(nutrients, "carb_g")} g, dans la plage moteur v0 diabète gestationnel.`,
       `Fibres : ${nutrientValue(nutrients, "fiber_g")} g par portion pour ralentir l'absorption glucidique.`,
@@ -529,7 +1085,7 @@ function buildProfessionalSheet(config, brief, nutrients, coverage_summary) {
       ciqual_code: ingredient.ciqual_code
     })),
     preparation_steps_fr: recipe.steps_fr || [],
-    clinical_adaptations_fr: buildClinicalAdaptations(config, nutrients),
+    clinical_adaptations_fr: buildClinicalAdaptations(config, nutrients, brief),
     micronutrition_highlights_fr: buildMicronutritionHighlights(recipe, nutrients),
     patient_explanation_fr: recipe.patient_note_fr || "",
     export_blocks: {
@@ -621,7 +1177,7 @@ function buildPdfUrl(brief) {
   return `https://alim.care/pdf/?${params.toString()}`;
 }
 
-function validateRecipe(config, nutrients) {
+function validateRecipe(config, nutrients, brief) {
   const failures = [];
   const warnings = [...config.warnings];
   const n = nutrients;
@@ -632,26 +1188,38 @@ function validateRecipe(config, nutrients) {
     if ((n[field]?.value ?? -Infinity) < limit) failures.push(`${label} < ${limit}`);
   };
 
-  if (config.profile_id === "t2_hta") {
-    max("salt_g", 1.6, "sel");
+  if (config.profile_id === "t2_hta" || config.profile_id === "t2_scan") {
+    if (config.profile_id === "t2_hta") max("salt_g", 1.6, "sel");
     max("carb_g", 60, "glucides");
     min("carb_g", 30, "glucides");
     max("added_sugar_g", 10, "sucres ajoutés");
     min("fiber_g", 7, "fibres");
-    max("saturated_fat_g", 7, "acides gras saturés");
+    if (config.profile_id === "t2_hta") max("saturated_fat_g", 7, "acides gras saturés");
     if ((n.sugar_g_total?.value ?? 0) > 25) warnings.push("Sucres totaux élevés : vérifier la source des sucres naturels.");
   }
 
   if (config.profile_id === "grossesse_dg") {
-    max("carb_g", 45, "glucides");
-    min("carb_g", 20, "glucides");
+    if (brief.meal_slot === "collation") {
+      max("energy_kcal", 250, "énergie collation");
+      min("energy_kcal", 150, "énergie collation");
+      max("carb_g", 30, "glucides collation");
+      min("carb_g", 15, "glucides collation");
+      max("fiber_g", 8, "fibres collation");
+      min("fiber_g", 2, "fibres collation");
+    } else {
+      max("carb_g", 45, "glucides");
+      min("carb_g", 20, "glucides");
+      min("fiber_g", 7, "fibres");
+      min("vit_b9_dfe_ug", 130, "folates");
+    }
     // Choix moteur v0 démo : zéro sucre ajouté dans les recettes DG générées.
     // Ce n'est pas une interdiction clinique générale des produits sucrés.
     max("added_sugar_g", 0, "sucres ajoutés");
-    min("fiber_g", 7, "fibres");
-    min("vit_b9_dfe_ug", 130, "folates");
     max("alcohol_g", 0, "alcool");
     if ((n.sugar_g_total?.value ?? 0) > 15) warnings.push("Sucres totaux au-dessus du seuil d'alerte DG : vérifier leur origine.");
+    if (brief.meal_slot === "collation") {
+      warnings.push("Collation DG v0 : calibrage indicatif 150-250 kcal et 15-30 g de glucides, à adapter au plan alimentaire global.");
+    }
   }
 
   return { failures, warnings };
@@ -712,7 +1280,7 @@ function generate(brief) {
   }
 
   const { nutrients, coverage_summary } = computeNutrients(config.recipe);
-  const { failures, warnings } = validateRecipe(config, nutrients);
+  const { failures, warnings } = validateRecipe(config, nutrients, brief);
   if (failures.length > 0) {
     return refused(`Recette refusée par validation déterministe : ${failures.join(", ")}.`, 422);
   }
@@ -761,6 +1329,35 @@ async function readJson(req) {
     err.status = 400;
     throw err;
   }
+}
+
+async function readBody(req) {
+  let body = "";
+  for await (const chunk of req) {
+    body += chunk;
+    if (Buffer.byteLength(body) > MAX_BODY_BYTES) {
+      const err = new Error("Payload too large");
+      err.status = 413;
+      throw err;
+    }
+  }
+  return body;
+}
+
+async function readFormOrJson(req) {
+  const body = await readBody(req);
+  const contentType = String(req.headers["content-type"] || "").toLowerCase();
+  if (contentType.includes("application/json")) {
+    try {
+      return body ? JSON.parse(body) : {};
+    } catch {
+      const err = new Error("Invalid JSON");
+      err.status = 400;
+      throw err;
+    }
+  }
+  const params = new URLSearchParams(body);
+  return Object.fromEntries(params.entries());
 }
 
 // ----- Onboarding (bêta /configurer/) -----------------------------------
@@ -874,6 +1471,12 @@ function escapeHtml(s) {
 const ALIM_DATA_DIR = process.env.ALIM_DATA_DIR || "/var/lib/alim";
 const ALIM_DB_FILE = process.env.ALIM_DB_FILE || `${ALIM_DATA_DIR}/alim.sqlite`;
 const DEFAULT_DAILY_QUOTA = Number(process.env.ALIM_DEFAULT_DAILY_QUOTA || 20);
+const OAUTH_CODE_TTL_MS = 5 * 60 * 1000;
+const OAUTH_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+const OAUTH_SCOPE = "alim.generate";
+const OAUTH_CLIENT_ID = process.env.ALIM_OAUTH_CLIENT_ID || "";
+const OAUTH_CLIENT_SECRET = process.env.ALIM_OAUTH_CLIENT_SECRET || "";
+const PUBLIC_ORIGIN = process.env.ALIM_PUBLIC_ORIGIN || "https://alim.care";
 let authDb = null;
 
 function getAuthDb() {
@@ -921,8 +1524,71 @@ function getAuthDb() {
       refusal_reason TEXT NOT NULL DEFAULT '',
       latency_ms INTEGER NOT NULL DEFAULT 0
     );
+    CREATE TABLE IF NOT EXISTS oauth_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code_hash TEXT NOT NULL UNIQUE,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      client_id TEXT NOT NULL DEFAULT '',
+      redirect_uri TEXT NOT NULL,
+      scope TEXT NOT NULL DEFAULT '${OAUTH_SCOPE}',
+      expires_at INTEGER NOT NULL,
+      used_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS oauth_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      token_hash TEXT NOT NULL UNIQUE,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      scope TEXT NOT NULL DEFAULT '${OAUTH_SCOPE}',
+      expires_at INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      last_used_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      token_hash TEXT NOT NULL UNIQUE,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      client_id TEXT NOT NULL DEFAULT '',
+      scope TEXT NOT NULL DEFAULT '${OAUTH_SCOPE}',
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      last_used_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS oauth_clients (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id TEXT NOT NULL UNIQUE,
+      client_secret_hash TEXT NOT NULL DEFAULT '',
+      client_name TEXT NOT NULL DEFAULT '',
+      redirect_uris TEXT NOT NULL DEFAULT '[]',
+      grant_types TEXT NOT NULL DEFAULT '["authorization_code","refresh_token"]',
+      response_types TEXT NOT NULL DEFAULT '["code"]',
+      scope TEXT NOT NULL DEFAULT '${OAUTH_SCOPE}',
+      token_endpoint_auth_method TEXT NOT NULL DEFAULT 'none',
+      raw_metadata TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      last_used_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS account_recipes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      title_fr TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      tags TEXT NOT NULL DEFAULT '[]',
+      clinical_context TEXT NOT NULL DEFAULT '{}',
+      recipe_payload TEXT NOT NULL DEFAULT '{}',
+      presentation_markdown_fr TEXT NOT NULL DEFAULT '',
+      pdf_url TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      last_used_at TEXT
+    );
     CREATE INDEX IF NOT EXISTS idx_usage_account_day ON api_usage_logs(account_id, day);
     CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(token_hash);
+    CREATE INDEX IF NOT EXISTS idx_oauth_codes_hash ON oauth_codes(code_hash);
+    CREATE INDEX IF NOT EXISTS idx_oauth_tokens_hash ON oauth_tokens(token_hash);
+    CREATE INDEX IF NOT EXISTS idx_oauth_refresh_tokens_hash ON oauth_refresh_tokens(token_hash);
+    CREATE INDEX IF NOT EXISTS idx_oauth_clients_client_id ON oauth_clients(client_id);
+    CREATE INDEX IF NOT EXISTS idx_account_recipes_account ON account_recipes(account_id, updated_at);
   `);
   return authDb;
 }
@@ -946,6 +1612,26 @@ function generateAlimApiKey() {
   return `alim_live_${randomBytes(24).toString("base64url")}`;
 }
 
+function generateOAuthCode() {
+  return `alim_code_${randomBytes(24).toString("base64url")}`;
+}
+
+function generateOAuthAccessToken() {
+  return `alim_oauth_${randomBytes(32).toString("base64url")}`;
+}
+
+function generateOAuthRefreshToken() {
+  return `alim_refresh_${randomBytes(32).toString("base64url")}`;
+}
+
+function generateOAuthClientId() {
+  return `alim-dcr-${randomBytes(16).toString("base64url")}`;
+}
+
+function generateOAuthClientSecret() {
+  return `alim_secret_${randomBytes(24).toString("base64url")}`;
+}
+
 function readBearerToken(req) {
   const auth = String(req.headers.authorization || "");
   const match = auth.match(/^Bearer\s+(.+)$/i);
@@ -965,6 +1651,11 @@ function findAccountByBearer(req) {
   if (!token) {
     return { ok: false, status: 401, payload: { ok: false, error: "Clé Bearer ALIM manquante." } };
   }
+  if (token.startsWith("alim_oauth_")) return findAccountByOAuthToken(token);
+  return findAccountByApiKey(token);
+}
+
+function findAccountByApiKey(token) {
   const db = getAuthDb();
   const row = db.prepare(`
     SELECT
@@ -998,13 +1689,48 @@ function findAccountByBearer(req) {
   return { ok: true, account: row };
 }
 
+function findAccountByOAuthToken(token) {
+  const db = getAuthDb();
+  const row = db.prepare(`
+    SELECT
+      a.id AS account_id, a.email, a.display_name, a.cabinet_name, a.status AS account_status,
+      a.plan, a.quota_daily, a.practitioner_profile, a.cabinet_branding,
+      NULL AS api_key_id, 'oauth' AS prefix, 'active' AS key_status,
+      t.id AS oauth_token_id, t.expires_at
+    FROM oauth_tokens t
+    JOIN accounts a ON a.id = t.account_id
+    WHERE t.token_hash = ?
+  `).get(keyHash(token));
+
+  if (!row) {
+    return { ok: false, status: 401, payload: { ok: false, error: "Token OAuth ALIM invalide." } };
+  }
+  if (Number(row.expires_at || 0) < Date.now()) {
+    return { ok: false, status: 401, payload: { ok: false, error: "Token OAuth ALIM expiré." } };
+  }
+  if (row.account_status !== "active") {
+    return {
+      ok: false,
+      status: 403,
+      payload: {
+        ok: false,
+        error: "Compte ALIM non actif.",
+        account_status: row.account_status,
+        action_required: "Activez ou régularisez l'abonnement ALIM."
+      }
+    };
+  }
+  db.prepare("UPDATE oauth_tokens SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.oauth_token_id);
+  return { ok: true, account: row };
+}
+
 function usageForToday(accountId) {
   const db = getAuthDb();
   const day = todayIso();
   const row = db.prepare(`
     SELECT COUNT(*) AS used
     FROM api_usage_logs
-    WHERE account_id = ? AND day = ? AND route IN ('/api/v1/generate', '/mcp/v1')
+    WHERE account_id = ? AND day = ? AND route IN ('/api/v1/generate', '/api/v1/scan-recipe', '/api/v1/scan-recipe-url', '/mcp/v1')
   `).get(accountId, day);
   return Number(row?.used || 0);
 }
@@ -1044,6 +1770,12 @@ function normalizeStringArray(value, allowed = null, max = 16) {
     .slice(0, max);
 }
 
+function clampNumber(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(parsed)));
+}
+
 function normalizeAccountUpdate(input) {
   const data = input && typeof input === "object" ? input : {};
   const p = data.practitioner_profile && typeof data.practitioner_profile === "object"
@@ -1062,6 +1794,15 @@ function normalizeAccountUpdate(input) {
       patienteles: normalizeStringArray(p.patienteles, ["DT2", "HTA", "grossesse", "DG", "surpoids", "senior", "pediatrie", "sport"]),
       formats: normalizeStringArray(p.formats, ["fiche_patient_pdf", "variantes", "liste_courses", "tableau_nutritionnel", "message_patient", "substitutions"]),
       contraintes: normalizeStringArray(p.contraintes, ["petit_budget", "repas_familial", "cuisine_minimale", "batch_cooking", "halal", "casher", "vegetarien", "vegan"]),
+      preferences: {
+        clinical_strictness: clampNumber(p.preferences?.clinical_strictness, 1, 5, 4),
+        culinary_creativity: clampNumber(p.preferences?.culinary_creativity, 1, 5, 3),
+        patient_detail_level: clampNumber(p.preferences?.patient_detail_level, 1, 5, 3),
+        source_display: cleanText(p.preferences?.source_display || "patient_discreet", 64),
+        source_threshold: cleanText(p.preferences?.source_threshold || "verified_only", 64)
+      },
+      patient_examples: normalizeStringArray(p.patient_examples, null, 3)
+        .map((item) => cleanText(item, 400)),
       notes: cleanText(p.notes || "", 1000)
     },
     cabinet_branding: {
@@ -1119,15 +1860,485 @@ function quotaOk(account) {
   return { ok: true, used, quota };
 }
 
+function parseBasicClientAuth(req) {
+  const auth = String(req.headers.authorization || "");
+  const match = auth.match(/^Basic\s+(.+)$/i);
+  if (!match) return {};
+  try {
+    const decoded = Buffer.from(match[1], "base64").toString("utf8");
+    const splitAt = decoded.indexOf(":");
+    if (splitAt === -1) return {};
+    return {
+      client_id: decoded.slice(0, splitAt),
+      client_secret: decoded.slice(splitAt + 1)
+    };
+  } catch {
+    return {};
+  }
+}
+
+function validateOAuthClient({ client_id, client_secret, requireSecret = false }) {
+  if (OAUTH_CLIENT_ID && client_id !== OAUTH_CLIENT_ID) {
+    return { ok: false, error: "Client OAuth ALIM invalide." };
+  }
+  if (requireSecret && OAUTH_CLIENT_SECRET && client_secret !== OAUTH_CLIENT_SECRET) {
+    return { ok: false, error: "Secret OAuth ALIM invalide." };
+  }
+  if (!OAUTH_CLIENT_ID && client_id) {
+    const client = getAuthDb().prepare(`
+      SELECT client_id, client_secret_hash, token_endpoint_auth_method
+      FROM oauth_clients
+      WHERE client_id = ?
+    `).get(client_id);
+    if (client) {
+      if (requireSecret && client.token_endpoint_auth_method !== "none" && client.client_secret_hash) {
+        if (!client_secret || keyHash(client_secret) !== client.client_secret_hash) {
+          return { ok: false, error: "Secret OAuth ALIM invalide." };
+        }
+      }
+      getAuthDb().prepare("UPDATE oauth_clients SET last_used_at = CURRENT_TIMESTAMP WHERE client_id = ?")
+        .run(client_id);
+    }
+  }
+  return { ok: true };
+}
+
+function oauthAuthorizationServerMetadata(origin = PUBLIC_ORIGIN) {
+  return {
+    issuer: origin,
+    authorization_endpoint: `${origin}/oauth/authorize`,
+    token_endpoint: `${origin}/oauth/token`,
+    registration_endpoint: `${origin}/oauth/register`,
+    scopes_supported: [OAUTH_SCOPE],
+    response_types_supported: ["code"],
+    grant_types_supported: ["authorization_code", "refresh_token"],
+    token_endpoint_auth_methods_supported: ["client_secret_post", "client_secret_basic", "none"],
+    code_challenge_methods_supported: ["S256"]
+  };
+}
+
+function oauthProtectedResourceMetadata(origin = PUBLIC_ORIGIN) {
+  return {
+    resource: `${origin}${MCP_ENDPOINT}`,
+    authorization_servers: [origin],
+    scopes_supported: [OAUTH_SCOPE],
+    bearer_methods_supported: ["header"],
+    resource_documentation: `${origin}/install/claude/`
+  };
+}
+
+function bearerChallengeHeader() {
+  return `Bearer resource_metadata="${PUBLIC_ORIGIN}/.well-known/oauth-protected-resource"`;
+}
+
+function normalizeDcrArray(value, fallback = []) {
+  if (!Array.isArray(value)) return fallback;
+  return value.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 20);
+}
+
+async function handleOAuthRegister(req, res) {
+  let input;
+  try {
+    input = await readJson(req);
+  } catch (error) {
+    return sendJson(res, error.status || 400, {
+      error: "invalid_client_metadata",
+      error_description: error.message || "Body JSON invalide."
+    });
+  }
+
+  const redirectUris = normalizeDcrArray(input.redirect_uris, []);
+  for (const redirectUri of redirectUris) {
+    const validation = validateRedirectUri(redirectUri);
+    if (!validation.ok) {
+      return sendJson(res, 400, {
+        error: "invalid_redirect_uri",
+        error_description: validation.error
+      });
+    }
+  }
+
+  const authMethod = cleanText(input.token_endpoint_auth_method || "none", 64);
+  const tokenEndpointAuthMethod = ["none", "client_secret_post", "client_secret_basic"].includes(authMethod)
+    ? authMethod
+    : "none";
+  const clientId = generateOAuthClientId();
+  const clientSecret = tokenEndpointAuthMethod === "none" ? "" : generateOAuthClientSecret();
+  const now = Math.floor(Date.now() / 1000);
+  const grantTypes = normalizeDcrArray(input.grant_types, ["authorization_code", "refresh_token"]);
+  const responseTypes = normalizeDcrArray(input.response_types, ["code"]);
+  const scope = cleanText(input.scope || OAUTH_SCOPE, 200) || OAUTH_SCOPE;
+  const clientName = cleanText(input.client_name || input.software_id || "Claude MCP Connector", 160);
+
+  getAuthDb().prepare(`
+    INSERT INTO oauth_clients (
+      client_id, client_secret_hash, client_name, redirect_uris, grant_types,
+      response_types, scope, token_endpoint_auth_method, raw_metadata
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    clientId,
+    clientSecret ? keyHash(clientSecret) : "",
+    clientName,
+    JSON.stringify(redirectUris),
+    JSON.stringify(grantTypes),
+    JSON.stringify(responseTypes),
+    scope,
+    tokenEndpointAuthMethod,
+    JSON.stringify(input || {})
+  );
+
+  const payload = {
+    client_id: clientId,
+    client_id_issued_at: now,
+    client_name: clientName,
+    redirect_uris: redirectUris,
+    grant_types: grantTypes,
+    response_types: responseTypes,
+    scope,
+    token_endpoint_auth_method: tokenEndpointAuthMethod
+  };
+  if (clientSecret) {
+    payload.client_secret = clientSecret;
+    payload.client_secret_expires_at = 0;
+  }
+  return sendJson(res, 201, payload);
+}
+
+function validateRedirectUri(redirectUri) {
+  if (!redirectUri) return { ok: false, error: "redirect_uri manquant." };
+  let parsed;
+  try {
+    parsed = new URL(redirectUri);
+  } catch {
+    return { ok: false, error: "redirect_uri invalide." };
+  }
+  const isLocalhost = ["localhost", "127.0.0.1"].includes(parsed.hostname);
+  if (parsed.protocol !== "https:" && !(isLocalhost && parsed.protocol === "http:")) {
+    return { ok: false, error: "redirect_uri doit utiliser HTTPS." };
+  }
+  if (process.env.ALIM_OAUTH_STRICT_REDIRECTS === "1") {
+    const allowed = String(process.env.ALIM_OAUTH_REDIRECT_HOSTS || "chat.openai.com,chatgpt.com")
+      .split(",")
+      .map((host) => host.trim().toLowerCase())
+      .filter(Boolean);
+    if (!allowed.includes(parsed.hostname.toLowerCase())) {
+      return { ok: false, error: "redirect_uri non autorisé pour ALIM." };
+    }
+  }
+  return { ok: true, url: parsed };
+}
+
+function oauthProviderLabel(params = {}) {
+  const redirectUri = String(params.redirect_uri || "");
+  const clientId = String(params.client_id || "");
+  if (redirectUri.includes("claude.ai") || clientId.toLowerCase().includes("claude")) return "Claude";
+  if (redirectUri.includes("chat.openai.com") || redirectUri.includes("chatgpt.com") || clientId.toLowerCase().includes("chatgpt")) return "ChatGPT";
+  return "votre IA";
+}
+
+function oauthInfoPage() {
+  return `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Connexion ALIM</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f2e8;color:#17251f;font-family:Inter,Arial,sans-serif}
+    main{width:min(520px,calc(100vw - 32px));background:#fffaf0;border:1px solid #dccfb7;border-radius:16px;padding:28px;box-shadow:0 24px 80px rgba(23,37,31,.12)}
+    h1{margin:0 0 10px;font-family:Georgia,serif;font-size:30px}
+    p{line-height:1.5;color:#536056}
+    a{color:#8f4d35;font-weight:700}
+    .steps{margin:18px 0 0;padding-left:20px;color:#536056}
+    .steps li{margin:8px 0}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Connecter ALIM à votre IA</h1>
+    <p>Cette page ne s'ouvre pas directement. Elle doit être lancée depuis le bouton de connexion de ChatGPT ou Claude, pour que l'IA fournisse l'adresse de retour sécurisée.</p>
+    <ol class="steps">
+      <li>Retournez dans ChatGPT ou Claude.</li>
+      <li>Relancez la connexion ALIM.</li>
+      <li>Cliquez sur le bouton de connexion affiché par votre IA.</li>
+      <li>Collez votre clé ALIM sur la page qui s'ouvrira.</li>
+    </ol>
+    <p><a href="/compte/">Gérer mon compte ALIM</a></p>
+  </main>
+</body>
+</html>`;
+}
+
+function oauthErrorPage(message, status = 400) {
+  return `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Connexion ALIM</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f2e8;color:#17251f;font-family:Inter,Arial,sans-serif}
+    main{width:min(520px,calc(100vw - 32px));background:#fffaf0;border:1px solid #dccfb7;border-radius:16px;padding:28px;box-shadow:0 24px 80px rgba(23,37,31,.12)}
+    h1{margin:0 0 10px;font-family:Georgia,serif;font-size:30px}
+    p{line-height:1.5;color:#536056}
+    a{color:#8f4d35}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Connexion ALIM impossible</h1>
+    <p>${escapeHtml(message)}</p>
+    <p>Relancez la connexion depuis ChatGPT ou Claude, puis choisissez <strong>Se connecter à ALIM</strong>.</p>
+    <p><a href="/compte/">Retourner à mon compte ALIM</a></p>
+  </main>
+</body>
+</html>`;
+}
+
+function oauthAuthorizePage(params, error = "") {
+  const provider = oauthProviderLabel(params);
+  const providerText = provider === "votre IA" ? "votre IA" : provider;
+  const hidden = ["response_type", "client_id", "redirect_uri", "scope", "state"]
+    .map((key) => `<input type="hidden" name="${key}" value="${escapeHtml(params[key] || "")}">`)
+    .join("\n");
+  return `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Connecter ALIM à ${escapeHtml(providerText)}</title>
+  <style>
+    :root{color-scheme:light}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f2e8;color:#17251f;font-family:Inter,Arial,sans-serif}
+    main{width:min(560px,calc(100vw - 32px));background:#fffaf0;border:1px solid #dccfb7;border-radius:18px;padding:30px;box-shadow:0 24px 80px rgba(23,37,31,.12)}
+    .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#9b6b2f;font-weight:700}
+    h1{margin:8px 0 12px;font-family:Georgia,serif;font-size:34px;line-height:1.05}
+    p{line-height:1.5;color:#536056}
+    label{display:block;font-weight:700;margin:22px 0 8px}
+    input[type=password],input[type=text]{width:100%;box-sizing:border-box;border:1px solid #cdbfa8;border-radius:10px;padding:13px 14px;font-size:15px;background:white;color:#17251f}
+    button{width:100%;margin-top:16px;border:0;border-radius:999px;background:#17251f;color:#fffaf0;padding:14px 18px;font-weight:800;font-size:15px;cursor:pointer}
+    .error{margin-top:14px;padding:12px 14px;border-radius:10px;background:#fff1ed;color:#8f2f1d;border:1px solid #efc0b4}
+    .hint{font-size:13px;color:#667066}
+    .foot{font-size:12px;margin-top:16px;color:#7a8178}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">ALIM OAuth</div>
+    <h1>Connecter ALIM à ${escapeHtml(providerText)}</h1>
+    <p>Collez votre clé ALIM une seule fois. ${escapeHtml(providerText)} recevra un jeton d'accès dédié et n'affichera pas votre clé dans la conversation.</p>
+    <form method="post" action="/oauth/authorize">
+      ${hidden}
+      <label for="api_key">Clé ALIM</label>
+      <input id="api_key" name="api_key" type="password" autocomplete="off" placeholder="alim_live_..." required>
+      <p class="hint">Vous la retrouvez ou la régénérez dans <a href="/compte/" target="_blank" rel="noopener">votre compte ALIM</a>.</p>
+      <button type="submit">Autoriser ALIM</button>
+    </form>
+    ${error ? `<div class="error">${escapeHtml(error)}</div>` : ""}
+    <p class="foot">ALIM ne traite pas de données patient nominatives. Usage réservé aux professionnels, sous validation clinique.</p>
+  </main>
+</body>
+</html>`;
+}
+
+async function handleOAuthAuthorizeGet(req, res, url) {
+  const params = Object.fromEntries(url.searchParams.entries());
+  if (!url.search) {
+    return sendHtml(res, 200, oauthInfoPage());
+  }
+  if (params.response_type !== "code") {
+    return sendHtml(res, 400, oauthErrorPage("La demande de connexion envoyée par ChatGPT est incomplète. Relancez la connexion depuis le GPT ALIM."));
+  }
+  const clientValidation = validateOAuthClient({ client_id: params.client_id || "", client_secret: "" });
+  if (!clientValidation.ok) {
+    return sendHtml(res, 400, oauthErrorPage(clientValidation.error));
+  }
+  const redirectValidation = validateRedirectUri(params.redirect_uri || "");
+  if (!redirectValidation.ok) {
+    return sendHtml(res, 400, oauthErrorPage(redirectValidation.error));
+  }
+  return sendHtml(res, 200, oauthAuthorizePage({
+    ...params,
+    scope: params.scope || OAUTH_SCOPE
+  }));
+}
+
+async function handleOAuthAuthorizePost(req, res) {
+  let params;
+  try {
+    params = await readFormOrJson(req);
+  } catch (error) {
+    return sendHtml(res, error.status || 400, oauthErrorPage(error.message || "Formulaire invalide."));
+  }
+
+  const baseParams = {
+    response_type: params.response_type || "code",
+    client_id: params.client_id || "",
+    redirect_uri: params.redirect_uri || "",
+    scope: params.scope || OAUTH_SCOPE,
+    state: params.state || ""
+  };
+  if (baseParams.response_type !== "code") {
+    return sendHtml(res, 400, oauthErrorPage("response_type doit valoir code."));
+  }
+  const clientValidation = validateOAuthClient({ client_id: baseParams.client_id, client_secret: "" });
+  if (!clientValidation.ok) {
+    return sendHtml(res, 400, oauthAuthorizePage(baseParams, clientValidation.error));
+  }
+  const redirectValidation = validateRedirectUri(baseParams.redirect_uri);
+  if (!redirectValidation.ok) {
+    return sendHtml(res, 400, oauthAuthorizePage(baseParams, redirectValidation.error));
+  }
+
+  const apiKey = String(params.api_key || "").trim();
+  const accountAuth = findAccountByApiKey(apiKey);
+  if (!accountAuth.ok) {
+    return sendHtml(res, 401, oauthAuthorizePage(baseParams, "Clé ALIM invalide, désactivée ou compte non actif."));
+  }
+
+  const code = generateOAuthCode();
+  getAuthDb().prepare(`
+    INSERT INTO oauth_codes (code_hash, account_id, client_id, redirect_uri, scope, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(
+    keyHash(code),
+    accountAuth.account.account_id,
+    baseParams.client_id,
+    baseParams.redirect_uri,
+    baseParams.scope,
+    Date.now() + OAUTH_CODE_TTL_MS
+  );
+
+  const redirectUrl = new URL(baseParams.redirect_uri);
+  redirectUrl.searchParams.set("code", code);
+  if (baseParams.state) redirectUrl.searchParams.set("state", baseParams.state);
+  return redirect(res, redirectUrl.toString());
+}
+
+async function handleOAuthToken(req, res) {
+  let input;
+  try {
+    input = await readFormOrJson(req);
+  } catch (error) {
+    return sendJson(res, error.status || 400, { error: "invalid_request", error_description: error.message });
+  }
+  const basic = parseBasicClientAuth(req);
+  const client_id = basic.client_id || input.client_id || "";
+  const client_secret = basic.client_secret || input.client_secret || "";
+  const clientValidation = validateOAuthClient({ client_id, client_secret, requireSecret: true });
+  if (!clientValidation.ok) {
+    return sendJson(res, 401, { error: "invalid_client", error_description: clientValidation.error });
+  }
+  if (!["authorization_code", "refresh_token"].includes(input.grant_type)) {
+    return sendJson(res, 400, { error: "unsupported_grant_type", error_description: "ALIM supporte authorization_code et refresh_token." });
+  }
+
+  if (input.grant_type === "refresh_token") {
+    const refreshToken = String(input.refresh_token || "").trim();
+    if (!refreshToken) {
+      return sendJson(res, 400, { error: "invalid_request", error_description: "refresh_token manquant." });
+    }
+    const db = getAuthDb();
+    const row = db.prepare(`
+      SELECT r.id, r.account_id, r.client_id, r.scope, r.status, a.status AS account_status
+      FROM oauth_refresh_tokens r
+      JOIN accounts a ON a.id = r.account_id
+      WHERE r.token_hash = ?
+    `).get(keyHash(refreshToken));
+    if (!row || row.status !== "active") {
+      return sendJson(res, 400, { error: "invalid_grant", error_description: "Refresh token invalide." });
+    }
+    if (row.client_id && client_id && row.client_id !== client_id) {
+      return sendJson(res, 400, { error: "invalid_grant", error_description: "client_id incohérent." });
+    }
+    if (row.account_status !== "active") {
+      return sendJson(res, 403, { error: "access_denied", error_description: "Compte ALIM non actif." });
+    }
+    const accessToken = generateOAuthAccessToken();
+    const expiresAt = Date.now() + OAUTH_TOKEN_TTL_MS;
+    db.exec("BEGIN IMMEDIATE");
+    try {
+      db.prepare("UPDATE oauth_refresh_tokens SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
+      db.prepare(`
+        INSERT INTO oauth_tokens (token_hash, account_id, scope, expires_at)
+        VALUES (?, ?, ?, ?)
+      `).run(keyHash(accessToken), row.account_id, row.scope || OAUTH_SCOPE, expiresAt);
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+    return sendJson(res, 200, {
+      access_token: accessToken,
+      token_type: "Bearer",
+      expires_in: Math.floor(OAUTH_TOKEN_TTL_MS / 1000),
+      scope: row.scope || OAUTH_SCOPE
+    });
+  }
+
+  const code = String(input.code || "").trim();
+  if (!code) {
+    return sendJson(res, 400, { error: "invalid_request", error_description: "code manquant." });
+  }
+
+  const db = getAuthDb();
+  const row = db.prepare(`
+    SELECT id, account_id, client_id, redirect_uri, scope, expires_at, used_at
+    FROM oauth_codes
+    WHERE code_hash = ?
+  `).get(keyHash(code));
+  if (!row || row.used_at || Number(row.expires_at || 0) < Date.now()) {
+    return sendJson(res, 400, { error: "invalid_grant", error_description: "Code OAuth invalide ou expiré." });
+  }
+  if (row.client_id && client_id && row.client_id !== client_id) {
+    return sendJson(res, 400, { error: "invalid_grant", error_description: "client_id incohérent." });
+  }
+  if (input.redirect_uri && row.redirect_uri !== input.redirect_uri) {
+    return sendJson(res, 400, { error: "invalid_grant", error_description: "redirect_uri incohérent." });
+  }
+
+  const accessToken = generateOAuthAccessToken();
+  const refreshToken = generateOAuthRefreshToken();
+  const expiresAt = Date.now() + OAUTH_TOKEN_TTL_MS;
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    db.prepare("UPDATE oauth_codes SET used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
+    db.prepare(`
+      INSERT INTO oauth_tokens (token_hash, account_id, scope, expires_at)
+      VALUES (?, ?, ?, ?)
+    `).run(keyHash(accessToken), row.account_id, row.scope || OAUTH_SCOPE, expiresAt);
+    db.prepare(`
+      INSERT INTO oauth_refresh_tokens (token_hash, account_id, client_id, scope)
+      VALUES (?, ?, ?, ?)
+    `).run(keyHash(refreshToken), row.account_id, client_id || row.client_id || "", row.scope || OAUTH_SCOPE);
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+
+  return sendJson(res, 200, {
+    access_token: accessToken,
+    token_type: "Bearer",
+    expires_in: Math.floor(OAUTH_TOKEN_TTL_MS / 1000),
+    refresh_token: refreshToken,
+    scope: row.scope || OAUTH_SCOPE
+  });
+}
+
 async function handleV1Me(req, res) {
   const auth = findAccountByBearer(req);
-  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
   return sendJson(res, 200, accountPayload(auth.account));
 }
 
 async function handleV1AccountUpdate(req, res) {
   const auth = findAccountByBearer(req);
-  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
 
   let input;
   try {
@@ -1169,7 +2380,7 @@ async function handleV1AccountUpdate(req, res) {
 
 async function handleV1RegenerateKey(req, res) {
   const auth = findAccountByBearer(req);
-  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
 
   const db = getAuthDb();
   const token = generateAlimApiKey();
@@ -1198,7 +2409,7 @@ async function handleV1RegenerateKey(req, res) {
 async function handleV1Generate(req, res) {
   const startedAt = Date.now();
   const auth = findAccountByBearer(req);
-  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
 
   const quota = quotaOk(auth.account);
   if (!quota.ok) {
@@ -1264,6 +2475,356 @@ async function handleV1Generate(req, res) {
     latencyMs: Date.now() - startedAt
   });
   return sendJson(res, result.status, payload);
+}
+
+async function handleV1ScanRecipe(req, res) {
+  const startedAt = Date.now();
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
+
+  const quota = quotaOk(auth.account);
+  if (!quota.ok) {
+    logApiUsage({
+      account: auth.account,
+      route: "/api/v1/scan-recipe",
+      channel: "api_v1",
+      status: 429,
+      input: {},
+      output: quota.payload,
+      latencyMs: Date.now() - startedAt
+    });
+    return sendJson(res, 429, quota.payload);
+  }
+
+  let input;
+  try {
+    input = await readJson(req);
+  } catch (error) {
+    const payload = {
+      refused: { reason_fr: error.status ? error.message : "Body JSON invalide." },
+      warnings: [DISCLAIMER]
+    };
+    logApiUsage({
+      account: auth.account,
+      route: "/api/v1/scan-recipe",
+      channel: "api_v1",
+      status: error.status || 400,
+      input: {},
+      output: payload,
+      latencyMs: Date.now() - startedAt
+    });
+    return sendJson(res, error.status || 400, payload);
+  }
+
+  const result = scanRecipe(input);
+  const payload = {
+    ...result.payload,
+    account_context: {
+      practitioner_profile: safeJsonParse(auth.account.practitioner_profile, {}),
+      cabinet_branding: safeJsonParse(auth.account.cabinet_branding, {})
+    },
+    account: {
+      plan: auth.account.plan,
+      quota_daily: quota.quota,
+      quota_month: quota.quota,
+      used_today: quota.used + 1,
+      usage_month: quota.used + 1,
+      remaining_today: Math.max(0, quota.quota - quota.used - 1)
+    }
+  };
+  logApiUsage({
+    account: auth.account,
+    route: "/api/v1/scan-recipe",
+    channel: "api_v1",
+    status: result.status,
+    input,
+    output: payload,
+    latencyMs: Date.now() - startedAt
+  });
+  return sendJson(res, result.status, payload);
+}
+
+async function handleV1ScanRecipeUrl(req, res) {
+  const startedAt = Date.now();
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
+
+  const quota = quotaOk(auth.account);
+  if (!quota.ok) {
+    logApiUsage({
+      account: auth.account,
+      route: "/api/v1/scan-recipe-url",
+      channel: "api_v1",
+      status: 429,
+      input: {},
+      output: quota.payload,
+      latencyMs: Date.now() - startedAt
+    });
+    return sendJson(res, 429, quota.payload);
+  }
+
+  let input;
+  try {
+    input = await readJson(req);
+  } catch (error) {
+    const payload = {
+      refused: { reason_fr: error.status ? error.message : "Body JSON invalide." },
+      warnings: [DISCLAIMER]
+    };
+    logApiUsage({
+      account: auth.account,
+      route: "/api/v1/scan-recipe-url",
+      channel: "api_v1",
+      status: error.status || 400,
+      input: {},
+      output: payload,
+      latencyMs: Date.now() - startedAt
+    });
+    return sendJson(res, error.status || 400, payload);
+  }
+
+  const result = await scanRecipeUrl(input);
+  const payload = {
+    ...result.payload,
+    account_context: {
+      practitioner_profile: safeJsonParse(auth.account.practitioner_profile, {}),
+      cabinet_branding: safeJsonParse(auth.account.cabinet_branding, {})
+    },
+    account: {
+      plan: auth.account.plan,
+      quota_daily: quota.quota,
+      quota_month: quota.quota,
+      used_today: quota.used + 1,
+      usage_month: quota.used + 1,
+      remaining_today: Math.max(0, quota.quota - quota.used - 1)
+    }
+  };
+  logApiUsage({
+    account: auth.account,
+    route: "/api/v1/scan-recipe-url",
+    channel: "api_v1",
+    status: result.status,
+    input: { ...input, url: input?.url || input?.recipe_url || "" },
+    output: payload,
+    latencyMs: Date.now() - startedAt
+  });
+  return sendJson(res, result.status, payload);
+}
+
+function publicRecipeId(id) {
+  return `recipe_${id}`;
+}
+
+function parsePublicRecipeId(value) {
+  const match = String(value || "").match(/^recipe_(\d+)$/);
+  return match ? Number(match[1]) : 0;
+}
+
+function normalizeSavedRecipeInput(input) {
+  const data = input && typeof input === "object" ? input : {};
+  const source = data.alim_response && typeof data.alim_response === "object"
+    ? data.alim_response
+    : data.recipe_payload && typeof data.recipe_payload === "object"
+      ? data.recipe_payload
+      : data;
+
+  const title = cleanText(
+    data.title_fr ||
+    source.professional_sheet?.title_fr ||
+    source.recipe?.name_fr ||
+    "",
+    180
+  );
+  if (!title) {
+    return { ok: false, status: 400, payload: { ok: false, error: "Titre de recette manquant." } };
+  }
+
+  const status = ["draft", "validated", "favorite"].includes(data.status) ? data.status : "draft";
+  const clinicalContext = {
+    pathologies: normalizeList(data.clinical_context?.pathologies || data.brief?.pathologies || []),
+    meal_slot: cleanText(data.clinical_context?.meal_slot || data.brief?.meal_slot || source.professional_sheet?.meal_slot || "", 32),
+    diet_type: cleanText(data.clinical_context?.diet_type || data.brief?.diet_type || "", 32),
+    season: cleanText(data.clinical_context?.season || data.brief?.season || "", 32),
+    notes: cleanText(data.clinical_context?.notes || data.brief?.notes || "", 600)
+  };
+  const tags = normalizeStringArray(data.tags || [
+    ...clinicalContext.pathologies,
+    clinicalContext.meal_slot,
+    clinicalContext.diet_type,
+    clinicalContext.season
+  ], null, 20);
+  const payload = {
+    recipe: source.recipe || null,
+    nutrients_per_portion: source.nutrients_per_portion || null,
+    professional_sheet: source.professional_sheet || null,
+    presentation_markdown_fr: cleanMultilineText(source.presentation_markdown_fr || source.professional_sheet?.presentation_markdown_fr || "", 50000),
+    pdf_url: cleanText(source.pdf_url || "", 1000),
+    coverage_summary: source.coverage_summary || null,
+    rules_applied: Array.isArray(source.rules_applied) ? source.rules_applied.slice(0, 32) : [],
+    sources: Array.isArray(source.sources) ? source.sources.slice(0, 24) : [],
+    references_consulted: Array.isArray(source.references_consulted) ? source.references_consulted.slice(0, 24) : [],
+    warnings: Array.isArray(source.warnings) ? source.warnings.slice(0, 24) : []
+  };
+  const piiProbe = JSON.stringify({
+    title,
+    tags,
+    clinicalContext,
+    presentation_markdown_fr: payload.presentation_markdown_fr
+  });
+  const piiKind = detectPii(piiProbe);
+  if (piiKind) {
+    return {
+      ok: false,
+      status: 422,
+      payload: {
+        ok: false,
+        error: `Recette non enregistrée : ${piiKind} détectée. Enregistrez uniquement des cas anonymisés.`
+      }
+    };
+  }
+  return {
+    ok: true,
+    recipe: {
+      title_fr: title,
+      status,
+      tags,
+      clinical_context: clinicalContext,
+      recipe_payload: payload,
+      presentation_markdown_fr: payload.presentation_markdown_fr,
+      pdf_url: payload.pdf_url
+    }
+  };
+}
+
+function recipeSummary(row) {
+  return {
+    id: publicRecipeId(row.id),
+    title_fr: row.title_fr,
+    status: row.status,
+    tags: safeJsonParse(row.tags, []),
+    clinical_context: safeJsonParse(row.clinical_context, {}),
+    pdf_url: row.pdf_url || "",
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    last_used_at: row.last_used_at || null
+  };
+}
+
+function listSavedRecipesForAccount(account, { limit = 30, q = "" } = {}) {
+  const safeLimit = clampInt(limit, 1, 100, 30);
+  const query = cleanText(q || "", 80).toLowerCase();
+  const rows = getAuthDb().prepare(`
+    SELECT id, title_fr, status, tags, clinical_context, pdf_url, created_at, updated_at, last_used_at
+    FROM account_recipes
+    WHERE account_id = ?
+    ORDER BY updated_at DESC, id DESC
+    LIMIT ?
+  `).all(account.account_id, safeLimit);
+  const recipes = rows
+    .map(recipeSummary)
+    .filter((recipe) => {
+      if (!query) return true;
+      return JSON.stringify(recipe).toLowerCase().includes(query);
+    });
+  return { ok: true, recipes };
+}
+
+function saveRecipeForAccount(account, input) {
+  const normalized = normalizeSavedRecipeInput(input);
+  if (!normalized.ok) return normalized.payload;
+  const r = normalized.recipe;
+  const result = getAuthDb().prepare(`
+    INSERT INTO account_recipes (
+      account_id, title_fr, status, tags, clinical_context, recipe_payload,
+      presentation_markdown_fr, pdf_url
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    account.account_id,
+    r.title_fr,
+    r.status,
+    JSON.stringify(r.tags),
+    JSON.stringify(r.clinical_context),
+    JSON.stringify(r.recipe_payload),
+    r.presentation_markdown_fr,
+    r.pdf_url
+  );
+  return {
+    ok: true,
+    recipe: {
+      id: publicRecipeId(result.lastInsertRowid),
+      title_fr: r.title_fr,
+      status: r.status,
+      tags: r.tags,
+      clinical_context: r.clinical_context,
+      pdf_url: r.pdf_url
+    }
+  };
+}
+
+function getRecipeForAccount(account, recipeId) {
+  const id = parsePublicRecipeId(recipeId);
+  if (!id) return { ok: false, error: "Recette introuvable." };
+  const row = getAuthDb().prepare(`
+    SELECT *
+    FROM account_recipes
+    WHERE id = ? AND account_id = ?
+  `).get(id, account.account_id);
+  if (!row) return { ok: false, error: "Recette introuvable." };
+  getAuthDb().prepare("UPDATE account_recipes SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+  return {
+    ok: true,
+    recipe: {
+      ...recipeSummary(row),
+      recipe_payload: safeJsonParse(row.recipe_payload, {}),
+      presentation_markdown_fr: row.presentation_markdown_fr || ""
+    }
+  };
+}
+
+function deleteRecipeForAccount(account, recipeId) {
+  const id = parsePublicRecipeId(recipeId);
+  if (!id) return { ok: false, error: "Recette introuvable." };
+  const result = getAuthDb().prepare("DELETE FROM account_recipes WHERE id = ? AND account_id = ?")
+    .run(id, account.account_id);
+  if (!result.changes) return { ok: false, error: "Recette introuvable." };
+  return { ok: true, deleted: publicRecipeId(id) };
+}
+
+async function handleV1RecipesList(req, res, url) {
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
+  return sendJson(res, 200, listSavedRecipesForAccount(auth.account, {
+    limit: url.searchParams.get("limit"),
+    q: url.searchParams.get("q") || ""
+  }));
+}
+
+async function handleV1RecipeSave(req, res) {
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
+  let input;
+  try {
+    input = await readJson(req);
+  } catch (error) {
+    return sendJson(res, error.status || 400, { ok: false, error: error.message || "Body JSON invalide." });
+  }
+  const payload = saveRecipeForAccount(auth.account, input);
+  return sendJson(res, payload.ok ? 201 : 422, payload);
+}
+
+async function handleV1RecipeGet(req, res, recipeId) {
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
+  const payload = getRecipeForAccount(auth.account, recipeId);
+  return sendJson(res, payload.ok ? 200 : 404, payload);
+}
+
+async function handleV1RecipeDelete(req, res, recipeId) {
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendAuthFailure(res, auth.status, auth.payload);
+  const payload = deleteRecipeForAccount(auth.account, recipeId);
+  return sendJson(res, payload.ok ? 200 : 404, payload);
 }
 
 // ===== Demo chat (alim.care widget) =====================================
@@ -1678,6 +3239,14 @@ async function handleDemoChat(req, res) {
 const MCP_ENDPOINT = "/mcp/v1";
 const MCP_DISCOVERY = "/.well-known/mcp.json";
 const MCP_TOOL_NAME = "generate_clinical_recipe";
+const MCP_ACCOUNT_TOOL_NAME = "get_alim_account";
+const MCP_LIST_RECIPES_TOOL_NAME = "list_saved_recipes";
+const MCP_SAVE_RECIPE_TOOL_NAME = "save_generated_recipe";
+const MCP_GET_RECIPE_TOOL_NAME = "get_saved_recipe";
+const MCP_DELETE_RECIPE_TOOL_NAME = "delete_saved_recipe";
+const MCP_SCAN_RECIPE_TOOL_NAME = "scan_recipe_text";
+const MCP_SCAN_RECIPE_URL_TOOL_NAME = "scan_recipe_url";
+const MCP_VERSION = "0.1.4";
 const MCP_RATE_LIMIT_PER_IP_PER_DAY = 60;
 const MCP_RATE_LIMIT_GLOBAL_PER_HOUR = 300;
 const mcpIpRl = new Map();
@@ -1718,11 +3287,277 @@ const mcpInputSchema = {
     .describe("Brief anonymisé : goûts, contraintes, allergies simples, hypothèses. Jamais de donnée nominative.")
 };
 
+const mcpScanRecipeInputSchema = {
+  recipe_text: z.string()
+    .min(20)
+    .max(5000)
+    .describe("Texte copié de la recette à analyser, avec ingrédients quantifiés en grammes. Ne pas transmettre d'URL seule en V0."),
+  title_fr: z.string().max(160).default("Recette scannée"),
+  brief: z.object({
+    pathologies: z.array(z.enum(["diabete_t2", "hta", "diabete_gestationnel", "grossesse"])).min(1).max(4),
+    meal_slot: z.enum(["petit_dejeuner", "dejeuner", "diner", "collation"]),
+    diet_type: z.enum(["omnivore", "vegetarien", "vegan", "pescetarien", "sans_gluten", "sans_lactose"]).default("omnivore"),
+    season: z.enum(["printemps", "ete", "automne", "hiver", "all"]).default("all"),
+    equipment: z.array(z.enum(["plaque", "four", "vapeur", "micro_ondes", "blender"])).max(8).default(["plaque", "four"]),
+    portions: z.number().int().min(1).max(8).default(1),
+    notes: z.string().max(600).default("")
+  }).describe("Brief clinique anonymisé utilisé pour évaluer la recette.")
+};
+
+const mcpScanRecipeUrlInputSchema = {
+  url: z.string()
+    .url()
+    .max(500)
+    .describe("URL publique http/https d'une page recette. Les URLs locales ou internes sont refusées."),
+  title_fr: z.string().max(160).default("Recette scannée depuis URL"),
+  brief: mcpScanRecipeInputSchema.brief
+};
+
 function createAlimMcpServer(account = null) {
   const server = new McpServer({
     name: "ALIM",
     title: "ALIM — recettes nutritionnelles cadrées",
-    version: "0.1.0"
+    version: MCP_VERSION
+  });
+
+  server.registerTool(MCP_ACCOUNT_TOOL_NAME, {
+    title: "Lire le compte ALIM connecté",
+    description: [
+      "Retourne le statut, le plan, le quota du jour, le profil de pratique et l'identité cabinet du compte ALIM associé au Bearer/OAuth courant.",
+      "Lecture seule. Aucune donnée patient.",
+      "À appeler en début de conversation si le praticien demande son profil, son quota, son plan, son cabinet, ou si vous devez adapter le ton et les formats par défaut sans les redemander."
+    ].join(" "),
+    inputSchema: {}
+  }, async () => {
+    if (!account) {
+      const payload = {
+        ok: false,
+        error: "Compte ALIM non disponible sur cette connexion MCP.",
+        disclaimer: DISCLAIMER
+      };
+      return {
+        isError: true,
+        structuredContent: payload,
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }]
+      };
+    }
+    const payload = {
+      ...accountPayload(account),
+      meta: {
+        channel: "mcp",
+        tool: MCP_ACCOUNT_TOOL_NAME,
+        read_only: true,
+        disclaimer: DISCLAIMER
+      }
+    };
+    return {
+      isError: false,
+      structuredContent: payload,
+      content: [{ type: "text", text: JSON.stringify(payload, null, 2) }]
+    };
+  });
+
+  server.registerTool(MCP_LIST_RECIPES_TOOL_NAME, {
+    title: "Lister les recettes ALIM enregistrées",
+    description: [
+      "Retourne la bibliothèque de recettes anonymisées du compte ALIM connecté.",
+      "Lecture seule. À utiliser quand le praticien demande ses recettes, ses favoris, ou une recherche par titre/pathologie/repas."
+    ].join(" "),
+    inputSchema: {
+      q: z.string().max(80).default("").describe("Recherche optionnelle dans les titres, tags et contexte clinique."),
+      limit: z.number().int().min(1).max(100).default(30)
+    }
+  }, async (args) => {
+    if (!account) {
+      const payload = { ok: false, error: "Compte ALIM non disponible sur cette connexion MCP.", disclaimer: DISCLAIMER };
+      return { isError: true, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+    }
+    const payload = {
+      ...listSavedRecipesForAccount(account, args || {}),
+      meta: { channel: "mcp", tool: MCP_LIST_RECIPES_TOOL_NAME, read_only: true, disclaimer: DISCLAIMER }
+    };
+    return { isError: false, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+  });
+
+  server.registerTool(MCP_SAVE_RECIPE_TOOL_NAME, {
+    title: "Enregistrer une recette ALIM",
+    description: [
+      "Enregistre dans la bibliothèque du compte une recette ALIM anonymisée déjà générée.",
+      "Ne jamais appeler automatiquement : demander une confirmation explicite au praticien avant sauvegarde.",
+      "Refuse les contenus contenant e-mail, téléphone, date complète ou identifiants patient."
+    ].join(" "),
+    inputSchema: {
+      title_fr: z.string().max(180).optional().describe("Titre optionnel si absent de la sortie ALIM."),
+      status: z.enum(["draft", "validated", "favorite"]).default("draft"),
+      tags: z.array(z.string().max(80)).max(20).default([]),
+      clinical_context: z.any().optional().describe("Contexte clinique anonymisé : pathologies, repas, saison, notes sans PII."),
+      recipe_payload: z.any().optional().describe("Payload complet de recette ALIM, idéalement la sortie du tool generate_clinical_recipe."),
+      alim_response: z.any().optional().describe("Alias accepté pour la sortie complète ALIM à sauvegarder."),
+      brief: z.any().optional().describe("Brief anonymisé utilisé pour générer la recette.")
+    }
+  }, async (args) => {
+    if (!account) {
+      const payload = { ok: false, error: "Compte ALIM non disponible sur cette connexion MCP.", disclaimer: DISCLAIMER };
+      return { isError: true, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+    }
+    const payload = {
+      ...saveRecipeForAccount(account, args || {}),
+      meta: { channel: "mcp", tool: MCP_SAVE_RECIPE_TOOL_NAME, disclaimer: DISCLAIMER }
+    };
+    return { isError: !payload.ok, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+  });
+
+  server.registerTool(MCP_GET_RECIPE_TOOL_NAME, {
+    title: "Lire une recette ALIM enregistrée",
+    description: "Retourne le détail complet d'une recette enregistrée du compte ALIM connecté.",
+    inputSchema: {
+      recipe_id: z.string().regex(/^recipe_\d+$/).describe("Identifiant public de recette, par exemple recipe_12.")
+    }
+  }, async (args) => {
+    if (!account) {
+      const payload = { ok: false, error: "Compte ALIM non disponible sur cette connexion MCP.", disclaimer: DISCLAIMER };
+      return { isError: true, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+    }
+    const payload = {
+      ...getRecipeForAccount(account, args?.recipe_id || ""),
+      meta: { channel: "mcp", tool: MCP_GET_RECIPE_TOOL_NAME, read_only: true, disclaimer: DISCLAIMER }
+    };
+    return { isError: !payload.ok, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+  });
+
+  server.registerTool(MCP_DELETE_RECIPE_TOOL_NAME, {
+    title: "Supprimer une recette ALIM enregistrée",
+    description: [
+      "Supprime une recette de la bibliothèque du compte ALIM connecté.",
+      "Demander une confirmation explicite au praticien avant suppression."
+    ].join(" "),
+    inputSchema: {
+      recipe_id: z.string().regex(/^recipe_\d+$/).describe("Identifiant public de recette, par exemple recipe_12.")
+    }
+  }, async (args) => {
+    if (!account) {
+      const payload = { ok: false, error: "Compte ALIM non disponible sur cette connexion MCP.", disclaimer: DISCLAIMER };
+      return { isError: true, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+    }
+    const payload = {
+      ...deleteRecipeForAccount(account, args?.recipe_id || ""),
+      meta: { channel: "mcp", tool: MCP_DELETE_RECIPE_TOOL_NAME, disclaimer: DISCLAIMER }
+    };
+    return { isError: !payload.ok, structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+  });
+
+  server.registerTool(MCP_SCAN_RECIPE_TOOL_NAME, {
+    title: "Scanner une recette externe",
+    description: [
+      "Analyse une recette copiée par le praticien : ingrédients quantifiés, calcul CIQUAL, garde-fous du profil ALIM et ajustements proposés.",
+      "V0 texte uniquement : si le praticien donne une URL, demander de coller le texte de la recette et les quantités.",
+      "À utiliser pour évaluer une recette trouvée par un patient ou sur le web avant validation clinique."
+    ].join(" "),
+    inputSchema: mcpScanRecipeInputSchema
+  }, async (args) => {
+    const startedAt = Date.now();
+    const quota = account ? quotaOk(account) : { ok: true };
+    if (!quota.ok) {
+      logApiUsage({
+        account,
+        route: "/mcp/v1",
+        channel: "mcp",
+        status: 429,
+        input: args || {},
+        output: quota.payload,
+        latencyMs: Date.now() - startedAt
+      });
+      return {
+        isError: true,
+        structuredContent: quota.payload,
+        content: [{ type: "text", text: JSON.stringify(quota.payload, null, 2) }]
+      };
+    }
+
+    const result = scanRecipe(args || {});
+    const payload = {
+      ...result.payload,
+      meta: {
+        channel: "mcp",
+        tool: MCP_SCAN_RECIPE_TOOL_NAME,
+        status: result.status,
+        latency_ms: Date.now() - startedAt,
+        disclaimer: DISCLAIMER
+      }
+    };
+    if (account) {
+      logApiUsage({
+        account,
+        route: "/mcp/v1",
+        channel: "mcp",
+        status: result.status,
+        input: args || {},
+        output: payload,
+        latencyMs: Date.now() - startedAt
+      });
+    }
+    return {
+      isError: result.status >= 400,
+      structuredContent: payload,
+      content: [{ type: "text", text: JSON.stringify(payload, null, 2) }]
+    };
+  });
+
+  server.registerTool(MCP_SCAN_RECIPE_URL_TOOL_NAME, {
+    title: "Scanner une recette depuis URL",
+    description: [
+      "Récupère une page recette publique, extrait les ingrédients via JSON-LD Recipe ou HTML, puis lance l'analyse ALIM.",
+      "Refuse les URLs locales, internes ou non HTML.",
+      "Si l'extraction échoue, demander au praticien de coller le texte de la recette."
+    ].join(" "),
+    inputSchema: mcpScanRecipeUrlInputSchema
+  }, async (args) => {
+    const startedAt = Date.now();
+    const quota = account ? quotaOk(account) : { ok: true };
+    if (!quota.ok) {
+      logApiUsage({
+        account,
+        route: "/mcp/v1",
+        channel: "mcp",
+        status: 429,
+        input: args || {},
+        output: quota.payload,
+        latencyMs: Date.now() - startedAt
+      });
+      return {
+        isError: true,
+        structuredContent: quota.payload,
+        content: [{ type: "text", text: JSON.stringify(quota.payload, null, 2) }]
+      };
+    }
+
+    const result = await scanRecipeUrl(args || {});
+    const payload = {
+      ...result.payload,
+      meta: {
+        channel: "mcp",
+        tool: MCP_SCAN_RECIPE_URL_TOOL_NAME,
+        status: result.status,
+        latency_ms: Date.now() - startedAt,
+        disclaimer: DISCLAIMER
+      }
+    };
+    if (account) {
+      logApiUsage({
+        account,
+        route: "/mcp/v1",
+        channel: "mcp",
+        status: result.status,
+        input: args || {},
+        output: payload,
+        latencyMs: Date.now() - startedAt
+      });
+    }
+    return {
+      isError: result.status >= 400,
+      structuredContent: payload,
+      content: [{ type: "text", text: JSON.stringify(payload, null, 2) }]
+    };
   });
 
   server.registerTool(MCP_TOOL_NAME, {
@@ -1839,7 +3674,7 @@ async function handleMcpRequest(req, res) {
   if (!mcpAuth.ok) {
     res.writeHead(401, {
       "content-type": "application/json; charset=utf-8",
-      "www-authenticate": "Bearer",
+      "www-authenticate": bearerChallengeHeader(),
       "Access-Control-Allow-Origin": "*"
     });
     return res.end(JSON.stringify({
@@ -1955,12 +3790,74 @@ function mcpDiscoveryPayload(hostname = "alim.care") {
   return {
     name: "ALIM",
     title: "ALIM — recettes nutritionnelles cadrées",
-    version: "0.1.0",
+    version: MCP_VERSION,
     transport: "streamable-http",
     endpoint: `https://${hostname}${MCP_ENDPOINT}`,
+    documentation_url: `https://${hostname}/install/claude/`,
     auth: MCP_AUTH_REQUIRED ? "bearer" : "prototype-no-auth",
     authorization_header: MCP_AUTH_REQUIRED ? "Authorization: Bearer alim_live_..." : null,
     tools: [
+      {
+        name: MCP_ACCOUNT_TOOL_NAME,
+        title: "Lire le compte ALIM connecté",
+        output_contract: [
+          "account.status / account.plan : état du compte et abonnement",
+          "quota_daily / used_today / remaining_today : quota du jour",
+          "practitioner_profile : métier, patientèles, formats, contraintes et préférences",
+          "cabinet_branding : identité cabinet pour les sorties patient",
+          "lecture seule, aucune donnée patient"
+        ]
+      },
+      {
+        name: MCP_LIST_RECIPES_TOOL_NAME,
+        title: "Lister les recettes ALIM enregistrées",
+        output_contract: [
+          "recipes[] : id, titre, statut, tags, contexte clinique anonymisé, pdf_url, dates",
+          "lecture seule"
+        ]
+      },
+      {
+        name: MCP_SAVE_RECIPE_TOOL_NAME,
+        title: "Enregistrer une recette ALIM",
+        output_contract: [
+          "sauvegarde une sortie ALIM anonymisée après confirmation explicite du praticien",
+          "retourne recipe.id / title_fr / tags / clinical_context / pdf_url",
+          "refuse les contenus contenant des données personnelles"
+        ]
+      },
+      {
+        name: MCP_GET_RECIPE_TOOL_NAME,
+        title: "Lire une recette ALIM enregistrée",
+        output_contract: [
+          "retourne le résumé, recipe_payload complet et presentation_markdown_fr"
+        ]
+      },
+      {
+        name: MCP_DELETE_RECIPE_TOOL_NAME,
+        title: "Supprimer une recette ALIM enregistrée",
+        output_contract: [
+          "suppression après confirmation explicite du praticien",
+          "retourne l'identifiant supprimé"
+        ]
+      },
+      {
+        name: MCP_SCAN_RECIPE_TOOL_NAME,
+        title: "Scanner une recette externe",
+        output_contract: [
+          "texte de recette quantifié → matching CIQUAL → verdict vert/orange/rouge",
+          "retourne nutriments estimés, ingrédients reconnus, lignes non reconnues, règles appliquées, corrections proposées",
+          "V0 : pas de scraping URL, demander le texte de la recette"
+        ]
+      },
+      {
+        name: MCP_SCAN_RECIPE_URL_TOOL_NAME,
+        title: "Scanner une recette depuis URL",
+        output_contract: [
+          "URL publique → extraction JSON-LD Recipe ou HTML → scan_recipe_text",
+          "retourne verdict, nutriments estimés, ingrédients reconnus, corrections proposées et métadonnées d'extraction",
+          "refuse URLs locales, internes, non HTML ou non extractibles"
+        ]
+      },
       {
         name: MCP_TOOL_NAME,
         title: "Générer une recette clinique cadrée",
@@ -1995,6 +3892,34 @@ function sendJson(res, status, payload) {
   res.end(body);
 }
 
+function sendAuthFailure(res, status, payload) {
+  const body = JSON.stringify(payload);
+  res.writeHead(status, {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "www-authenticate": bearerChallengeHeader()
+  });
+  res.end(body);
+}
+
+function sendHtml(res, status, html) {
+  res.writeHead(status, {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff"
+  });
+  res.end(html);
+}
+
+function redirect(res, location) {
+  res.writeHead(302, {
+    "location": location,
+    "cache-control": "no-store"
+  });
+  res.end();
+}
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || "127.0.0.1"}`);
 
@@ -2004,6 +3929,30 @@ const server = createServer(async (req, res) => {
 
   if (req.method === "GET" && url.pathname === MCP_DISCOVERY) {
     return sendJson(res, 200, mcpDiscoveryPayload(url.hostname || "alim.care"));
+  }
+
+  if (req.method === "GET" && /^\/\.well-known\/oauth-authorization-server(\/.*)?$/.test(url.pathname)) {
+    return sendJson(res, 200, oauthAuthorizationServerMetadata(PUBLIC_ORIGIN));
+  }
+
+  if (req.method === "GET" && /^\/\.well-known\/oauth-protected-resource(\/.*)?$/.test(url.pathname)) {
+    return sendJson(res, 200, oauthProtectedResourceMetadata(PUBLIC_ORIGIN));
+  }
+
+  if (req.method === "GET" && url.pathname === "/oauth/authorize") {
+    return handleOAuthAuthorizeGet(req, res, url);
+  }
+
+  if (req.method === "POST" && url.pathname === "/oauth/authorize") {
+    return handleOAuthAuthorizePost(req, res);
+  }
+
+  if (req.method === "POST" && url.pathname === "/oauth/token") {
+    return handleOAuthToken(req, res);
+  }
+
+  if (req.method === "POST" && (url.pathname === "/oauth/register" || url.pathname === "/register")) {
+    return handleOAuthRegister(req, res);
   }
 
   if (url.pathname === MCP_ENDPOINT) {
@@ -2026,7 +3975,42 @@ const server = createServer(async (req, res) => {
     return handleV1Generate(req, res);
   }
 
+  if (req.method === "POST" && url.pathname === "/api/v1/scan-recipe") {
+    return handleV1ScanRecipe(req, res);
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/v1/scan-recipe-url") {
+    return handleV1ScanRecipeUrl(req, res);
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/v1/recipes") {
+    return handleV1RecipesList(req, res, url);
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/v1/recipes") {
+    return handleV1RecipeSave(req, res);
+  }
+
+  const recipeMatch = url.pathname.match(/^\/api\/v1\/recipes\/([^/]+)$/);
+  if (recipeMatch && req.method === "GET") {
+    return handleV1RecipeGet(req, res, recipeMatch[1]);
+  }
+
+  if (recipeMatch && req.method === "DELETE") {
+    return handleV1RecipeDelete(req, res, recipeMatch[1]);
+  }
+
   if (req.method === "POST" && url.pathname === "/api/generate") {
+    return sendJson(res, 401, {
+      ok: false,
+      refused: {
+        reason_fr: "Endpoint protégé : utilisez /api/v1/generate avec une clé ALIM active."
+      },
+      warnings: [DISCLAIMER]
+    });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/demo-generate") {
     try {
       const rl = apiGenerateRateLimitOk(getClientIp(req));
       if (!rl.ok) {
@@ -2034,7 +4018,7 @@ const server = createServer(async (req, res) => {
           refused: {
             reason_fr: rl.reason === "global"
               ? "ALIM est temporairement saturé. Réessayez dans une heure."
-              : "Quota démo atteint sur /api/generate. Demandez un accès bêta dédié sur /configurer/."
+              : "Quota démo atteint. Demandez un accès bêta dédié sur /configurer/."
           },
           warnings: [DISCLAIMER]
         });

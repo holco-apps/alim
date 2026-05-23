@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ajouter ALIM dans ChatGPT — installation guidée</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Activer ALIM dans ChatGPT en quelques clics : ouvrir le GPT, se connecter à ALIM, coller sa clé sur alim.care, puis tester une première fiche recette.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#233872">
+<link rel="icon" href="/assets/alim-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#233872;
+    --navy-deep:#172650;
+    --gold:#f7da29;
+    --gold-soft:#fff6b7;
+    --paper:#f5f0e8;
+    --paper-alt:#fcfaf5;
+    --white:#fff;
+    --ink:#111827;
+    --ink-soft:#3f4860;
+    --muted:#687083;
+    --line:#ded8ca;
+    --line-strong:#c4bba6;
+    --ok:#286c4d;
+    --warn:#9a661f;
+    --bad:#8a2a2a;
+    --gpt:#10a37f;
+    --gpt-soft:#d8f0e6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:84px}
+  body{
+    margin:0;
+    color:var(--ink);
+    background:var(--paper-alt);
+    font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  a{color:var(--navy); text-decoration-thickness:1px; text-underline-offset:3px}
+  h1,h2,h3,h4{
+    margin:0;
+    font-family:"Instrument Serif", Georgia, "Times New Roman", serif;
+    font-weight:400;
+    letter-spacing:-0.01em;
+    line-height:1.1;
+    color:var(--navy-deep);
+  }
+  p{margin:0}
+  .wrap{width:min(820px, calc(100% - 40px)); margin:0 auto}
+
+  .site-header{
+    position:sticky; top:0; z-index:30;
+    border-bottom:1px solid rgba(35,56,114,.10);
+    background:rgba(252,250,245,.92);
+    backdrop-filter:blur(14px);
+  }
+  .nav{
+    width:min(1120px, calc(100% - 40px));
+    margin:0 auto;
+    height:92px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:24px;
+  }
+  .brand{display:inline-flex; align-items:center; gap:10px; color:var(--navy); text-decoration:none; font-weight:700}
+  .brand-svg{height:38px; width:auto; transition:transform .25s ease}
+  .brand:hover .brand-svg{transform:scale(1.03)}
+  .nav-links{display:flex; align-items:center; gap:22px; font-size:14px}
+  .nav-links a{color:#4b5567; text-decoration:none}
+  .nav-links a:hover{color:var(--navy)}
+
+  main{padding-block: 48px 96px; background:var(--paper)}
+  .kicker{
+    font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:14px;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .kicker .gpt-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--gpt-soft); color:var(--gpt);
+    border:1px solid rgba(16,163,127,.3);
+    padding:3px 8px; border-radius:999px;
+    font-size:10.5px; letter-spacing:.1em;
+  }
+  .kicker .gpt-pill .dot{width:6px; height:6px; border-radius:50%; background:var(--gpt)}
+
+  h1.h-display{font-size: clamp(32px, 4vw, 46px); letter-spacing:-0.02em}
+  h1.h-display em{font-style:italic; color:var(--navy)}
+  .lede{margin-top:14px; font-size:15.5px; line-height:1.6; color:var(--ink-soft); max-width:62ch}
+
+  .meta-bar{
+    margin-top:24px;
+    display:flex; flex-wrap:wrap; gap:16px;
+    font-size:13px; color:var(--muted);
+  }
+  .meta-bar strong{color:var(--ink); font-weight:600}
+  .meta-bar .dot{display:inline-block; margin:0 8px; opacity:.5}
+
+  .quick-panel{
+    margin-top:30px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:20px 22px;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:12px;
+  }
+  @media (max-width:720px){.quick-panel{grid-template-columns:1fr}}
+  .quick-item{
+    min-height:92px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 14px;
+    background:var(--paper-alt);
+  }
+  .quick-item strong{display:block; color:var(--navy-deep); font-size:13px; margin-bottom:5px}
+  .quick-item span{display:block; color:var(--ink-soft); font-size:12.5px; line-height:1.45}
+  .safe-note{
+    margin-top:18px;
+    padding:14px 16px;
+    background:#fff;
+    border:1px solid rgba(40,108,77,.25);
+    border-left:4px solid var(--ok);
+    border-radius:8px;
+    color:var(--ink-soft);
+    font-size:13px;
+    line-height:1.55;
+  }
+  .usage-section{
+    margin-top:44px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:28px 30px;
+  }
+  .usage-section h2{font-size:25px; margin-bottom:8px}
+  .usage-section .usage-lede{font-size:14px; line-height:1.65; color:var(--ink-soft); max-width:68ch}
+  .mock-thread{
+    margin-top:18px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:linear-gradient(180deg, #fff 0%, var(--paper-alt) 100%);
+    padding:16px;
+    display:grid;
+    gap:10px;
+  }
+  .mock-msg{
+    max-width:88%;
+    padding:11px 13px;
+    border-radius:10px;
+    font-size:13px;
+    line-height:1.5;
+  }
+  .mock-msg.user{justify-self:end; background:var(--navy); color:#fff}
+  .mock-msg.assistant{justify-self:start; background:#fff; border:1px solid var(--line); color:var(--ink-soft)}
+  .tool-call{
+    justify-self:start;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    width:max-content;
+    max-width:100%;
+    padding:8px 11px;
+    border-radius:999px;
+    background:var(--gpt-soft);
+    border:1px solid rgba(16,163,127,.25);
+    color:var(--gpt);
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+  }
+  .tool-call::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--gpt)}
+  .tool-grid{
+    margin-top:22px;
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:12px;
+  }
+  @media (max-width:720px){.tool-grid{grid-template-columns:1fr}}
+  .tool-card{
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--paper-alt);
+    padding:15px;
+  }
+  .tool-card strong{display:block; color:var(--navy-deep); font-size:14px; margin-bottom:5px}
+  .tool-card code{font-size:11.5px}
+  .tool-card span{display:block; color:var(--ink-soft); font-size:12.8px; line-height:1.5}
+  .example-list{
+    margin-top:20px;
+    display:grid;
+    gap:10px;
+  }
+  .example-line{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    border:1px dashed var(--line);
+    background:#fff;
+    border-radius:8px;
+    padding:12px 14px;
+    color:var(--ink-soft);
+    font-size:13px;
+    line-height:1.5;
+  }
+  .example-line b{color:var(--navy-deep); min-width:82px; font-size:12px}
+
+  /* Connect card (key input) */
+  .connect-card{
+    margin-top:36px;
+    background:#fff;
+    border:1px solid var(--line); border-left:4px solid var(--navy);
+    border-radius:10px;
+    padding:26px 28px;
+  }
+  .connect-card h2{font-size:22px; margin-bottom:8px}
+  .connect-card p{color:var(--ink-soft); font-size:14px}
+  .connect-row{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap}
+  .connect-row input{
+    flex:1 1 360px; min-width:0; padding:11px 13px;
+    font: 14px/1.4 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--ink); background:var(--paper-alt);
+    border:1px solid var(--line); border-radius:6px;
+  }
+  .connect-row input:focus{outline:none; border-color:var(--navy); box-shadow:0 0 0 3px rgba(35,56,114,.12)}
+  .btn-ghost{
+    padding:11px 18px; background:#fff; border:1px solid var(--line);
+    border-radius:6px; cursor:pointer;
+    font:500 13px/1 Inter, sans-serif; color:var(--ink-soft);
+  }
+  .btn-ghost:hover{border-color:var(--navy); color:var(--navy)}
+  .key-status{margin-top:12px; font-size:13px}
+  .key-status.is-ok{color:var(--ok)}
+  .key-status.is-warn{color:var(--warn)}
+
+  /* Primary CTA */
+  .cta-row{
+    margin-top:36px;
+    background:linear-gradient(180deg, #fff 0%, var(--gpt-soft) 200%);
+    border:1px solid var(--gpt);
+    border-radius:12px;
+    padding:24px 28px;
+    display:flex; align-items:center; gap:20px;
+    flex-wrap:wrap;
+  }
+  .cta-row .cta-text{flex:1 1 auto; min-width:240px}
+  .cta-row h3{font-size:22px; color:var(--navy-deep); margin-bottom:6px}
+  .cta-row p{font-size:13.5px; color:var(--ink-soft); line-height:1.55}
+  .cta-row a{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 22px;
+    background:var(--gpt); color:#fff; text-decoration:none;
+    border-radius:8px;
+    font:600 14.5px/1 Inter, sans-serif;
+    transition:transform .12s, background .15s;
+  }
+  .cta-row a:hover{background:#0d8a6b; transform:translateY(-1px)}
+
+  /* Flow schema horizontal */
+  .flow-schema{
+    margin:36px 0 0;
+    padding:24px 26px;
+    background:linear-gradient(180deg, #fff 0%, var(--paper-alt) 100%);
+    border:1px solid var(--line); border-radius:12px;
+  }
+  .flow-schema .fs-eyebrow{
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:18px; text-align:center;
+  }
+  .flow-grid{
+    display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;
+    gap:12px; align-items:stretch;
+  }
+  @media (max-width:780px){
+    .flow-grid{grid-template-columns:1fr; gap:14px}
+    .flow-arrow{transform:rotate(90deg); margin:0 auto}
+  }
+  .flow-node{
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    padding:16px 14px; text-align:center;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .flow-node:hover{transform:translateY(-2px); box-shadow:0 12px 24px -16px rgba(23,38,80,.2)}
+  .flow-node.is-key{border-color:var(--gpt); background:linear-gradient(180deg, #fff 0%, var(--gpt-soft) 200%)}
+  .flow-node .fn-icon{
+    width:44px; height:44px; margin:0 auto 10px;
+    border-radius:50%;
+    background:var(--gold-soft);
+    color:var(--navy-deep);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .flow-node.is-key .fn-icon{background:var(--gpt); color:#fff}
+  .flow-node .fn-icon svg{width:22px; height:22px}
+  .flow-node .fn-title{
+    font:600 13px/1.25 Inter, sans-serif; color:var(--navy-deep); margin-bottom:4px;
+  }
+  .flow-node .fn-sub{font-size:11.5px; color:var(--muted); line-height:1.45}
+  .flow-arrow{
+    display:flex; align-items:center; justify-content:center;
+    color:var(--navy); width:24px;
+  }
+  .flow-arrow svg{width:18px; height:18px}
+
+  
+  /* === Onboarding progress (interactive checklist) === */
+  .install-progress{
+    position:sticky; top:64px; z-index:25;
+    margin:18px 0 28px;
+    padding:14px 18px;
+    background:rgba(255,255,255,.97); backdrop-filter:blur(10px);
+    border:1px solid var(--line); border-radius:10px;
+    box-shadow:0 8px 24px -16px rgba(15,17,21,.15);
+    display:flex; align-items:center; gap:14px;
+  }
+  .install-progress .ip-label{
+    font:600 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); white-space:nowrap;
+  }
+  .install-progress .ip-track{
+    flex:1; height:6px;
+    background:var(--line); border-radius:99px; overflow:hidden;
+  }
+  .install-progress .ip-fill{
+    height:100%; width:0%;
+    background:var(--gpt);
+    border-radius:99px;
+    transition:width .35s cubic-bezier(.65,.05,.36,1);
+  }
+  .install-progress .ip-count{
+    font:600 13px/1 Inter, sans-serif; color:var(--navy-deep);
+    white-space:nowrap;
+  }
+  .install-progress .ip-count strong{color:var(--gpt); font-weight:700}
+  @media (max-width:560px){
+    .install-progress{flex-wrap:wrap; gap:8px}
+    .install-progress .ip-track{order:3; flex-basis:100%}
+  }
+
+  /* État des steps */
+  .step{transition:opacity .25s ease, border-color .25s ease, background .25s ease}
+  .step.is-pending{opacity:.55}
+  .step.is-current{
+    border-color:var(--gpt);
+    box-shadow:0 0 0 3px var(--gpt-soft);
+  }
+  .step.is-done{
+    opacity:.62;
+    background:linear-gradient(180deg, #fff 0%, var(--paper-alt) 100%);
+  }
+  .step.is-done .step-num{
+    background:var(--ok); color:#fff;
+    border-color:var(--ok);
+  }
+  .step.is-done .step-num::before{content:"✓"; font-size:22px}
+  .step.is-done .step-num > *{display:none}
+
+  .step-cta-row{
+    margin-top:18px;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .step-cta{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 20px;
+    background:var(--gpt); color:#fff; border:0;
+    border-radius:8px; cursor:pointer;
+    font:600 13.5px/1 Inter, sans-serif;
+    transition:opacity .15s, transform .05s, background .15s;
+  }
+  .step-cta:hover{opacity:.92}
+  .step-cta:active{transform:translateY(1px)}
+  .step-cta:disabled{background:var(--line-strong); color:#fff; cursor:not-allowed; opacity:1}
+  .step.is-pending .step-cta{display:none}
+  .step.is-done .step-cta{display:none}
+  .step-cta-done{
+    display:none;
+    align-items:center; gap:6px;
+    color:var(--ok); font:600 12.5px/1 Inter, sans-serif;
+    padding:8px 0;
+  }
+  .step.is-done .step-cta-done{display:inline-flex}
+
+  /* Restart button */
+  .install-restart{
+    margin:24px auto 0; display:block;
+    background:transparent; border:1px solid var(--line); color:var(--muted);
+    padding:8px 14px; border-radius:6px; cursor:pointer;
+    font:500 12px/1 Inter, sans-serif;
+  }
+  .install-restart:hover{border-color:var(--navy); color:var(--navy)}
+
+  /* Steps */
+  .steps{margin-top:36px; display:grid; gap:18px}
+  .step{
+    background:#fff;
+    border:1px solid var(--line); border-radius:12px;
+    padding:24px 26px;
+    display:grid; grid-template-columns:auto 1fr; gap:20px;
+  }
+  @media (max-width:520px){.step{grid-template-columns:1fr; gap:14px; padding:22px 22px}}
+  .step-num{
+    width:46px; height:46px; border-radius:50%;
+    background:var(--gold-soft); color:var(--navy-deep);
+    display:inline-flex; align-items:center; justify-content:center;
+    font:600 18px/1 "Instrument Serif", Georgia, serif;
+    border:1px solid rgba(247,218,41,.55);
+    flex-shrink:0;
+  }
+  .step-body h3{font-size:22px; margin-bottom:6px}
+  .step-body .step-hint{font-size:14px; color:var(--ink-soft); line-height:1.6}
+
+  /* Visual hint */
+  .visual-hint{
+    margin-top:16px;
+    background:linear-gradient(180deg, #fff 0%, var(--paper-alt) 100%);
+    border:1px solid var(--line); border-radius:8px;
+    padding:18px 20px;
+    font-size:13px; color:var(--ink-soft); line-height:1.6;
+  }
+  .visual-hint .chat-mock{
+    border:1px solid var(--line); border-radius:8px;
+    background:#fff;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .visual-hint .chat-mock .chat-bot{
+    font-size:13px; color:var(--ink); line-height:1.55;
+    padding:9px 12px;
+    background:var(--paper-alt);
+    border-radius:8px;
+    margin-bottom:8px;
+  }
+  .visual-hint .chat-mock .chat-bot::before{
+    content:"●"; color:var(--gpt); margin-right:6px; font-size:9px;
+  }
+  .visual-hint .chat-mock .chat-connect{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 14px;
+    background:#fff; color:var(--gpt);
+    border:1px solid var(--gpt); border-radius:6px;
+    font:600 12.5px/1.2 Inter, sans-serif;
+  }
+  .visual-hint .auth-mock{
+    background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:16px 18px;
+  }
+  .visual-hint .auth-mock .auth-line{
+    font-size:13px; color:var(--ink); line-height:1.4; margin-bottom:8px;
+  }
+  .visual-hint .auth-mock .auth-line strong{color:var(--navy-deep)}
+  .visual-hint .auth-mock input{
+    display:block; width:100%; padding:8px 11px;
+    font: 12.5px/1.3 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--muted); background:var(--paper-alt);
+    border:1px solid var(--line); border-radius:5px;
+    margin-bottom:8px;
+  }
+  .visual-hint .auth-mock .auth-btn{
+    display:inline-block; padding:7px 14px;
+    background:var(--navy); color:#fff;
+    border-radius:5px; font:600 12.5px/1.2 Inter, sans-serif;
+  }
+
+  /* Code copy block */
+  .code-block{
+    margin-top:14px; padding:14px 16px;
+    background:var(--paper-alt); border:1px dashed var(--line); border-radius:8px;
+    font: 13.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--ink); word-break:break-all;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .code-block button{
+    flex:0 0 auto; padding:7px 14px;
+    border:1px solid var(--line); background:#fff;
+    border-radius:5px; cursor:pointer;
+    font:500 12px/1 Inter, sans-serif; color:var(--ink-soft);
+  }
+  .code-block button:hover{border-color:var(--navy); color:var(--navy)}
+  .code-block .placeholder{color:var(--muted); font-style:italic}
+
+  /* Test card */
+  .test-card{
+    margin-top:44px;
+    background:linear-gradient(180deg, #fff 0%, var(--gold-soft) 200%);
+    border:1px solid var(--gold);
+    border-radius:12px;
+    padding:28px 30px;
+  }
+  .test-card h2{font-size:24px; margin-bottom:8px}
+  .test-head{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap}
+  .test-prompt{
+    margin-top:14px;
+    background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:14px 18px;
+    font: 14px/1.55 "Instrument Serif", Georgia, serif;
+    color:var(--ink); font-style:italic;
+  }
+  .test-prompt::before{content:"« "; color:var(--muted)}
+  .test-prompt::after{content:" »"; color:var(--muted)}
+
+  /* Beta notice */
+  .beta-notice{
+    margin-top:24px;
+    background:var(--gold-soft); border:1px solid #f0d24a;
+    border-radius:10px;
+    padding:14px 18px;
+    font-size:13px; line-height:1.55; color:var(--navy-deep);
+  }
+  .beta-notice strong{color:var(--navy-deep)}
+
+  /* Troubleshooting */
+  .troubleshoot{margin-top:44px}
+  .troubleshoot h2{font-size:24px; margin-bottom:14px}
+  .troubleshoot details{
+    margin-bottom:10px;
+    background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:14px 18px;
+  }
+  .troubleshoot summary{
+    cursor:pointer;
+    font:500 14.5px/1.4 Inter, sans-serif; color:var(--navy-deep);
+    list-style:none;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .troubleshoot summary::-webkit-details-marker{display:none}
+  .troubleshoot summary::after{content:"+"; color:var(--muted); font-size:18px; line-height:1; transition:transform .15s}
+  .troubleshoot details[open] summary::after{content:"−"}
+  .troubleshoot details p{margin-top:10px; font-size:13.5px; line-height:1.6; color:var(--ink-soft)}
+
+  /* Prereq */
+  .prereq{
+    margin-top:28px;
+    background:var(--gold-soft); border:1px solid #f0d24a;
+    border-radius:10px;
+    padding:18px 22px;
+    font-size:13.5px; line-height:1.6; color:var(--navy-deep);
+  }
+  .prereq strong{color:var(--navy-deep)}
+
+  /* Alt: 1-line summary */
+  .alt-install{
+    margin-top:36px;
+    padding:18px 22px;
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    font-size:13.5px; color:var(--ink-soft); line-height:1.6;
+  }
+  .alt-install strong{color:var(--navy-deep)}
+
+  footer{background:var(--navy-deep); color:#d6dded; padding:32px 0 48px; font-size:13px}
+  footer a{color:var(--gold)}
+  footer .wrap{width:min(1120px, calc(100% - 40px))}
+  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px}
+  @media (max-width:640px){
+  }
+</style>
+</head>
+<body>
+
+
+</div>
+
+<header class="site-header">
+  <div class="nav">
+    <a class="brand" href="/" aria-label="ALIM — accueil">
+      <svg class="brand-svg" viewBox="0 0 130 44" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALIM"><text x="0" y="34" font-family="Instrument Serif, Georgia, serif" font-size="36" font-weight="500" fill="currentColor" letter-spacing="0.5">ALIM</text><circle cx="120" cy="24" r="6" fill="#f7da29"/></svg>
+    </a>
+    <nav class="nav-links">
+      <a href="/#install">Installer</a>
+      <a href="/#piliers">Fonctions</a>
+      <a href="/sources/">Corpus</a>
+      <a href="/compte/">Mon compte</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <p class="kicker">Installation <span class="gpt-pill"><span class="dot"></span>ChatGPT</span></p>
+    <h1 class="h-display">Ajouter <em>ALIM dans ChatGPT</em>.</h1>
+    <p class="lede">
+      ALIM s'invite dans <strong>votre ChatGPT habituel</strong> comme une couche métier&nbsp;: Ciqual&nbsp;2025, garde-fous HAS / ANSES, sources tracées, refus clair hors périmètre. ChatGPT garde la conversation, le ton, la pédagogie. Vous ne changez pas d'outil&nbsp;: vous gagnez la rigueur clinique.
+    </p>
+
+    <div class="meta-bar">
+      <span>⏱ <strong>≈ 1 minute</strong></span>
+      <span class="dot">·</span>
+      <span>Aucun téléchargement</span>
+      <span class="dot">·</span>
+      <span>Bêta gratuite, sans carte</span>
+    </div>
+
+    <!-- Flow schema : visuel pédagogique du parcours -->
+    <div class="flow-schema" aria-label="Parcours d'installation ALIM dans ChatGPT">
+      <p class="fs-eyebrow">Le parcours en 4 instants</p>
+      <div class="flow-grid">
+
+        <div class="flow-node">
+          <span class="fn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+          </span>
+          <div class="fn-title">1. Vous recevez votre clé</div>
+          <div class="fn-sub">Un mail, une clé <code style="font-size:11px">alim_live_…</code></div>
+        </div>
+
+        <span class="flow-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </span>
+
+        <div class="flow-node">
+          <span class="fn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/><circle cx="7" cy="14" r="1"/></svg>
+          </span>
+          <div class="fn-title">2. Vous ouvrez le GPT</div>
+          <div class="fn-sub">Un lien direct dans ChatGPT</div>
+        </div>
+
+        <span class="flow-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </span>
+
+        <div class="flow-node is-key">
+          <span class="fn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <div class="fn-title">3. Vous collez la clé une fois</div>
+          <div class="fn-sub">Sur <strong>alim.care</strong>, jamais dans le chat</div>
+        </div>
+
+        <span class="flow-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </span>
+
+        <div class="flow-node">
+          <span class="fn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18l-2 12H5z"/><path d="M9 11v4M15 11v4M3 7l2-4h14l2 4"/></svg>
+          </span>
+          <div class="fn-title">4. Vous demandez une recette</div>
+          <div class="fn-sub">ALIM cadre la nutrition</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Quick panel : 3 étapes en un coup d'œil -->
+    <div class="quick-panel" aria-label="Installation en 3 étapes">
+      <div class="quick-item">
+        <strong>1. Ouvrir le GPT ALIM</strong>
+        <span>Lien direct dans la galerie ChatGPT. Aucun téléchargement.</span>
+      </div>
+      <div class="quick-item">
+        <strong>2. Se connecter à ALIM</strong>
+        <span>ChatGPT vous redirige sur alim.care, collez votre clé une fois.</span>
+      </div>
+      <div class="quick-item">
+        <strong>3. Demander une recette</strong>
+        <span>ALIM pré-charge votre profil et cite ses sources à chaque fiche.</span>
+      </div>
+    </div>
+
+    <!-- Prérequis -->
+    <div class="prereq">
+      <strong>Avant de commencer.</strong> Vous avez besoin (1) d'un compte <strong>ChatGPT</strong> (le GPT public ALIM est accessible à toutes les versions qui autorisent l'utilisation de GPTs personnalisés avec Actions — aujourd'hui Plus, Pro, Team, Enterprise) ; et (2) de votre <strong>clé d'accès ALIM</strong> personnelle (commence par <code style="background:#fff; padding:1px 5px; border-radius:3px;">alim_live_</code>), reçue par e-mail après validation de votre demande bêta. Pas encore de clé ? <a href="/configurer/">Rejoignez la bêta →</a>
+    </div>
+
+    <!-- Connect card -->
+    <section class="connect-card" id="connect" aria-labelledby="connect-title">
+      <h2 id="connect-title">Votre clé d'accès</h2>
+      <p>Collez votre clé <code>alim_live_…</code>. Elle reste dans votre navigateur (stockage local), elle vous sera demandée une seule fois lors de la connexion ALIM ↔ ChatGPT.</p>
+      <div class="connect-row">
+        <input id="keyInput" type="text" placeholder="alim_live_…" autocomplete="off" spellcheck="false">
+        <button class="btn-ghost" id="useKeyBtn" type="button">Utiliser cette clé</button>
+        <button class="btn-ghost" id="forgetKeyBtn" type="button" style="display:none">Oublier</button>
+      </div>
+      <div class="key-status" id="keyStatus"></div>
+    </section>
+
+    <!-- Safe note : rassurance sécurité -->
+    <div class="safe-note">
+      <strong style="color:var(--ok)">Sécurité.</strong> Votre clé reste sur votre appareil. ChatGPT n'en a jamais copie en clair&nbsp;: le flux OAuth échange un <em>token opaque</em> côté serveur ALIM — révocable à tout moment depuis <a href="/compte/">/compte/</a>. Aucune donnée patient ne transite par ALIM (le filtre PII bloque e-mail, téléphone, date de naissance, n° de sécurité sociale).
+    </div>
+
+    <!-- CTA principal -->
+    <div class="cta-row">
+      <div class="cta-text">
+        <h3>Ouvrez le GPT ALIM</h3>
+        <p>Le GPT public ALIM est hébergé directement dans la galerie ChatGPT. Vous y arrivez sans rien installer.</p>
+      </div>
+      <a href="https://chatgpt.com/g/g-6a10d4e300f0819184833f4b467e53b7-alim-pro" target="_blank" rel="noopener" id="openGptBtn">
+        Ouvrir ALIM dans ChatGPT
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-10 10"/><path d="M14 21H5a2 2 0 0 1-2-2v-9"/></svg>
+      </a>
+    </div>
+
+    <!-- Steps -->
+    
+    <!-- Progress bar (interactive checklist) -->
+    <div class="install-progress" role="status" aria-live="polite">
+      <span class="ip-label">Progression</span>
+      <div class="ip-track"><div class="ip-fill" id="progressFill"></div></div>
+      <span class="ip-count"><strong id="progressCount">0</strong> / 3</span>
+    </div>
+
+<div class="steps">
+
+      <article class="step">
+        <span class="step-num">1</span>
+        <div class="step-body">
+          <h3>Démarrez une conversation avec ALIM</h3>
+          <p class="step-hint">
+            À l'ouverture du GPT ALIM, vous voyez l'écran de bienvenue. Avant de pouvoir générer une recette cadrée, ChatGPT va vous proposer de <strong>vous connecter à ALIM</strong> pour relier votre compte praticien. C'est une bannière ou un bouton, selon les versions de l'interface ChatGPT.
+          </p>
+          <div class="visual-hint">
+            <div class="chat-mock">
+              <div class="chat-bot">Bonjour. Je suis ALIM, votre assistant nutritionnel cadré (Ciqual + HAS). Connectez votre compte praticien pour démarrer.</div>
+              <span class="chat-connect">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Se connecter à ALIM
+              </span>
+            </div>
+          </div>
+        </div>
+          <div class="step-cta-row">
+            <button type="button" class="step-cta" data-step="1">Fait — étape suivante <span aria-hidden="true">→</span></button>
+            <span class="step-cta-done"><span aria-hidden="true">✓</span> Terminé</span>
+          </div>
+
+      </article>
+
+      <article class="step">
+        <span class="step-num">2</span>
+        <div class="step-body">
+          <h3>Autorisez ALIM sur alim.care</h3>
+          <p class="step-hint">
+            ChatGPT vous redirige sur <strong>alim.care/oauth/authorize</strong> — la page de connexion ALIM. Vous y collez votre clé <code>alim_live_…</code> une seule fois ; ALIM associe votre compte praticien à votre ChatGPT et vous renvoie automatiquement dans la conversation.
+          </p>
+          <div class="visual-hint">
+            <div class="auth-mock">
+              <div class="auth-line"><strong>alim.care / oauth / authorize</strong></div>
+              <div class="auth-line" style="font-size:12px; color:var(--muted)">Connecter ALIM à votre conversation ChatGPT.</div>
+              <input type="text" value="alim_live_…" readonly id="oauthKeyMock">
+              <span class="auth-btn">Autoriser ALIM →</span>
+            </div>
+          </div>
+        </div>
+          <div class="step-cta-row">
+            <button type="button" class="step-cta" data-step="2">Fait — étape suivante <span aria-hidden="true">→</span></button>
+            <span class="step-cta-done"><span aria-hidden="true">✓</span> Terminé</span>
+          </div>
+
+      </article>
+
+      <article class="step">
+        <span class="step-num">3</span>
+        <div class="step-body">
+          <h3>Demandez votre première recette</h3>
+          <p class="step-hint">
+            De retour dans ChatGPT, votre compte ALIM est branché. Mirabelle (l'agent ALIM) charge votre profil de pratique et vos préférences automatiquement — pas besoin de re-saisir patientèles ou ton préféré. Demandez une recette dans votre langage habituel.
+          </p>
+        </div>
+          <div class="step-cta-row">
+            <button type="button" class="step-cta" data-step="3">Fait — étape suivante <span aria-hidden="true">→</span></button>
+            <span class="step-cta-done"><span aria-hidden="true">✓</span> Terminé</span>
+          </div>
+
+      </article>
+
+    </div>
+
+      <button type="button" class="install-restart" id="restartChecklist">↻ Recommencer la check-list</button>
+
+
+    <section class="usage-section" id="demarrer">
+      <h2>Démarrer une vraie conversation</h2>
+      <p class="usage-lede">
+        Une fois connecté, parlez normalement à ChatGPT. Le bon réflexe est de commencer par le contexte praticien ou par un brief patient anonymisé. ChatGPT rédige et dialogue ; ALIM intervient quand il faut lire votre compte, générer une fiche, sauvegarder ou retrouver une recette.
+      </p>
+
+      <div class="mock-thread" aria-label="Exemple de conversation ChatGPT avec ALIM">
+        <div class="mock-msg user">ALIM, charge mon profil puis propose-moi un dîner DT2 + HTA, végétarien, hiver, plaque + four.</div>
+        <div class="tool-call">getAlimAccount</div>
+        <div class="mock-msg assistant">Profil chargé : ton clinique, fiche patient PDF, contraintes fréquentes repas familial et petit budget.</div>
+        <div class="tool-call">generateClinicalRecipe</div>
+        <div class="mock-msg assistant">Je vous propose une fiche complète : ingrédients pesés, étapes, kcal, glucides, fibres, sel, garde-fous, sources et lien PDF. Souhaitez-vous l'enregistrer dans votre bibliothèque ?</div>
+      </div>
+
+      <div class="tool-grid" aria-label="Fonctions disponibles dans ChatGPT">
+        <div class="tool-card">
+          <strong>Lire votre compte</strong>
+          <span><code>getAlimAccount</code> : profil, cabinet, plan, quota, patientèles et préférences.</span>
+        </div>
+        <div class="tool-card">
+          <strong>Générer une fiche recette</strong>
+          <span><code>generateClinicalRecipe</code> : recette cadrée, nutrition par portion, sources, PDF.</span>
+        </div>
+        <div class="tool-card">
+          <strong>Gérer la bibliothèque</strong>
+          <span><code>listSavedRecipes</code>, <code>getSavedRecipe</code> : retrouver une fiche enregistrée.</span>
+        </div>
+        <div class="tool-card">
+          <strong>Sauvegarder ou supprimer</strong>
+          <span><code>saveGeneratedRecipe</code>, <code>deleteSavedRecipe</code> : uniquement après votre confirmation explicite.</span>
+        </div>
+      </div>
+
+      <div class="example-list">
+        <div class="example-line"><b>Profil</b><span>« ALIM, montre-moi mon profil, mon quota et les formats de fiches configurés. »</span></div>
+        <div class="example-line"><b>Recette</b><span>« Génère une fiche patient pour DT2 + HTA, dîner végétarien, 25 minutes, petit budget, fonction rénale conservée. »</span></div>
+        <div class="example-line"><b>Variantes</b><span>« Garde le même cadre clinique, propose 3 variantes plus familiales et une liste de courses. »</span></div>
+        <div class="example-line"><b>Bibliothèque</b><span>« Enregistre cette recette si elle ne contient aucune donnée patient, puis liste mes recettes DT2 + HTA. »</span></div>
+      </div>
+    </section>
+
+    <!-- Test -->
+    <section class="test-card">
+      <div class="test-head">
+        <h2 style="margin:0">Vérifier que ça marche.</h2>
+        <span style="font:600 10.5px/1 'JetBrains Mono', ui-monospace, monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--gpt); padding:5px 10px; background:var(--gpt-soft); border:1px solid rgba(16,163,127,.3); border-radius:99px; align-self:center;">Prompt à coller</span>
+      </div>
+      <p style="font-size:14px; color:var(--ink-soft); line-height:1.6; margin-top:10px">
+        Une fois la connexion établie, collez ce message dans votre conversation ChatGPT&nbsp;:
+      </p>
+      <p class="test-prompt" id="testPrompt">Utilise ALIM pour me proposer un dîner cadré pour un patient diabète T2 + HTA, omnivore, qui a une plaque et un four. Je remettrai une fiche imprimable au patient.</p>
+      <p style="margin-top:14px; font-size:13px; color:var(--ink-soft); line-height:1.6">
+        ChatGPT doit vous indiquer qu'il appelle l'outil <code>generate_clinical_recipe</code>. Acceptez. Vous recevrez la fiche complète&nbsp;: ingrédients pesés, nutriments par portion, garde-fous cliniques, sources tracées, et un lien PDF imprimable brandé à votre cabinet (si vous l'avez configuré sur <a href="/compte/">/compte/</a>).
+      </p>
+      <p style="margin-top:10px; font-size:13px; color:var(--ink-soft); line-height:1.6">
+        Vous pouvez aussi essayer <em>« ALIM, montre-moi mon profil et mon quota »</em> — ChatGPT appellera l'outil <code>getAlimAccount</code> et vous renverra votre statut, plan, patientèles configurées et nombre de générations restantes.
+      </p>
+    </section>
+
+    <!-- Alt: 1-line summary -->
+    <div class="alt-install">
+      <strong>Vous préférez en mode rapide ?</strong> Ouvrez le <a href="https://chatgpt.com/g/g-6a10d4e300f0819184833f4b467e53b7-alim-pro" target="_blank" rel="noopener">GPT ALIM</a> → cliquez « Se connecter à ALIM » → collez votre clé sur la page <code>alim.care/oauth/authorize</code> → retournez dans ChatGPT et demandez votre première recette. C'est tout.
+    </div>
+
+    <!-- Troubleshooting -->
+    <section class="troubleshoot">
+      <h2>Si quelque chose coince</h2>
+
+      <details>
+        <summary>Je n'ai pas de bouton « Se connecter à ALIM »</summary>
+        <p>Votre version ChatGPT n'autorise probablement pas (encore) les GPTs avec Actions externes — c'est typiquement le cas sur Free dans certains pays. Basculez sur Claude — voir <a href="/install/claude/">/install/claude/</a> — ou contactez <a href="mailto:alim@holco.co">alim@holco.co</a>.</p>
+      </details>
+
+      <details>
+        <summary>« Clé invalide » ou erreur 401 lors de l'autorisation</summary>
+        <p>Votre clé a probablement été régénérée depuis votre <a href="/compte/">espace compte</a>, ou elle est marquée comme inactive côté serveur. Allez sur <a href="/compte/">/compte/</a>, copiez la clé actuelle, et recommencez le flow OAuth. Si la clé est bien active mais que l'erreur persiste, écrivez à <a href="mailto:alim@holco.co">alim@holco.co</a>.</p>
+      </details>
+
+      <details>
+        <summary>ChatGPT ne propose pas d'utiliser ALIM automatiquement</summary>
+        <p>Préfixez votre message&nbsp;: <em>« Utilise ALIM pour… »</em>, ou <em>« Appelle l'outil generate_clinical_recipe pour… »</em>. ChatGPT choisit ses outils selon le contexte&nbsp;; il proposera ALIM de lui-même au bout de quelques échanges sur du cadrage clinique. Vous pouvez aussi mettre votre profil dans <a href="/compte/">/compte/</a> à jour (patientèles, ton, formats) pour guider ses choix.</p>
+      </details>
+
+      <details>
+        <summary>ALIM retourne « hors périmètre » ou refus</summary>
+        <p>C'est volontaire. ALIM v0 ne couvre que <em>diabète T2 + HTA</em> et <em>grossesse + diabète gestationnel</em>. L'insuffisance rénale chronique, la dyslipidémie isolée et les autres pathologies déclenchent un refus clair, traçable, sans improvisation. Le périmètre s'étendra progressivement — voir <a href="/sources/">/sources/</a> pour le détail du corpus actuel.</p>
+      </details>
+
+      <details>
+        <summary>Quota épuisé / message « limite atteinte »</summary>
+        <p>Chaque compte bêta dispose d'un quota journalier (par défaut 300 appels/jour, remis à zéro à minuit Europe/Paris). Vous pouvez le consulter sur <a href="/compte/">/compte/</a>. Pour relever le quota, écrivez à <a href="mailto:alim@holco.co">alim@holco.co</a>.</p>
+      </details>
+
+      <details>
+        <summary>Comment déconnecter ALIM de ChatGPT</summary>
+        <p>ChatGPT → Settings → Connected apps (ou Connectors / Actions selon votre version) → ALIM → Disconnect. Vous pouvez aussi révoquer définitivement votre clé depuis <a href="/compte/">/compte/</a> (bouton « Régénérer la clé ») — l'ancienne clé est invalidée immédiatement et vous devez refaire le flow OAuth avec la nouvelle.</p>
+      </details>
+
+      <details>
+        <summary>Je veux aussi ajouter ALIM dans Claude</summary>
+        <p>Même clé, autre canal. Voir <a href="/install/claude/">/install/claude/</a> pour le guide Custom Connector dans Claude.ai (plans Pro / Team / Enterprise).</p>
+      </details>
+    </section>
+
+    <p style="margin-top:36px; font-size:13.5px; color:var(--muted); text-align:center">
+      Une question ? Répondez simplement à votre e-mail de bienvenue, ou écrivez à <a href="mailto:alim@holco.co">alim@holco.co</a>.
+    </p>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien (art. L. 4161-1 du Code de la santé publique). Aucune donnée patient n'est collectée.</p>
+    <div class="footer-links">
+      <a href="/">Accueil</a>
+      <a href="/configurer/">Rejoindre la bêta</a>
+      <a href="/compte/">Mon compte</a>
+      <a href="/install/claude/">Install Claude</a>
+      <a href="/sources/">Corpus</a>
+      <a href="/mentions-legales/">Mentions légales</a>
+      <a href="mailto:alim@holco.co">alim@holco.co</a>
+      <a href="https://holco.co/">HOLCO</a>
+      <span>© 2026 HOLCO</span>
+    </div>
+      <div class="footer-dev-links" style="display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:14px; font:11px/1.4 JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.02em; color:rgba(104,112,131,.82)">
+      <span style="text-transform:uppercase; letter-spacing:.16em; color:rgba(104,112,131,.62)">dev</span>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/humans.txt">humans.txt</a>
+      <a href="/robots.txt">robots.txt</a>
+      <a href="/sitemap.xml">sitemap.xml</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <a href="/.well-known/ai-plugin.json">ai-plugin.json</a>
+      <a href="https://github.com/holco-apps/alim">github.com/holco-apps/alim</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const KEY_STORAGE = 'alim_account_key';
+
+  function getStored(){ try { return localStorage.getItem(KEY_STORAGE) || ''; } catch(_) { return ''; } }
+  function setStored(k){ try { localStorage.setItem(KEY_STORAGE, k); } catch(_) {} }
+  function clearStored(){ try { localStorage.removeItem(KEY_STORAGE); } catch(_) {} }
+
+  function maskKey(k){
+    if (!k || k.length < 14) return 'alim_live_…';
+    return k.slice(0, 12) + '…' + k.slice(-4);
+  }
+  function validKeyShape(k){
+    return /^alim_live_[A-Za-z0-9_-]{12,}$/.test(k);
+  }
+
+  async function copyText(text, btn){
+    try {
+      await navigator.clipboard.writeText(text);
+      const old = btn.textContent;
+      btn.textContent = 'Copié ✓';
+      setTimeout(() => { btn.textContent = old; }, 1500);
+    } catch(_){}
+  }
+
+  function refreshKeyUI(k){
+    const status = $('#keyStatus');
+    const forgetBtn = $('#forgetKeyBtn');
+    const mock = $('#oauthKeyMock');
+    if (k && validKeyShape(k)){
+      status.textContent = '✓ Clé en mémoire (stockée localement). Elle sera pré-remplie sur la page d\'autorisation alim.care/oauth/authorize.';
+      status.classList.add('is-ok'); status.classList.remove('is-warn');
+      forgetBtn.style.display = '';
+      $('#keyInput').value = k;
+      if (mock) mock.value = maskKey(k);
+    } else {
+      forgetBtn.style.display = 'none';
+      if (mock) mock.value = 'alim_live_…';
+      if (k){
+        status.textContent = '⚠ Format inattendu. La clé doit commencer par alim_live_ suivi d\'au moins 12 caractères.';
+        status.classList.add('is-warn'); status.classList.remove('is-ok');
+      } else {
+        status.textContent = '';
+        status.classList.remove('is-ok','is-warn');
+      }
+    }
+  }
+
+  $('#useKeyBtn').addEventListener('click', () => {
+    const k = $('#keyInput').value.trim();
+    if (validKeyShape(k)){ setStored(k); refreshKeyUI(k); }
+    else { refreshKeyUI(k); }
+  });
+  $('#keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#useKeyBtn').click(); });
+  $('#forgetKeyBtn').addEventListener('click', () => {
+    if (!confirm('Oublier votre clé sur cet appareil ?')) return;
+    clearStored();
+    $('#keyInput').value = '';
+    refreshKeyUI('');
+  });
+
+  // boot
+  const queryKey = new URLSearchParams(location.search).get('key');
+  const initialKey = queryKey || getStored();
+  if (queryKey){
+    setStored(queryKey);
+    history.replaceState(null, '', location.pathname);
+  }
+  refreshKeyUI(initialKey || '');
+})();
+</script>
+
+
+<script>
+(function(){
+  const KEY = "alim_install_progress_chatgpt";
+  const TOTAL = 3;
+  const steps = Array.from(document.querySelectorAll(".steps > .step"));
+  if (!steps.length) return;
+  const progressFill = document.getElementById("progressFill");
+  const progressCount = document.getElementById("progressCount");
+
+  function getDone(){ try { return Number(localStorage.getItem(KEY) || "0"); } catch(_) { return 0; } }
+  function setDone(n){ try { localStorage.setItem(KEY, String(n)); } catch(_) {} }
+
+  function render(done){
+    done = Math.max(0, Math.min(TOTAL, done));
+    steps.forEach((el, i) => {
+      el.classList.remove("is-done", "is-current", "is-pending");
+      if (i < done) el.classList.add("is-done");
+      else if (i === done) el.classList.add("is-current");
+      else el.classList.add("is-pending");
+    });
+    const pct = Math.round((done / TOTAL) * 100);
+    progressFill.style.width = pct + "%";
+    progressCount.textContent = String(done);
+  }
+
+  steps.forEach((step, i) => {
+    const btn = step.querySelector(".step-cta");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      const newDone = i + 1;
+      setDone(newDone);
+      render(newDone);
+      // Scroll vers la step suivante (ou la test-card si dernière)
+      const target = steps[newDone] || document.querySelector(".test-card") || step;
+      setTimeout(() => target.scrollIntoView({behavior:"smooth", block:"start"}), 220);
+    });
+  });
+
+  const restartBtn = document.getElementById("restartChecklist");
+  if (restartBtn){
+    restartBtn.addEventListener("click", () => {
+      if (!confirm("Réinitialiser la check-list d'installation ?")) return;
+      setDone(0); render(0);
+      steps[0]?.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  }
+
+  render(getDone());
+})();
+</script>
+
+</body>
+</html>

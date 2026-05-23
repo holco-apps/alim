@@ -13,9 +13,10 @@ paths:
     get:
       operationId: getAlimAccount
       summary: Vérifier le compte ALIM actif
-      description: Vérifie la clé ALIM, le statut du compte et le quota restant.
+      description: Vérifie le compte ALIM connecté, le statut et le quota restant.
       security:
-        - bearerAuth: []
+        - alimOAuth:
+            - alim.generate
       responses:
         "200":
           description: Compte actif
@@ -27,9 +28,10 @@ paths:
     post:
       operationId: generateClinicalRecipe
       summary: Générer une recette nutritionnelle cadrée
-      description: Génère une fiche ALIM v1 avec nutrition, garde-fous, sources et lien PDF. Nécessite une clé ALIM active.
+      description: Génère une fiche ALIM v1 avec nutrition, garde-fous, sources et lien PDF.
       security:
-        - bearerAuth: []
+        - alimOAuth:
+            - alim.generate
       requestBody:
         required: true
         content:
@@ -57,44 +59,176 @@ paths:
           description: Quota atteint
         "500":
           description: Erreur interne ALIM
-  /api/generate:
+  /api/v1/scan-recipe:
     post:
-      operationId: generateClinicalRecipeDemo
-      summary: Générer une recette nutritionnelle cadrée
-      description: >
-        Endpoint démo temporaire sans compte. Utiliser /api/v1/generate pour
-        le Custom GPT protégé.
+      operationId: scanRecipeText
+      summary: Scanner une recette externe
+      description: Analyse une recette copiée par le praticien, calcule les nutriments via CIQUAL, applique les garde-fous ALIM et propose des corrections.
+      security:
+        - alimOAuth:
+            - alim.generate
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AlimRecipeRequest"
+              $ref: "#/components/schemas/ScanRecipeRequest"
       responses:
         "200":
-          description: Recette cadrée générée
+          description: Analyse de recette réalisée
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AlimRecipeResponse"
+                $ref: "#/components/schemas/ScanRecipeResponse"
+        "401":
+          description: Clé manquante ou invalide
+        "403":
+          description: Compte ALIM non actif ou clé désactivée
         "422":
-          description: Brief refusé ou hors périmètre bêta
+          description: Recette non analysable ou brief hors périmètre
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AlimRefusalResponse"
-        "400":
-          description: Requête invalide
-        "500":
-          description: Erreur interne ALIM
+        "429":
+          description: Quota atteint
+  /api/v1/scan-recipe-url:
+    post:
+      operationId: scanRecipeUrl
+      summary: Scanner une recette depuis une URL
+      description: Récupère une page recette publique, extrait les ingrédients, calcule via CIQUAL et applique les garde-fous ALIM.
+      security:
+        - alimOAuth:
+            - alim.generate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRecipeUrlRequest"
+      responses:
+        "200":
+          description: Analyse de recette depuis URL réalisée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanRecipeResponse"
+        "401":
+          description: Clé manquante ou invalide
+        "403":
+          description: Compte ALIM non actif ou clé désactivée
+        "422":
+          description: URL non extractible, non sûre, ou brief hors périmètre
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlimRefusalResponse"
+        "429":
+          description: Quota atteint
+  /api/v1/recipes:
+    get:
+      operationId: listSavedRecipes
+      summary: Lister les recettes enregistrées
+      description: Liste les recettes anonymisées enregistrées dans le compte ALIM.
+      security:
+        - alimOAuth:
+            - alim.generate
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Recherche texte optionnelle sur titre, tags ou contexte.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+      responses:
+        "200":
+          description: Recettes du compte
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedRecipeListResponse"
+    post:
+      operationId: saveGeneratedRecipe
+      summary: Enregistrer une recette ALIM
+      description: Enregistre une recette anonymisée générée par ALIM dans la bibliothèque du compte.
+      security:
+        - alimOAuth:
+            - alim.generate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveRecipeRequest"
+      responses:
+        "201":
+          description: Recette enregistrée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedRecipeResponse"
+        "422":
+          description: Refus si donnée nominative détectée
+  /api/v1/recipes/{recipe_id}:
+    get:
+      operationId: getSavedRecipe
+      summary: Récupérer une recette enregistrée
+      description: Récupère la fiche complète d'une recette sauvegardée.
+      security:
+        - alimOAuth:
+            - alim.generate
+      parameters:
+        - in: path
+          name: recipe_id
+          required: true
+          schema:
+            type: string
+            pattern: "^recipe_[0-9]+$"
+      responses:
+        "200":
+          description: Recette complète
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedRecipeResponse"
+        "404":
+          description: Recette introuvable
+    delete:
+      operationId: deleteSavedRecipe
+      summary: Supprimer une recette enregistrée
+      description: Supprime une recette de la bibliothèque du compte.
+      security:
+        - alimOAuth:
+            - alim.generate
+      parameters:
+        - in: path
+          name: recipe_id
+          required: true
+          schema:
+            type: string
+            pattern: "^recipe_[0-9]+$"
+      responses:
+        "200":
+          description: Recette supprimée
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
+    alimOAuth:
+      type: oauth2
       description: >
-        À activer avec /api/v1/generate quand les clés ALIM par cabinet seront
-        disponibles. /api/generate reste l'endpoint de démonstration publique.
+        Connexion OAuth ALIM pour ChatGPT Actions. Le praticien autorise ChatGPT
+        depuis alim.care avec sa clé ALIM ; ChatGPT reçoit ensuite un token Bearer.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://alim.care/oauth/authorize
+          tokenUrl: https://alim.care/oauth/token
+          scopes:
+            alim.generate: Générer des fiches recettes ALIM et lire le profil du compte.
   schemas:
     AlimRecipeRequest:
       type: object
@@ -112,8 +246,9 @@ components:
               - diabete_gestationnel
               - grossesse
           description: >
-            Pathologies ou situations couvertes. Combinaisons bêta :
+            Pathologies ou situations couvertes. Génération bêta :
             [diabete_t2, hta] ou [grossesse, diabete_gestationnel].
+            Scanner de recette : accepte aussi [diabete_t2] seul.
         diet_type:
           type: string
           enum:
@@ -167,6 +302,143 @@ components:
       required:
         - pathologies
         - meal_slot
+    ScanRecipeRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        recipe_text:
+          type: string
+          minLength: 20
+          maxLength: 5000
+          description: >
+            Texte copié de la recette externe, avec ingrédients quantifiés.
+            V0 : ne pas envoyer une URL seule ; demander au praticien de coller le texte.
+        title_fr:
+          type: string
+          maxLength: 160
+          default: Recette scannée
+        brief:
+          $ref: "#/components/schemas/AlimRecipeRequest"
+      required:
+        - recipe_text
+        - brief
+    ScanRecipeUrlRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          format: uri
+          maxLength: 500
+          description: URL publique http/https d'une page recette. Les URLs locales ou internes sont refusées.
+        title_fr:
+          type: string
+          maxLength: 160
+          default: Recette scannée depuis URL
+        brief:
+          $ref: "#/components/schemas/AlimRecipeRequest"
+      required:
+        - url
+        - brief
+    ScanRecipeResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        scan_type:
+          type: string
+        verdict:
+          type: object
+          properties:
+            status:
+              type: string
+              enum:
+                - green
+                - orange
+                - red
+            label_fr:
+              type: string
+            summary_fr:
+              type: string
+        brief:
+          $ref: "#/components/schemas/AlimRecipeRequest"
+        title_fr:
+          type: string
+        portion_g:
+          type: number
+        ingredients_matched:
+          type: array
+          items:
+            type: object
+            properties:
+              input_label_fr:
+                type: string
+              name_fr:
+                type: string
+              quantity_g:
+                type: number
+              ciqual_code:
+                type: string
+              match_score:
+                type: number
+        unmatched_lines:
+          type: array
+          items:
+            type: string
+        nutrients_per_portion:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/NutrientValue"
+        coverage_summary:
+          $ref: "#/components/schemas/CoverageSummary"
+        failures:
+          type: array
+          items:
+            type: string
+        suggestions_fr:
+          type: array
+          items:
+            type: string
+        rules_applied:
+          type: array
+          items:
+            type: string
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Source"
+        references_consulted:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferenceConsulted"
+        warnings:
+          type: array
+          items:
+            type: string
+        presentation_markdown_fr:
+          type: string
+          description: Analyse Markdown prête à afficher au praticien.
+        url_scan:
+          type: object
+          properties:
+            url:
+              type: string
+            final_url:
+              type: string
+            extraction_method:
+              type: string
+            ingredients_count:
+              type: integer
+            title_fr:
+              type: string
+      required:
+        - ok
+        - verdict
+        - ingredients_matched
+        - nutrients_per_portion
+        - failures
+        - suggestions_fr
+        - presentation_markdown_fr
     NutrientValue:
       type: object
       properties:
@@ -508,3 +780,106 @@ components:
             type: string
       required:
         - refused
+    ClinicalContext:
+      type: object
+      properties:
+        pathologies:
+          type: array
+          items:
+            type: string
+        meal_slot:
+          type: string
+        diet_type:
+          type: string
+        season:
+          type: string
+        notes:
+          type: string
+          description: Notes anonymisées seulement.
+    SaveRecipeRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title_fr:
+          type: string
+          description: Titre lisible de la recette. Optionnel si alim_response contient déjà un titre.
+        status:
+          type: string
+          enum:
+            - draft
+            - validated
+            - favorite
+          default: draft
+        tags:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+        clinical_context:
+          $ref: "#/components/schemas/ClinicalContext"
+        alim_response:
+          $ref: "#/components/schemas/AlimRecipeResponse"
+          description: Réponse complète retournée par generateClinicalRecipe, sans donnée nominative.
+      required:
+        - alim_response
+    SavedRecipeSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        title_fr:
+          type: string
+        status:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        clinical_context:
+          $ref: "#/components/schemas/ClinicalContext"
+        pdf_url:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        last_used_at:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - title_fr
+        - status
+        - tags
+    SavedRecipe:
+      allOf:
+        - $ref: "#/components/schemas/SavedRecipeSummary"
+        - type: object
+          properties:
+            recipe_payload:
+              type: object
+            presentation_markdown_fr:
+              type: string
+    SavedRecipeResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        recipe:
+          $ref: "#/components/schemas/SavedRecipe"
+      required:
+        - ok
+        - recipe
+    SavedRecipeListResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        recipes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedRecipeSummary"
+      required:
+        - ok
+        - recipes

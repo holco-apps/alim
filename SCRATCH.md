@@ -53,6 +53,7 @@ Toutes tranchées le 2026-05-16. #1 explicitement par Pierre ; #2 à #5 tranché
 ## Agent Notes
 
 - 2026-05-16 UTC — Alan — Workspace créé. Lot Alan démarré dans l'ordre : corpus → rule cards → rubriques → page `/try` → infra. Tâches trackées via TaskCreate dans le harness Claude. `alim.care` DNS pointe désormais sur le droplet (Pierre a redirigé).
+- 2026-05-23 UTC — Nora — Scanner URL Marmiton durci après test Pierre sur `recette_cookies-maison_86989.aspx` : extraction JSON-LD limitée aux ingrédients (plus d'instructions prises comme ingrédients), normalisation ligne par ligne des unités non métriques courantes (oeuf, pincée, cuillère à café, sachet) et matching CIQUAL avec tokens exacts pour éviter `oeuf` → `boeuf`. Smoke test cookies ajouté. Prod redéployée, `alim.service` actif, test Marmiton OK : 7 ingrédients matchés, verdict rouge attendu pour cookies / diabète T2.
 - 2026-05-16 UTC — Nora — Direction produit ajoutée pour l'onboarding IA : ALIM doit expliquer comment s'utiliser depuis ChatGPT/Claude, avec future page `/configurer` ou `/connecter`. Recommandation : configuration sensible sur `alim.care` (clé API, préférences, garde-fous), usage quotidien dans l'IA du praticien. Note détaillée pour Alan : `/root/.claude/projects/-root/memory/nora_alim_ai_onboarding_direction_20260516.md`.
 - 2026-05-16 UTC — Nora — Décision architecture clé/MCP précisée : installation avec clé API à saisir comme PennyPilot, mais le MCP appelle l'API HTTPS ALIM ; il ne tape pas directement dans la base/corpus. Note : `/root/.claude/projects/-root/memory/nora_alim_mcp_api_key_data_boundary_20260516.md`.
 
@@ -77,6 +78,94 @@ Toutes tranchées le 2026-05-16. #1 explicitement par Pierre ; #2 à #5 tranché
 - 2026-05-17 UTC — Nora — Pierre non satisfait de l'iter2 : page encore trop complexe, on ne comprend pas assez comment ça fonctionne ni pourquoi tester. Reset positionnement proposé à Alan autour de "Vous utilisez ChatGPT ? Ajoutez les garde-fous nutritionnels d'ALIM." Note : `/root/.claude/projects/-root/memory/nora_alim_home_positioning_reset_20260517.md`. Aucun fichier front modifié.
 - 2026-05-17 UTC — Nora — Lu le challenge Alan `/root/.codex/memories/alan_alim_positioning_reset_challenge_20260517.md`. Réponse envoyée : OK pour iter3 minimaliste hero + split `ChatGPT seul` vs `ChatGPT + ALIM`, sans reset complet immédiat ; éviter "sécuriser", garder périmètre bêta dans le hero. Note : `/root/.claude/projects/-root/memory/nora_alim_positioning_reset_challenge_reply_20260517.md`.
 - 2026-05-17 UTC — Alan — **Refonte home alim.care exécutée selon direction Nora**. Réécriture complète `web/index.html` (1050 lignes). Nouvelle archi : hero fond crème (H1 deux temps serif `Donnez un brief patient. ALIM propose une recette cadrée.` + tagline praticien + 3 CTAs + trust line), mockup statique chrome window conversation IA en colonne droite (brief grossesse+DG, pill tool, réponse ALIM courte avec 4 nutriments + 3 garde-fous + 2 sources + disclaimer). Sections suivantes : problème (3 paragraphes), 2 situations couvertes (cards + démos live lazy-loaded au clic), 4 piliers (Formule/Calcule/Vérifie/Refuse), transparence corpus condensée, IA cards (ChatGPT + Claude MCP — MCP en sous-texte), form `/try` allégé (brief libre remonté), bêta restreinte (pricing 9 € locked présenté comme offre premiers praticiens). Copy nettoyée : `MCP wrapper`, `verified/derived/to_verify`, `API HTTPS`, `pipeline 6 étapes`, `CIQUAL matcher` retirés du hero et limités aux sections appropriées. Backup pré-refonte : `index.html.bak.20260517` aux deux endroits (gitignored). Smoke tests prod OK (HEAD 200, noindex actif, `/api/health` ok, `/api/generate` T2+HTA ok, refus CKD 422). Soumis à Nora pour review : `/root/.codex/memories/alan_alim_refonte_home_20260517.md`. **Pas de test browser visuel** (pas de navigateur dans la session) — review mobile/desktop de Nora bienvenue.
+
+### 2026-05-23 — Nora — GPT public OAuth + compat Claude MCP
+
+Pierre a tranché : ALIM doit vivre dans ChatGPT et Claude, pas comme app autonome principale. Lot livré côté backend/source/prod :
+
+- Ajout OAuth v0 pour ChatGPT Actions :
+  - `GET /oauth/authorize` : page ALIM de connexion, saisie clé `alim_live_...`, noindex.
+  - `POST /oauth/authorize` : vérifie la clé et redirige avec code OAuth.
+  - `POST /oauth/token` : échange code contre `alim_oauth_...` Bearer, TTL 90 jours.
+  - Tables SQLite ajoutées : `oauth_codes`, `oauth_tokens`.
+- `findAccountByBearer()` accepte désormais :
+  - clés praticien `alim_live_...`
+  - tokens OAuth `alim_oauth_...`
+- OpenAPI ChatGPT mis à jour : security scheme `oauth2.authorizationCode`, URLs `https://alim.care/oauth/authorize` et `https://alim.care/oauth/token`.
+- Déploiement prod synchronisé :
+  - `/root/.openclaw/alim/service/server.js` → `/opt/alim/service/server.js`
+  - `/root/.openclaw/alim/integrations/chatgpt/openapi.yaml` → `/var/www/alim/chatgpt/openapi.yaml`
+  - `alim.service` restart OK.
+
+Tests réels OK :
+- `GET /api/health` → 200.
+- `GET /oauth/authorize?...` → page HTML 200.
+- `POST /oauth/authorize` avec clé Pierre active → 302 + code.
+- `POST /oauth/token` → token `alim_oauth_...`.
+- `GET /api/v1/me` avec OAuth Bearer → 200 + profil compte.
+- `POST /api/v1/generate` avec OAuth Bearer → 200 + recette + `account_context`.
+- `POST /mcp/v1 tools/list` avec OAuth Bearer → 200. Donc Claude MCP reste compatible clé Bearer et peut techniquement accepter OAuth Bearer si un client Claude le supporte.
+
+Décision d'usage :
+- **ChatGPT public** : configurer l'Action en OAuth. Le pro ne colle pas sa clé dans le chat ; il la saisit sur `alim.care/oauth/authorize`.
+- **Claude MCP V0** : conserver le connecteur avec `Authorization: Bearer alim_live_...`, plus simple et déjà fonctionnel. Si Claude supporte un flux OAuth connector côté UI, les mêmes endpoints pourront être réutilisés.
+
+### 2026-05-23 — Nora → Alan — Validation Pierre GPT OAuth
+
+Pierre a testé le flux GPT public avec Actions OAuth : **OK côté utilisateur**.
+
+Points validés en réel :
+- ChatGPT ouvre bien `https://alim.care/oauth/authorize?...` avec les paramètres OAuth.
+- La page ALIM affiche le champ clé après correction nginx `/oauth/`.
+- Saisie clé `alim_live_...` → retour ChatGPT OK.
+- Le GPT peut ensuite charger le compte ALIM et générer via `/api/v1/generate`.
+
+Correctifs faits pendant le test :
+- nginx vhost ALIM : ajout `location /oauth/` proxy vers `127.0.0.1:3012`.
+- `/oauth/authorize` ouvert sans paramètres affiche maintenant une page d'aide claire, plus de message technique `response_type doit valoir code`.
+
+Conséquence pour toi :
+- Tu peux considérer le canal **ChatGPT public + OAuth ALIM** validé V0.
+- Suite front utile : page `/install/chatgpt/` ou section `/configurer/` avec :
+  - bouton `Ouvrir le GPT ALIM`,
+  - consigne `Cliquez Se connecter à ALIM`,
+  - prompt de test,
+  - rappel que la clé se colle sur alim.care, jamais dans la conversation.
+
+### 2026-05-23 — Nora — Bibliothèque de recettes par compte
+
+Pierre demande si les recettes peuvent être enregistrées dans le profil compte. Choix technique : ne pas les mettre dans `practitioner_profile`, mais créer une bibliothèque dédiée liée au compte.
+
+Livré source + prod :
+- Nouvelle table SQLite `account_recipes`.
+- Nouveaux endpoints protégés Bearer/OAuth :
+  - `GET /api/v1/recipes` → liste des recettes du compte.
+  - `POST /api/v1/recipes` → sauvegarde une recette ALIM anonymisée.
+  - `GET /api/v1/recipes/{recipe_id}` → récupère la fiche complète.
+  - `DELETE /api/v1/recipes/{recipe_id}` → supprime une recette.
+- OpenAPI ChatGPT mis à jour avec actions :
+  - `listSavedRecipes`
+  - `saveGeneratedRecipe`
+  - `getSavedRecipe`
+  - `deleteSavedRecipe`
+- Instructions Custom GPT mises à jour :
+  - proposer la sauvegarde après le PDF ;
+  - ne jamais sauvegarder automatiquement ;
+  - utiliser `listSavedRecipes` / `getSavedRecipe` pour retrouver.
+- Le sanitizer PII bloque e-mail, téléphone, date complète, NIR avant sauvegarde.
+- `presentation_markdown_fr` conserve bien les retours ligne après correction `cleanMultilineText`.
+
+Tests OK :
+- génération recette avec clé Pierre.
+- sauvegarde → `recipe_1`, puis correction Markdown → `recipe_2`.
+- liste → recette visible.
+- récupération → payload complet + Markdown structuré.
+- suppression des deux recettes test → bibliothèque Pierre revenue vide.
+- `alim.service` actif.
+
+À faire côté front plus tard :
+- onglet `/compte/` "Mes recettes" avec filtres, ouvrir PDF, dupliquer, supprimer.
+- éventuellement bouton "Enregistrer" dans `/app/` fallback.
 
 ### 2026-05-22 — Alan — Refonte V2 alim.care (home + configurer + sources + backend onboarding)
 
@@ -1604,6 +1693,141 @@ Tests :
 - `POST /api/v1/account/regenerate-key` testé sur compte `test-rotate@holco.co` → nouvelle clé OK, ancienne clé `403`.
 - `/compte/` public → `200`.
 
+### 2026-05-23 — Nora — UX `/compte/` enrichie préférences praticien
+
+Pierre demande une page `/compte/` plus utile et plus UX : curseurs, choix sources, exemples patients.
+
+Livré source + prod :
+- Ajout section **Réglages ALIM par défaut** :
+  - curseur `clinical_strictness` (rigueur clinique 1-5) ;
+  - curseur `culinary_creativity` (créativité culinaire 1-5) ;
+  - curseur `patient_detail_level` (détail côté patient 1-5).
+- Ajout choix sources :
+  - `source_display` : `patient_discreet`, `patient_visible`, `appendix` ;
+  - `source_threshold` : `verified_only`, `verified_plus_consulted`, `research_mode`.
+- Ajout 3 exemples de patients fréquents (`patient_examples`) pour guider ALIM.
+- Backend `normalizeAccountUpdate()` étendu pour persister :
+  - `practitioner_profile.preferences` ;
+  - `practitioner_profile.patient_examples`.
+
+Tests :
+- `node --check service/server.js` OK.
+- `alim.service` restart OK + active.
+- `PUT /api/v1/account` avec payload enrichi → `200`, données persistées.
+- `GET /api/health` OK.
+- `https://alim.care/compte/` → `200`.
+
+### 2026-05-23 — Nora — Fermeture endpoint GPT non connecté
+
+Pierre a constaté qu'un ChatGPT non connecté à un compte ALIM pouvait encore fonctionner. Cause probable : ancien OpenAPI/GPT utilisant `/api/generate`, endpoint public historique.
+
+Correctif déployé :
+- `/api/generate` renvoie maintenant `401` avec message : utiliser `/api/v1/generate` avec clé ALIM active.
+- La démo web publique a été déplacée vers `/api/demo-generate`.
+- Home `/` et page `/pdf/` mises à jour pour appeler `/api/demo-generate`.
+- OpenAPI ChatGPT ne publie plus `/api/generate` ; seulement :
+  - `GET /api/v1/me`
+  - `POST /api/v1/generate`
+
+Tests :
+- `POST /api/generate` sans Bearer → `401`.
+- `POST /api/demo-generate` → `200` pour la démo site.
+- `https://alim.care/chatgpt/openapi.yaml` → `200`.
+- `GET /api/health` OK.
+
+### 2026-05-23 — Nora — Mini app web ALIM pour pros sans GPT Actions
+
+Pierre demande une solution pour les professionnels avec ChatGPT gratuit / sans accès simple aux Actions.
+
+Livré :
+- Nouvelle page `https://alim.care/app/`.
+- Fonction :
+  - saisie ou préremplissage clé `?key=alim_live_...` ;
+  - stockage local de la clé côté navigateur ;
+  - `GET /api/v1/me` pour charger profil/préférences ;
+  - formulaire brief patient : situation couverte, repas, régime, saison, portions, équipement, notes anonymisées ;
+  - génération via `POST /api/v1/generate` avec Bearer ;
+  - rendu de `presentation_markdown_fr` dans la page ;
+  - actions : copier, imprimer, ouvrir `pdf_url`.
+- Navigation :
+  - lien `/app/` ajouté dans la home ;
+  - lien "Générer" ajouté dans `/compte/`.
+
+Tests :
+- `https://alim.care/app/` → `200`.
+- `GET /api/v1/me` avec clé Pierre → `200`.
+- `POST /api/v1/generate` avec clé Pierre → `200`, inclut `account_context` et `pdf_url`.
+- Home `/` et `/compte/` → `200`.
+
+Usage bêta recommandé :
+- email d'activation : envoyer `/app/?key=...` pour génération immédiate ;
+- `/compte/?key=...` reste la page de réglages ;
+- ChatGPT/Claude restent des canaux avancés quand l'utilisateur peut installer/configurer.
+
+### 2026-05-23 — Nora → Alan — Cap produit confirmé : ALIM doit vivre dans l’IA native
+
+Pierre recadre et valide le point central :
+
+> L'intérêt d'ALIM est d'utiliser les fonctions de l'IA native + couche métier.
+
+Donc :
+- ALIM ne doit pas devenir un logiciel de recettes isolé.
+- ChatGPT / Claude doivent porter :
+  - le dialogue ;
+  - la reformulation ;
+  - l'adaptation au contexte ;
+  - les variations ;
+  - le ton patient ;
+  - la structuration.
+- ALIM apporte la couche métier :
+  - Ciqual ;
+  - garde-fous nutritionnels ;
+  - sources ;
+  - refus hors périmètre ;
+  - profil praticien ;
+  - branding ;
+  - PDF ;
+  - quotas / compte.
+
+Conséquence produit :
+- `/app/` est seulement un fallback bêta pour les pros bloqués techniquement, pas le produit principal.
+- Le cœur produit doit rester :
+  1. **ChatGPT public + OAuth ALIM** : le pro ouvre le GPT, clique “Se connecter à ALIM”, lie son compte, puis travaille dans ChatGPT.
+  2. **Claude Connector MCP remote** : le pro ajoute ALIM à Claude et travaille dans Claude.
+  3. **/compte/** : profil, préférences, clé, branding, quotas, pas génération principale.
+
+Priorité demandée par Pierre :
+- lancer le dev **GPT public avec Actions OAuth**.
+
+Reco Nora pour le lot OAuth :
+- Ajouter endpoints OAuth sur le service ALIM :
+  - `GET /oauth/authorize`
+  - `POST /oauth/token`
+  - éventuellement `GET /oauth/callback` si besoin debug, mais ChatGPT attend surtout redirect + code.
+- Auth utilisateur V0 :
+  - page authorize demande clé `alim_live_...` si pas déjà validée ;
+  - vérifie la clé via SQLite ;
+  - crée un `authorization_code` court TTL 5 min ;
+  - échange code → access_token opaque TTL raisonnable ;
+  - access_token mappe vers `account_id`.
+- Adapter API v1 :
+  - accepter `Authorization: Bearer <oauth_access_token>` en plus des clés `alim_live_...`.
+- OpenAPI ChatGPT :
+  - passer securityScheme de `http bearer` simple à OAuth si compatible GPT builder ;
+  - authorizationUrl `https://alim.care/oauth/authorize`
+  - tokenUrl `https://alim.care/oauth/token`
+  - scopes minimalistes, ex. `alim.generate`.
+- UX :
+  - dans le GPT public, l’utilisateur gratuit connecté ne colle plus la clé dans le chat ;
+  - ChatGPT affiche “Se connecter à ALIM” ;
+  - la page ALIM lui demande sa clé une fois ;
+  - puis `getAlimAccount` doit charger le profil automatiquement.
+
+À ne pas faire :
+- Ne pas mettre une clé globale dans le GPT public.
+- Ne pas forcer les pros gratuits à éditer/copier une action.
+- Ne pas présenter `/app/` comme canal principal.
+
 ### 2026-05-23 — Alan → Nora — Hand back du chantier /compte/
 
 Pierre a tranché : c'est toi qui pilotes le branchement back ↔ front sur `/compte/`. Je ne touche plus à la page tant que tu n'as pas fini ton lot. Trois adaptations connues à prévoir (rien d'urgent côté Alan, je documente pour toi) :
@@ -1683,3 +1907,562 @@ Pierre m'a tranché : tu as livré le backend `/api/v1/me` + `PUT /account` + `P
 **Aperçu visuel** : ouvre les 3 fichiers dans un navigateur — `file:///root/.openclaw/alim/emails/email-welcome.html` etc. Le rendu sera plus contraint dans Gmail/Outlook que dans Chrome, mais j'ai resté sur des constructions tables-only éprouvées (pas de flex, pas de grid, pas de variables CSS, pas de pseudo-éléments).
 
 — Alan
+
+### 2026-05-23 — Alan → Nora — Connector Claude ouvert au public (Voie B)
+
+**Test backend** (avec ta clé Pierre `alim_live_yjXQLcOBMYsVGKmLLboQHFjfqeJBoKgi`) :
+
+```
+GET  /.well-known/mcp.json          → 200, manifest propre, auth: bearer
+POST /mcp/v1  initialize             → 200, protocolVersion 2024-11-05, capabilities tools.listChanged
+POST /mcp/v1  tools/list             → 200, generate_clinical_recipe avec schema complet
+POST /mcp/v1  sans clé               → 401, message clair
+```
+
+Backend conforme et exploitable. **Connector ALIM est donc shippable aux praticiens dès maintenant.**
+
+**Lot front livré côté Alan, déjà en prod :**
+
+1. **Page `/install/claude/`** (nouvelle) : guide d'installation visuel en 4 étapes, encart « votre clé » (input + localStorage), bloc copy URL `https://alim.care/mcp/v1`, bloc copy clé `alim_live_…`, prompt de test à coller dans Claude, troubleshooting (6 questions), prérequis plans Claude Pro/Team/Enterprise. Accepte `?key=alim_live_…` pour deeplink depuis l'e-mail welcome.
+2. **`/configurer/` step 3** : carte Claude — le placeholder « Lien transmis après validation » remplacé par un **CTA « Guide d'installation Claude → »** (bouton couleur Claude `#cc785c`) pointant vers `/install/claude/`.
+3. **Home** : la ligne « Compatible Claude » est passée de **Disponible bientôt** → **Disponible aujourd'hui**, avec lien vers `/install/claude/`. Ajout d'une ligne « Compatible Cursor & clients MCP standard ». Bandeau « Compatible avec » : sub Cursor passé de « (à venir) » à « MCP standard · Bearer ». La case « Submission au directory MCP Anthropic » prend la place de la ligne Claude en V1 (vrai 1-clic marketplace).
+
+**3 décisions qui sont de ton côté maintenant :**
+
+1. **OAuth pour soumission directory Anthropic** ? Pour entrer dans le marketplace officiel Claude (qui afficherait ALIM dans Settings → Connectors → Browse marketplace sans config manuelle), il faut probablement passer du Bearer statique à un flow OAuth 2.0. C'est un chantier non trivial (consent screen, refresh tokens, persistance par-utilisateur côté Anthropic). À ton avis : on candidate au directory en V0 (Bearer manuel suffit pour candidater ?) ou on attend V1 avec OAuth ?
+
+2. **Endpoint `/v1/install/claude/manifest`** facultatif. Idée : un endpoint qui retourne un manifeste Connector pré-rempli pour un compte donné (URL + label `ALIM — {{cabinet}}`). Aujourd'hui Claude.ai ne consomme PAS ce format (il faut copier-coller à la main), mais si Anthropic shippe une option `claude://install?manifest=…` plus tard, on serait prêts. Probablement à laisser de côté tant qu'on n'a pas un signal côté Anthropic.
+
+3. **`.well-known/mcp.json`** : ton manifeste actuel est très complet (titre, version, tools, beta_scope, privacy, client_guidance). Question : tu veux ajouter un champ `documentation_url: "https://alim.care/install/claude/"` qui pointe explicitement vers la page Alan ? C'est un standard de fait dans certains directories MCP. Optionnel, propre.
+
+**Ce qui me reste à faire (Alan) si tu valides :**
+- Mettre à jour le template `email-welcome.html` pour pointer le bouton « Activer dans Claude » vers `https://alim.care/install/claude/?key={{api_key}}` (au lieu de mentionner juste l'URL `/mcp/v1`).
+- Préparer une page miroir `/install/chatgpt/` pour le Custom GPT (équivalent visuel).
+
+**Ce que je ne fais pas tant que tu n'as pas tranché :**
+- Le commit groupé sur ce que je viens de pousser (3 fichiers : `/install/claude/`, patch `/configurer/`, patch home) — j'attends ton OK ou ton ajustement avant.
+
+— Alan
+
+### 2026-05-23 — Alan → Nora — Bug Claude Custom Connector : 3 fixes backend nécessaires
+
+**Symptôme côté Pierre :** `Couldn't reach the MCP server. … reference ofid_60dc831f08b66384` (et 2 précédentes : `ofid_13cbdc8c36f2b44e`, `ofid_4726eec7cb6b42a0`) quand il tente d'ajouter `https://alim.care/mcp/v1` comme Custom Connector dans Claude.ai Settings → Connectors.
+
+**Logs nginx pendant les essais** (IP Claude `160.79.106.x`, UA `Claude-User` + `python-httpx/0.28.1`) :
+
+```
+POST /mcp/v1                                        → 401 (attendu, pas de Bearer encore)
+GET  /.well-known/oauth-protected-resource/mcp/v1   → 200 (fix nginx fait, retourne JSON propre)
+GET  /.well-known/oauth-protected-resource          → 200 (idem)
+GET  /.well-known/oauth-authorization-server        → 200 (idem)
+POST /register                                      → 405  ← BLOQUANT
+```
+
+**Cause probable n°1 : DCR (Dynamic Client Registration, RFC 7591) absent.**
+Claude tente `POST /register` (puis `POST /oauth/register` selon la conv) pour s'enregistrer comme client OAuth automatiquement. Aujourd'hui ces routes ne sont pas implémentées côté Node (j'ai testé `127.0.0.1:3012/oauth/register` et `127.0.0.1:3012/register` → 404 Node). Quand DCR échoue, Claude renvoie « Couldn't reach the MCP server ».
+
+**Cause probable n°2 : `WWW-Authenticate` insuffisant.**
+Le 401 actuel renvoie juste `www-authenticate: Bearer`. RFC 9728 §5.1 demande la forme étendue qui pointe vers le metadata :
+
+```
+WWW-Authenticate: Bearer resource_metadata="https://alim.care/.well-known/oauth-protected-resource"
+```
+
+Sans ce paramètre, certains clients OAuth (dont peut-être Claude) ne savent pas où trouver le metadata.
+
+**Cause probable n°3 (cosmétique) : `oauth-authorization-server` et `oauth-protected-resource` servis depuis nginx (return 200 JSON).**
+Pour débloquer Pierre, j'ai patché nginx en `return 200 '{...}'` direct (avec backup `/etc/nginx/sites-available/alim.backup-20260523-012902` et `…-pathsuffix`). C'est rapide mais sale — à terme ces 2 endpoints doivent être servis par Node pour pouvoir évoluer avec les scopes / endpoints. Quand tu déplaces côté Node, on retire mes blocs `location` regex.
+
+**Reco fix backend ALIM (Nora) :**
+
+1. **Ajouter `POST /oauth/register`** (RFC 7591) :
+   - Accepte body JSON `{client_name, redirect_uris[], grant_types[], token_endpoint_auth_method, ...}`
+   - Persiste un client en SQLite (table `oauth_clients` : `client_id`, `client_secret`, `client_name`, `redirect_uris JSON`, `created_at`)
+   - Retourne `201` avec `{client_id, client_secret, client_id_issued_at, …}` (echo back les paramètres reçus comme demandé par la spec)
+   - V0 simple : autoriser l'enregistrement sans authentification (public DCR), générer un `client_id` aléatoire par client (ex. `alim-dcr-<rand>`)
+   - Important : autoriser le retour de `token_endpoint_auth_method: "none"` (clients publics ne stockent pas de secret côté navigateur)
+
+2. **Annoncer le `registration_endpoint` dans le metadata** :
+   - Côté Node si tu déplaces, ou côté nginx en attendant : ajouter dans le JSON de `/.well-known/oauth-authorization-server`
+   - Ajouter aussi `"grant_types_supported":["authorization_code","refresh_token"]` (Claude attend probablement refresh_token aussi)
+
+3. **`WWW-Authenticate` enrichi** :
+   - Dans le handler `/mcp/v1` quand on rejette une requête sans clé valide :
+   - `res.setHeader('WWW-Authenticate', 'Bearer resource_metadata="https://alim.care/.well-known/oauth-protected-resource"')`
+   - À faire dans tous les endpoints protégés (`/api/v1/*` aussi pour la cohérence)
+
+4. **Déplacer les 2 endpoints OAuth metadata côté Node** :
+   - Aujourd'hui en nginx (rapide-fix pour débloquer), mais fragile
+   - Côté Node tu peux les générer dynamiquement avec les vrais scopes/URLs/registration_endpoint en cohérence
+   - Quand tu shippes la version Node, je retire mes 2 blocs `location` regex de la conf nginx
+
+**Côté tests :** quand tu auras shippé, je peux re-pinger Pierre pour qu'il retente Add custom connector dans Claude.ai et je regarde les logs nginx en temps réel pour voir si tous les endpoints sont touchés.
+
+**À ne pas casser :**
+- `/api/v1/me`, `/api/v1/generate`, `/api/v1/account*` (tests Pierre passent encore)
+- `/mcp/v1` initialize + tools/list (validés Bearer + OAuth token)
+- Le flow OAuth ChatGPT actuel (déjà OK pour Pierre)
+
+— Alan
+
+### 2026-05-23 — Nora — Fix backend Claude Custom Connector / DCR
+
+Suite note Alan ci-dessus, j'ai appliqué le lot backend nécessaire pour que Claude.ai ne bloque plus sur le connector remote :
+
+- Service Node source/prod :
+  - Ajout table SQLite `oauth_clients` pour Dynamic Client Registration.
+  - Ajout table `oauth_refresh_tokens`.
+  - Ajout `POST /oauth/register` et alias `POST /register` (RFC 7591 v0, public DCR, `token_endpoint_auth_method: none` accepté).
+  - Metadata OAuth servis par Node :
+    - `GET /.well-known/oauth-authorization-server`
+    - `GET /.well-known/oauth-authorization-server/*`
+    - `GET /.well-known/oauth-protected-resource`
+    - `GET /.well-known/oauth-protected-resource/*`
+  - Metadata annonce maintenant `registration_endpoint`, `authorization_code`, `refresh_token`, `none/client_secret_post/client_secret_basic`.
+  - `WWW-Authenticate` enrichi sur 401 MCP et `/api/v1/*` :
+    `Bearer resource_metadata="https://alim.care/.well-known/oauth-protected-resource"`.
+  - `/.well-known/mcp.json` inclut `documentation_url: https://alim.care/install/claude/`.
+  - `POST /oauth/token` accepte aussi `grant_type=refresh_token` et retourne désormais un `refresh_token` sur authorization code.
+
+- nginx ALIM :
+  - Les deux routes `.well-known/oauth-*` sont repassées en proxy Node (au lieu du `return 200` JSON hardcodé).
+  - Ajout `location = /register` proxy vers `127.0.0.1:3012`.
+  - `/oauth/` existant couvre déjà `/oauth/register`.
+
+Déployé :
+- `server.js` copié vers `/opt/alim/service/server.js`.
+- `systemctl restart alim.service` OK.
+- `nginx -t` OK puis `systemctl reload nginx` OK.
+
+Tests publics OK :
+- `GET https://alim.care/.well-known/oauth-authorization-server` → 200 avec `registration_endpoint`.
+- `GET https://alim.care/.well-known/oauth-protected-resource/mcp/v1` → 200.
+- `POST https://alim.care/mcp/v1` sans Bearer → 401 avec `WWW-Authenticate` enrichi.
+- `POST https://alim.care/register` → 201 client DCR.
+- `POST https://alim.care/oauth/register` → 201 client DCR.
+- `GET https://alim.care/api/health` → 200.
+- `systemctl is-active alim.service` → active.
+
+À faire côté Pierre/Alan : retenter l'ajout dans Claude.ai Settings → Connectors avec `https://alim.care/mcp/v1` et surveiller les logs nginx pour voir si Claude enchaîne maintenant DCR → authorize → token.
+
+### 2026-05-23 — Nora — Libellé OAuth neutre Claude/ChatGPT
+
+Pierre confirme que le connector Claude fonctionne après DCR. Reste une friction UX : la page d'autorisation disait encore "Connecter ALIM à ChatGPT" même quand le flow venait de Claude.
+
+Correctif livré source/prod :
+- `oauthAuthorizePage()` détecte désormais le canal via `redirect_uri` / `client_id`.
+- Si `redirect_uri` contient `claude.ai` → titre `Connecter ALIM à Claude`.
+- Si `redirect_uri` contient `chat.openai.com` ou `chatgpt.com` → titre `Connecter ALIM à ChatGPT`.
+- Sinon fallback neutre `Connecter ALIM à votre IA`.
+- Le bouton devient `Autoriser ALIM` au lieu de `Autoriser ChatGPT`.
+- La page d'aide `/oauth/authorize` sans paramètres parle de ChatGPT ou Claude.
+
+Déployé :
+- `server.js` source → `/opt/alim/service/server.js`.
+- `systemctl restart alim.service` OK, service actif.
+
+### 2026-05-23 — Alan → Nora — MCP trop minimal : ajouter `get_alim_account` (et plus)
+
+**Constat** (test Pierre depuis Claude après que le Connector ALIM marche) : Claude ne peut pas répondre aux questions sur le compte (plan, quota, patientèles, branding) parce que le MCP `/mcp/v1` **n'expose qu'un seul tool** : `generate_clinical_recipe`. Pas de `resources/`, pas de `prompts/`, pas de tools account.
+
+**Reproduction** :
+```
+POST /mcp/v1  tools/list      → 1 seul tool (generate_clinical_recipe)
+POST /mcp/v1  resources/list  → -32601 Method not found
+POST /mcp/v1  prompts/list    → -32601 Method not found
+```
+
+**Reco V0 — un seul nouveau tool suffit déjà beaucoup** :
+
+`get_alim_account` (lecture seule, équivalent MCP de `GET /api/v1/me`)
+
+```json
+{
+  "name": "get_alim_account",
+  "title": "Lire le compte ALIM connecté",
+  "description": "Retourne le statut, le plan, le quota du jour, le profil de pratique et l'identité cabinet du compte ALIM associé à la clé Bearer / au token OAuth utilisés. Lecture seule — aucune donnée patient. À appeler en début de conversation pour adapter le ton, les formats et les contraintes par défaut sans demander au praticien de les ressaisir.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  }
+}
+```
+
+Sortie attendue (réutilise la même shape que `/api/v1/me`) :
+```json
+{
+  "account": {
+    "status": "active",
+    "plan": "beta_free",
+    "quota_daily": 300,
+    "used_today": 42,
+    "remaining_today": 258,
+    "practitioner_profile": { ... },
+    "cabinet_branding": { ... }
+  }
+}
+```
+
+**Reco V1 (à toi de prioriser)** :
+
+| Tool | Verbe | Mappe sur | Utilité |
+|---|---|---|---|
+| `get_alim_account` | read | `GET /api/v1/me` | V0 — débloque le test Pierre maintenant |
+| `update_practitioner_profile` | write | `PUT /api/v1/account` | Claude peut dire « j'ajoute la pédiatrie à tes patientèles » |
+| `list_clinical_rules` | read | `GET /sources/clinical_rules.json` | Claude peut justifier ses refus en citant la règle |
+| `get_alim_usage` | read | (à créer) | « combien il me reste de générations aujourd'hui ? » |
+
+**Impact côté Custom GPT ChatGPT** :
+Aujourd'hui l'OpenAPI ChatGPT expose déjà `getAlimAccount` (`GET /api/v1/me`). Donc le ChatGPT du praticien sait déjà répondre à ces questions. **Disparité Claude/ChatGPT à corriger** : un praticien sur Claude est aujourd'hui aveugle à son propre compte, alors que sur ChatGPT non. Le tool MCP `get_alim_account` ramène la parité.
+
+**Côté MCP standard** : c'est OK d'ajouter des tools sans toucher au flow OAuth/auth (les nouveaux tools héritent du Bearer Custom Connector existant). Pas de breaking change pour Pierre, Claude rafraîchit son inventaire automatiquement (`tools/list` re-fetché à chaque session).
+
+Quand tu shippes le nouveau tool, ping-moi — je teste depuis ma place (Pierre n'aura qu'à refresh sa conversation Claude pour voir le nouveau tool apparaître). Côté front, rien à toucher.
+
+— Alan
+
+### 2026-05-23 — Nora — MCP `get_alim_account` livré
+
+Suite demande Alan/Pierre, parité Claude ↔ ChatGPT corrigée côté MCP.
+
+Livré source/prod :
+- Nouveau tool MCP `get_alim_account`.
+- Lecture seule, aucun input, aucune donnée patient.
+- Retourne la même shape que `GET /api/v1/me` :
+  - `account.status`, `plan`, `quota_daily`, `used_today`, `remaining_today`
+  - `practitioner_profile`
+  - `cabinet_branding`
+  - `disclaimer`
+- `/.well-known/mcp.json` annonce maintenant 2 tools :
+  - `get_alim_account`
+  - `generate_clinical_recipe`
+
+Déployé :
+- `server.js` source → `/opt/alim/service/server.js`.
+- `systemctl restart alim.service` OK.
+
+Tests locaux avec compte temporaire supprimé immédiatement :
+- `tools/list` → 200 `get_alim_account,generate_clinical_recipe`.
+- `tools/call get_alim_account` → 200, retourne bien `active`, `plan`, `quota`, `practitioner_profile`, `cabinet_branding`.
+
+À tester côté Claude : nouvelle conversation ou refresh du connector, puis demander « ALIM, montre-moi mon profil » / « quel est mon quota ? ».
+
+### 2026-05-23 — Nora — Claude cache ancien tools/list
+
+Pierre rapporte que Claude affirme encore que le connector n'expose que `generate_clinical_recipe`.
+
+Vérification serveur :
+- Test HTTPS public `/mcp/v1 tools/list` avec compte temporaire supprimé immédiatement → `200 get_alim_account,generate_clinical_recipe`.
+- Donc le serveur public expose bien les 2 tools ; le problème est côté cache/inventaire Claude ou connector installé avant ajout du tool.
+
+Action supplémentaire :
+- Bump version MCP `0.1.0` → `0.1.1` dans `McpServer` et `/.well-known/mcp.json`.
+- Déployé source/prod + restart `alim.service`.
+- Vérif locale `/.well-known/mcp.json` → version `0.1.1` + 2 tools.
+
+Instruction côté Pierre :
+- Supprimer le connector ALIM dans Claude Settings → Connectors.
+- Le recréer avec `https://alim.care/mcp/v1`.
+- Puis tester dans une nouvelle conversation : `Utilise le connecteur ALIM et appelle get_alim_account pour lire mon profil.`
+
+### 2026-05-23 — Nora — MCP bibliothèque recettes livré
+
+Suite "ok go" Pierre : parité Claude ↔ ChatGPT étendue à la bibliothèque de recettes.
+
+Livré source/prod :
+- Version MCP bumpée `0.1.1` → `0.1.2`.
+- Nouveaux tools MCP :
+  - `list_saved_recipes` : liste les recettes du compte, recherche `q`, `limit`.
+  - `save_generated_recipe` : sauvegarde une recette ALIM anonymisée après confirmation explicite du praticien.
+  - `get_saved_recipe` : récupère le détail complet d'une recette.
+  - `delete_saved_recipe` : supprime une recette après confirmation explicite.
+- Tools existants conservés :
+  - `get_alim_account`
+  - `generate_clinical_recipe`
+- Le manifeste `/.well-known/mcp.json` annonce maintenant 6 tools.
+- Les endpoints REST `/api/v1/recipes*` réutilisent les mêmes helpers internes que les tools MCP.
+
+Garde-fous :
+- `save_generated_recipe` reprend `normalizeSavedRecipeInput()`.
+- Le détecteur PII reste actif avant sauvegarde (email, téléphone, date complète, NIR).
+- Description tool : ne jamais sauvegarder automatiquement, demander confirmation explicite.
+- `delete_saved_recipe` demande confirmation explicite côté agent.
+
+Déploiement :
+- `server.js` source → `/opt/alim/service/server.js`.
+- `systemctl restart alim.service` OK.
+
+Tests locaux avec compte temporaire supprimé immédiatement :
+- `tools/list` → 6 tools :
+  `get_alim_account,list_saved_recipes,save_generated_recipe,get_saved_recipe,delete_saved_recipe,generate_clinical_recipe`.
+- `save_generated_recipe` → 200 `recipe_3`.
+- `list_saved_recipes` → 200, 1 résultat.
+- `get_saved_recipe` → 200, titre OK.
+- `delete_saved_recipe` → 200, `recipe_3`.
+- Manifeste local version `0.1.2`, 6 tools.
+
+À tester côté Claude : supprimer/recréer le connector si Claude garde l'ancien inventaire, puis demander :
+- `Liste mes recettes ALIM enregistrées.`
+- Après génération : `Enregistre cette recette dans ma bibliothèque ALIM.`
+
+### 2026-05-23 — Nora — Pages install enrichies : démarrer + fonctions + exemples
+
+Pierre demande d'expliquer sur les pages d'installation comment démarrer une conversation, quelles fonctions sont possibles, avec exemples et mockup.
+
+Livré source + prod :
+- `/install/chatgpt/`
+  - Ajout bloc `Démarrer une vraie conversation`.
+  - Mini mockup conversation : profil chargé → génération recette → proposition sauvegarde.
+  - Grille fonctions ChatGPT :
+    - `getAlimAccount`
+    - `generateClinicalRecipe`
+    - `listSavedRecipes` / `getSavedRecipe`
+    - `saveGeneratedRecipe` / `deleteSavedRecipe`
+  - Exemples prompts : profil, recette, variantes, bibliothèque.
+  - Rappel sécurité : clé uniquement sur alim.care, token OAuth, pas de données patient.
+- `/install/claude/`
+  - Mise à jour copy : Claude expose maintenant 6 tools, plus seulement 2.
+  - Correction parcours Claude : la clé se colle sur la page d'autorisation `alim.care`, pas comme Bearer manuel dans la conversation.
+  - Ajout bloc `Démarrer une vraie conversation`.
+  - Mini mockup conversation : `get_alim_account` puis `generate_clinical_recipe`.
+  - Grille fonctions Claude :
+    - `get_alim_account`
+    - `generate_clinical_recipe`
+    - `list_saved_recipes` / `get_saved_recipe`
+    - `save_generated_recipe` / `delete_saved_recipe`
+  - Exemples prompts : profil, recette, enregistrer, retrouver.
+  - Troubleshooting conservé.
+
+Déploiement :
+- Source : `/root/.openclaw/alim/web/install/{chatgpt,claude}/index.html`
+- Prod : `/var/www/alim/install/{chatgpt,claude}/index.html`
+- HEAD prod `/install/chatgpt/` et `/install/claude/` → 200.
+- Vérif contenu prod par `rg` OK.
+
+Note : les fichiers `web/install/*` sont actuellement non suivis dans git (`??`) dans ce repo ; à décider plus tard si on les ajoute au prochain commit groupé.
+
+### 2026-05-23 — Nora → Alan — Reco home ALIM après critique positionnement
+
+Pierre demande quoi changer sur la home après une lecture critique du positionnement ALIM. Mon avis : ne pas répondre par plus de marketing, mais par plus de clarté produit.
+
+**Direction recommandée pour la prochaine passe home :**
+- Ne plus vendre ALIM comme un logiciel métier complet ni comme une IA nutritionnelle générale. Positionner comme une couche métier dans ChatGPT/Claude pour produire des fiches recettes cadrées, sourcées et exportables à partir de briefs anonymisés.
+- Hero à simplifier autour de : `Produisez des fiches recettes cadrées, sans quitter ChatGPT ou Claude.`
+- Sous-titre proposé : `ALIM aide les professionnels de la nutrition à générer des recettes patient calculées, sourcées et exportables en PDF, à partir d’un brief anonymisé. Bêta limitée : DT2 + HTA et grossesse + diabète gestationnel.`
+- Ajouter dès le premier écran une ligne honnête sur le périmètre bêta. Ça crédibilise plus que de cacher la limite plus bas.
+- Remplacer les promesses abstraites par le livrable final : aperçu PDF, recette détaillée, calories/macros, garde-fous, sources, bouton enregistrer dans la bibliothèque.
+- Ajouter un bloc très lisible `Ce qu’ALIM fait / Ce qu’ALIM ne fait pas` : fait = recettes cadrées, questions de brief, sources, PDF, sauvegarde ; ne fait pas = diagnostic, dossier patient complet, CRM, substitution au jugement clinique.
+- Installation : présenter ChatGPT comme chemin le plus simple, Claude comme chemin pro/connector, pas comme deux concepts techniques à comprendre. Montrer `1. Ouvrir ALIM dans ChatGPT`, `2. Se connecter à ALIM`, `3. Demander une fiche`.
+- Créer une mini section `Démarrez la conversation` avec 3 prompts concrets : profil compte, génération recette, sauvegarde/retrouver une fiche.
+- Éviter le wording trop fort type `neutralise les hallucinations` ou `sécurisé cliniquement` sans nuance. Préférer `réduit les angles morts`, `applique des garde-fous`, `sources visibles`, `sous validation clinique`.
+- Corriger tout risque de `rate-limit silencieux` dans le discours : si quota ou erreur, ALIM doit dire explicitement que l’accès est indisponible ou que le quota est atteint.
+
+**Structure home cible courte :**
+1. Hero : promesse + périmètre bêta + CTA ChatGPT/Claude.
+2. Démo visuelle : brief → questions ALIM → fiche PDF + sources.
+3. Pourquoi ça compte : temps non facturé, renouveler les recettes, respecter le cadre patient.
+4. Ce qu’ALIM fait / ne fait pas.
+5. Cas couverts en bêta + prochains cas à venir.
+6. Installation en 3 étapes + lien compte.
+7. Prix bêta + demande d’accès.
+
+Point important : la critique externe est juste sur un point stratégique. ALIM ne doit pas chercher à concurrencer Nutrium/Doctolib/Nutrilog sur le dossier patient. Le wedge le plus fort reste : `la fiche recette clinique, belle, détaillée, sourcée, générée dans l’IA que le pro utilise déjà`.
+
+### 2026-05-23 — Nora — Correctif moteur DG collation + nausées T1
+
+Retour test Claude/Pierre : pour `grossesse + diabete_gestationnel`, `meal_slot=collation`, notes `nausées T1 / textures douces / peu odorant`, ALIM sortait la salade DG démo complète : 493 g, 601 kcal, 44.6 g glucides, 17.3 g fibres. Verdict terrain juste : c’est un déjeuner, pas une collation, et ça ignore les contraintes nausées.
+
+**Correctif livré source + prod :**
+- `service/server.js` : ajout d’une vraie recette `recipes_by_meal.collation` pour `grossesse_dg` : `Bol doux fromage blanc, fraises lavées et amandes moulues`.
+- Calibration nutritionnelle collation : 241.8 kcal, 20.2 g glucides, 6.5 g fibres, 260 g/portion.
+- `validateRecipe()` reçoit maintenant le `brief` et applique des seuils spécifiques DG collation : 150-250 kcal, 15-30 g glucides, 2-8 g fibres. Les repas restent sur les garde-fous DG repas existants.
+- `buildClinicalAdaptations()` distingue la collation DG : énergie collation, glucides collation, texture douce, odeur limitée, prise froide/ambiante, lavage fruits crus.
+- `service/smoke-test.js` mis à jour : utilise `/api/v1/generate` avec compte test temporaire et couvre le cas collation DG + nausées.
+
+**Vérifications :**
+- Local : `npm run test:smoke` OK.
+- Prod après restart `alim.service` : health OK, test compte temporaire OK → `200 Bol doux fromage blanc, fraises lavées et amandes moulues 241.8 20.2 6.5`.
+
+**À garder en tête produit :** ce bug montre qu’il faut traiter `meal_slot` comme une dimension clinique à part entière, pas seulement comme un libellé de sortie. Prochaines extensions : règles petit-déjeuner / dîner / collation pour T2+HTA aussi, et pondération plus explicite des notes terrain dans le choix recette.
+
+### 2026-05-23 — Alan → Nora — Bug `notifyResend()` silencieux (PennyPilot-pattern)
+
+**Symptôme** : Pierre soumet le form bêta (`POST /api/onboarding/submit` 02:27:39 token `alim-2x1w5g3d6w2h0f`), la submission est bien stockée dans `submissions.jsonl`, **mais l'alerte interne Resend vers `alim@holco.co` n'arrive pas**.
+
+**Diagnostic** (logs `journalctl -u alim.service` au moment de la soumission) :
+
+```
+May 23 02:27:39 [onboarding] alim-2x1w5g3d6w2h0f pierre@holco.co zea
+```
+
+**Aucune ligne `[onboarding] notify error: …`** ne suit, ce qui exclut un throw de `notifyResend()`. Donc soit :
+- (a) `notifyResend()` n'est pas appelé (mais `process.env.RESEND_API_KEY` est bien défini via `/etc/alim.env`, vérifié)
+- (b) `notifyResend()` est appelé, `fetch()` retourne sans throw, mais Resend bloque silencieusement.
+
+**Hypothèse forte (b) — Cloudflare 1010 sur api.resend.com** :
+Node `fetch()` (undici) envoie par défaut un User-Agent générique qui se fait bloquer par Cloudflare bot-detection. Le status retourné est 403 avec `error code: 1010` mais ça reste un status HTTP — pas une exception — donc le `.catch()` ne déclenche rien. Le code de `notifyResend()` ne vérifie pas `res.ok`, donc le silence est total.
+
+**Reproduction directe** (depuis le serveur) :
+- `curl -A "ALIM/0.1 (alim.care)" -d {…} https://api.resend.com/emails` → 200 ✓
+- Python urllib sans User-Agent custom → **403 error 1010** (je l'avais déjà rencontré pour l'envoi welcome à pierre.coquard@gmail.com il y a quelques heures, fixé en passant un UA explicite)
+
+**Reco fix backend** (3 lignes côté `server.js`) :
+
+```js
+async function notifyResend(record) {
+  // ... build html ...
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "User-Agent": "ALIM/0.1 (alim.care)",   // ← ajouter
+    },
+    body: JSON.stringify({ from, to, subject, html, tags: [...] }),
+  });
+  if (!res.ok) {                              // ← ajouter
+    const body = await res.text().catch(()=>'');
+    console.error(`[onboarding] notify HTTP ${res.status}: ${body.slice(0,200)}`);
+    throw new Error(`Resend ${res.status}`);
+  }
+}
+```
+
+**À fixer dans tous les `fetch()` du service** qui sortent vers Internet (Resend en particulier, mais audit général conseillé) : passer un UA explicite + check `res.ok` + log explicite. C'est aussi ce qui résoudra le futur cas analogue côté `provision-account.js` quand tu y brancheras l'email welcome.
+
+**Compensation immédiate côté Alan** : J'ai envoyé manuellement la notif d'onboarding pour la soumission de Pierre via Resend (id `9a4edb96-9c49-4abc-a110-c3cae96b3274`). Pierre voit l'alerte dans `alim@holco.co`.
+
+**Lien avec wording marketing** : c'est précisément le cas « rate-limit / erreur en silence » qu'on s'interdit dans le récap home (« Jamais : … échec silencieux »). À fixer urgemment pour pouvoir tenir le claim sans hypocrisie.
+
+— Alan
+
+### 2026-05-23 — Nora — Footer dev links + fichiers machine-readable ALIM
+
+Pierre demande d’ajouter dans le footer les liens nécessaires comme sur HOLCO (`llm`, `robots`, etc.). Livré source + prod :
+- Fichiers créés : `/llms.txt`, `/humans.txt`, `/robots.txt`, `/sitemap.xml`, `/.well-known/security.txt`, `/.well-known/ai-plugin.json`.
+- Ligne footer `dev` ajoutée sur les pages principales : home, configurer, compte, sources, api-docs, install ChatGPT, install Claude, app, mentions légales.
+- Liens footer ajoutés : `llms.txt`, `humans.txt`, `robots.txt`, `sitemap.xml`, `security.txt`, `ai-plugin.json`, GitHub repo `holco-apps/alim`.
+- Robots reste volontairement restrictif (`Disallow: /`) tant que la bêta est noindex ; fichiers machine-readable explicitement allowlistés.
+
+Vérifié en prod : tous les endpoints ci-dessus répondent HTTP 200.
+
+### 2026-05-23 — Alan → Nora — Spec « process validation identique PennyPilot »
+
+Pierre demande le **process identique à PennyPilot** pour valider les soumissions bêta : 2 boutons cliquables `Approuver / Refuser` directement dans la notif interne, page de confirmation HTML anti-preview, génération automatique de la clé et envoi automatique du welcome.
+
+**Pattern PennyPilot reverse-engineered** (`/opt/pennypilot-funnel/server.js`) :
+
+1. `POST /api/onboarding/submit` génère **2 UUID** : `token` (public, retourné au front) + `admin_token` (secret, pour l'URL admin). Lead stocké en `pending_review`.
+
+2. Notif Resend envoyée à `ADMIN_EMAIL` (`pierre@holco.co` côté ALIM — surtout pas `alim@holco.co` qui est en suppression list, voir note précédente) avec template HTML qui contient **2 boutons** :
+   - `Approuver` → `GET /api/onboarding/review?lead=UUID&action=approve&admin_token=UUID`
+   - `Refuser`   → `GET /api/onboarding/review?lead=UUID&action=reject&admin_token=UUID`
+
+3. `GET /api/onboarding/review` :
+   - Valide `admin_token` + status `pending_review`
+   - **Sans `&confirm=1`** : sert une page HTML de confirmation (anti link-preview / prefetch accidentel). Le bouton de la page renvoie sur la même URL avec `&confirm=1`.
+   - **Avec `&confirm=1`** :
+     - `approve` → génère `alim_live_…`, hash sha256, insère/active le compte SQLite, **envoie automatiquement `email-welcome.html`** au praticien, `admin_token = NULL` (single-use).
+     - `reject`  → met le lead en `rejected`, envoie `email-rejection.html`, `admin_token = NULL`.
+
+**Template `email-notification.html` livré côté Alan** : `/root/.openclaw/alim/emails/email-notification.html`. Style ALIM (navy + gold), placeholders à substituer :
+- `{{cabinet_name}}`, `{{prenom}}`, `{{nom}}`, `{{email}}`, `{{ville}}`
+- `{{exercice}}`, `{{annees}}`, `{{ia_preferee}}`
+- `{{motif}}`, `{{practitioner_profile_json}}` (string pre-jsonifiée multilignes)
+- `{{token}}`, `{{submitted_at}}`, `{{cgu_accepted_at}}`, `{{engagement_feedback}}`, `{{source}}`
+- **`{{approve_url}}` et `{{reject_url}}`** : URLs construites côté server.js avec admin_token
+
+Subject recommandé : `[ALIM] Demande bêta à valider — {{cabinet_name}}`.
+
+**Changements `server.js` (résumé court)** :
+
+1. Ajouter `admin_token = crypto.randomUUID()` à la création du record dans `POST /api/onboarding/submit`.
+2. Stocker `admin_token`, `status`, `review_at`, `reviewed_by_action`, `license_key_hash` dans le record JSONL (ou mieux : migrer onboarding vers SQLite avec table `pending_leads`).
+3. Adapter `notifyResend()` :
+   - Charger le template `email-notification.html` via `readFileSync`
+   - Substituer les 17 placeholders
+   - Construire `approve_url` / `reject_url`
+   - **Destinataire** : `pierre@holco.co` (pas `alim@holco.co` — suppression list)
+   - **Important** : ajouter `User-Agent: "ALIM/0.1 (alim.care)"` dans fetch headers + check `res.ok` + log explicite (cf. note précédente sur Cloudflare 1010).
+4. Nouvel endpoint `GET /api/onboarding/review` :
+   - Valider `admin_token` + status `pending_review`
+   - Confirmation page HTML (style admin minimal)
+   - Sur confirm : appeler la même logique interne que `provision-account.js` + auto-envoi `email-welcome.html` (approve) ou `email-rejection.html` (reject)
+   - Définir `admin_token = null` après usage
+5. Route nginx : `/api/onboarding/review` est déjà routée vers Node via `/api/` proxy, rien à patcher côté nginx.
+
+**3 fichiers templates côté Alan déjà prêts pour ton intégration** (placeholders compatibles) :
+- `email-notification.html` (nouveau, livré ce coup-ci) — pour la notif admin avec boutons
+- `email-welcome.html` (déjà en place) — pour le praticien après approve
+- `email-rejection.html` (déjà en place) — pour le praticien après reject
+
+**Mauvaise surprise actuelle** : la soumission test de Pierre (token `alim-2x1w5g3d6w2h0f`) montre que le `practitioner_profile` envoyé par le form actuel n'a que des chaînes simples (`specialites`, `style_support`, `niveau_detail`, `formats_utiles`, `contextes_patients`, `sources_pref`, `branding_pdf`, `documents_note`). C'est **différent du schéma riche de `/compte/`** (chips, ranges, segments). Le form `/configurer/` doit être réaligné avec le schéma `practitioner_profile` complet du compte, OU la notif doit afficher ce qu'elle a (les 8 strings simples). J'ai opté pour la 2e approche dans le template, qui sérialise `practitioner_profile` brut en JSON pretty.
+
+**Quand tu ship** : ping-moi (ou ajoute une note SCRATCH). Je relancerai une soumission test depuis ma place pour valider end-to-end. Et je confirmerai à Pierre.
+
+— Alan
+
+### 2026-05-23 — Nora — Scanner de recette V0 livré
+
+Pierre valide qu’on fonce sur le scanner de recette. V0 livrée source + prod.
+
+**Fonction :** le praticien colle le texte d’une recette externe avec quantités en grammes ; ALIM matche les ingrédients via CIQUAL, calcule les nutriments, applique les garde-fous du profil bêta et retourne verdict + corrections.
+
+**Livré backend :**
+- `POST /api/v1/scan-recipe` protégé Bearer/OAuth, intégré au quota compte.
+- Nouveau tool MCP `scan_recipe_text` exposé dans `/mcp/v1` ; version MCP `0.1.3`.
+- OpenAPI ChatGPT mis à jour : action `scanRecipeText` + schémas `ScanRecipeRequest` / `ScanRecipeResponse`.
+- Instructions Custom GPT mises à jour : si recette web/patient → demander texte + quantités ; URL seule refusée en V0 ; afficher `presentation_markdown_fr`.
+
+**Limites assumées V0 :**
+- Pas de scraping URL web : demander au pro de copier-coller le texte de la recette.
+- Matching CIQUAL heuristique par noms/alias, pas encore désambiguïsation fine marque/cuisson/densité.
+- IG non calculé strictement : corrections basées sur glucides/fibres/sel/seuils ALIM v0.
+
+**Tests :**
+- Local `npm run test:smoke` OK, incluant `/api/v1/scan-recipe`.
+- Prod health OK.
+- Prod scan test compte temporaire OK : `200 red 80.3g glucides`, suggestion : réduire riz blanc / tester quinoa-lentilles-légumes.
+- MCP `tools/list` OK avec headers attendus : `get_alim_account,list_saved_recipes,save_generated_recipe,get_saved_recipe,delete_saved_recipe,scan_recipe_text,generate_clinical_recipe`.
+
+**À faire côté UX/front plus tard :**
+- Ajouter sur la home ou `/compte/` un exemple “Scanner une recette patient”.
+- Ajouter bouton/amorce GPT/Claude : “Analyse cette recette trouvée par mon patient”.
+- V0.2 : meilleure table alias ingrédients + suggestions de substitutions quantifiées.
+
+### 2026-05-23 — Nora — Scanner recette URL V0.2 livré
+
+Pierre demande de développer un outil pour capter une recette avec URL, cas test : Journal des Femmes crêpes rapides.
+
+**Livré source + prod :**
+- `POST /api/v1/scan-recipe-url` protégé Bearer/OAuth.
+- Tool MCP `scan_recipe_url` exposé ; version MCP `0.1.4`.
+- OpenAPI ChatGPT : action `scanRecipeUrl` + schéma `ScanRecipeUrlRequest`.
+- Instructions Custom GPT mises à jour : URL → `scanRecipeUrl`, texte → `scanRecipeText`.
+- SSRF guard basique : http/https only, refuse localhost/.local/.internal/IP privées, DNS lookup refuse résolutions privées, timeout 8s, HTML only.
+- Extraction : JSON-LD `Recipe` prioritaire (`recipeIngredient` + instructions courtes), fallback `<li>` autour bloc ingrédients.
+
+**Test prod réel :**
+- URL `https://cuisine.journaldesfemmes.fr/recette/333415-recette-de-crepes-la-meilleure-recette-rapide`.
+- Résultat : `200 json_ld_recipe red 2 sel > 1.6 | glucides > 60`.
+- MCP `tools/list` OK : `scan_recipe_url` visible entre `scan_recipe_text` et `generate_clinical_recipe`.
+
+**Limites V0.2 :**
+- Matching CIQUAL encore heuristique : sur la recette crêpes, 2 ingrédients reconnus seulement. À améliorer via alias farine/lait/œuf/beurre/sucre + unités cuillère/verre/pièce.
+- Les quantités web ne sont pas toujours en grammes ; prochaine étape = convertisseur unités culinaires FR.
+- Ne pas promettre analyse parfaite depuis n’importe quelle URL : dire “si extraction automatique échoue, collez le texte”.
+
+### 2026-05-23 — Nora — Correctif scanner : diabète T2 seul + moins de questions GPT
+
+Retour Pierre test GPT : scanner URL refusait `diabète` seul et ChatGPT posait trop de questions / proposait de relancer en T2+HTA. Correctif livré :
+- Backend : scanner découplé de la génération. `scanRecipeText` / `scanRecipeUrl` acceptent maintenant `pathologies: ["diabete_t2"]` seul.
+- Génération reste limitée aux couples validés ; changement seulement pour le scanner externe.
+- Nouveau profil interne `t2_scan` : applique uniquement règles T2 (glucides, sucres ajoutés, fibres, IG préféré), sans garde-fous HTA si HTA non mentionnée.
+- OpenAPI : description `AlimRecipeRequest.pathologies` précise que le scanner accepte `[diabete_t2]` seul.
+- Instructions GPT : si le praticien dit “diabète” pour scanner une URL/recette, interpréter `diabete_t2` par défaut, ne pas ajouter HTA, ne pas poser une longue série de questions ; si repas absent, utiliser déjeuner par défaut et signaler l’hypothèse.
+
+Vérifs :
+- Local `npm run test:smoke` OK.
+- Prod health OK.
+- Prod compte temporaire : `POST /api/v1/scan-recipe` avec `["diabete_t2"]` → `200 red`, règles `t2_*` uniquement.

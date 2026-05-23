@@ -104,9 +104,14 @@
   footer .wrap{width:min(1120px, calc(100% - 40px)); margin:0 auto}
   footer a{color:var(--gold)}
   .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px}
+  @media (max-width:640px){
+  }
 </style>
 </head>
 <body>
+
+
+</div>
 
 <header class="site-header">
   <div class="nav">
@@ -330,6 +335,16 @@
       <a href="/sources/">Corpus</a>
       <a href="/mentions-legales/">Mentions</a>
       <a href="mailto:alim@holco.co">alim@holco.co</a>
+    </div>
+      <div class="footer-dev-links" style="display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:14px; font:11px/1.4 JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.02em; color:rgba(104,112,131,.82)">
+      <span style="text-transform:uppercase; letter-spacing:.16em; color:rgba(104,112,131,.62)">dev</span>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/humans.txt">humans.txt</a>
+      <a href="/robots.txt">robots.txt</a>
+      <a href="/sitemap.xml">sitemap.xml</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <a href="/.well-known/ai-plugin.json">ai-plugin.json</a>
+      <a href="https://github.com/holco-apps/alim">github.com/holco-apps/alim</a>
     </div>
   </div>
 </footer>

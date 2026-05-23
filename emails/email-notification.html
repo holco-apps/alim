@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demande ALIM à valider — {{cabinet_name}}</title>
+</head>
+<body style="margin:0; padding:0; background:#f5f0e8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif; color:#111827; -webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f0e8;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:640px; background:#ffffff; border-radius:12px; box-shadow:0 1px 2px rgba(23,38,80,.04); overflow:hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding:28px 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" style="vertical-align:middle;">
+                    <span style="font-family: Georgia, 'Times New Roman', serif; font-size:30px; line-height:1; color:#172650; letter-spacing:-0.5px;">ALIM</span>
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f7da29; margin-left:6px; vertical-align:middle;"></span>
+                  </td>
+                  <td align="right" style="vertical-align:middle; font-family: 'Courier New', monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#9a661f;">
+                    ⚠ Admin · à valider
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding:32px 32px 0;">
+              <h1 style="margin:0; font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size:26px; line-height:1.2; letter-spacing:-0.5px; color:#172650;">
+                Nouvelle demande bêta&nbsp;: {{cabinet_name}}
+              </h1>
+              <p style="margin:10px 0 0; font-size:14px; color:#687083; line-height:1.55;">
+                Un praticien vient de soumettre une demande d'accès à la bêta ALIM. À valider manuellement&nbsp;: la décision (approuver / refuser) se prend ici, dans cet e-mail.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Bloc Praticien -->
+          <tr>
+            <td style="padding:28px 32px 0;">
+              <div style="font-family:'Courier New', monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#687083; margin-bottom:10px;">Praticien</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13.5px; line-height:1.6; border-collapse:collapse;">
+                <tr><td style="padding:4px 0; color:#687083; width:160px;">Nom</td><td style="padding:4px 0; color:#111827;"><strong>{{prenom}} {{nom}}</strong></td></tr>
+                <tr><td style="padding:4px 0; color:#687083;">E-mail</td><td style="padding:4px 0;"><a href="mailto:{{email}}" style="color:#233872;">{{email}}</a></td></tr>
+                <tr><td style="padding:4px 0; color:#687083;">Ville</td><td style="padding:4px 0; color:#111827;">{{ville}}</td></tr>
+                <tr><td style="padding:4px 0; color:#687083;">Mode d'exercice</td><td style="padding:4px 0; color:#111827;">{{exercice}} · {{annees}}</td></tr>
+                <tr><td style="padding:4px 0; color:#687083;">IA préférée</td><td style="padding:4px 0; color:#111827;">{{ia_preferee}}</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Bloc Cabinet -->
+          <tr>
+            <td style="padding:22px 32px 0;">
+              <div style="font-family:'Courier New', monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#687083; margin-bottom:10px;">Cabinet</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13.5px; line-height:1.6; border-collapse:collapse;">
+                <tr><td style="padding:4px 0; color:#687083; width:160px;">Nom du cabinet</td><td style="padding:4px 0; color:#111827;"><strong>{{cabinet_name}}</strong></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Motif -->
+          <tr>
+            <td style="padding:22px 32px 0;">
+              <div style="font-family:'Courier New', monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#687083; margin-bottom:10px;">Motif de la demande</div>
+              <p style="margin:0; padding:12px 14px; background:#fcfaf5; border:1px solid #ded8ca; border-radius:6px; font-size:13.5px; color:#3f4860; line-height:1.55;">
+                {{motif}}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Profil de pratique (welcome praticien) -->
+          <tr>
+            <td style="padding:22px 32px 0;">
+              <div style="font-family:'Courier New', monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#687083; margin-bottom:10px;">Profil de pratique déclaré</div>
+              <pre style="margin:0; padding:14px 16px; background:#fcfaf5; border:1px solid #ded8ca; border-radius:6px; font:11.5px/1.55 'Courier New', monospace; color:#3f4860; white-space:pre-wrap; word-break:break-word;">{{practitioner_profile_json}}</pre>
+            </td>
+          </tr>
+
+          <!-- Décision -->
+          <tr>
+            <td style="padding:32px 32px 0;">
+              <hr style="border:0; border-top:1px solid #ded8ca; margin:0 0 20px;">
+              <h2 style="margin:0 0 14px; font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size:20px; color:#172650;">
+                Décision
+              </h2>
+              <p style="margin:0 0 18px; font-size:13.5px; color:#687083; line-height:1.55;">
+                Approuver génère la clé <code style="background:#f5f0e8; padding:1px 5px; border-radius:3px;">alim_live_…</code> et envoie automatiquement l'e-mail de bienvenue au praticien. Refuser envoie un message courtois. Les deux liens sont à usage unique.
+              </p>
+
+              <!-- Boutons -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding-right:10px;">
+                    <a href="{{approve_url}}" style="display:inline-block; padding:13px 24px; background:#286c4d; color:#ffffff; text-decoration:none; border-radius:8px; font:600 14.5px/1 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+                      ✓ Approuver et envoyer la clé
+                    </a>
+                  </td>
+                  <td>
+                    <a href="{{reject_url}}" style="display:inline-block; padding:13px 24px; background:#ffffff; color:#8a2a2a; text-decoration:none; border:1.5px solid #8a2a2a; border-radius:8px; font:600 14.5px/1 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+                      ✗ Refuser cette demande
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:14px 0 0; font-size:12px; color:#9aa3b5; line-height:1.5;">
+                Anti-prefetch&nbsp;: les liens mènent vers une page de confirmation. Cliquez une seule fois.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Traces -->
+          <tr>
+            <td style="padding:28px 32px 0;">
+              <div style="font-family:'Courier New', monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#687083; margin-bottom:10px;">Traces</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:12.5px; line-height:1.6; border-collapse:collapse; color:#687083;">
+                <tr><td style="padding:3px 0; width:160px;">Token soumission</td><td style="padding:3px 0; font-family:'Courier New', monospace;">{{token}}</td></tr>
+                <tr><td style="padding:3px 0;">Soumis le</td><td style="padding:3px 0;">{{submitted_at}}</td></tr>
+                <tr><td style="padding:3px 0;">CGU acceptées</td><td style="padding:3px 0;">{{cgu_accepted_at}}</td></tr>
+                <tr><td style="padding:3px 0;">Engagement retour</td><td style="padding:3px 0;">{{engagement_feedback}}</td></tr>
+                <tr><td style="padding:3px 0;">Source</td><td style="padding:3px 0;">{{source}}</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:32px 32px 28px;">
+              <hr style="border:0; border-top:1px solid #ded8ca; margin:0 0 18px;">
+              <p style="margin:0; font-size:12.5px; color:#687083; line-height:1.55;">
+                ALIM admin · <a href="mailto:{{email}}" style="color:#233872;">Répondre directement au praticien</a> · <a href="https://alim.care/" style="color:#233872;">alim.care</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

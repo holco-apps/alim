@@ -529,17 +529,21 @@
   /* ---------- footer ---------- */
   footer{
     background:var(--navy-deep); color:#d6dded;
-    padding:32px 0 48px; font-size:13px;
+    padding:36px 0 54px; font-size:13px;
   }
   footer a{color:var(--gold)}
   footer .wrap{
-    width:min(1200px, calc(100% - 40px)); margin:0 auto;
+    width:min(1120px, calc(100% - 40px)); margin:0 auto;
   }
-  footer .disclaimer{font-style:italic; margin:0 0 14px; line-height:1.5; max-width:80ch}
-  footer .links{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px}
+  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:16px}
+  @media (max-width:640px){
+  }
 </style>
 </head>
 <body>
+
+
+</div>
 
 <header class="site-header">
   <div class="nav">
@@ -688,17 +692,25 @@
 
 <footer>
   <div class="wrap">
-    <p class="disclaimer">
-      ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO ni les organismes cités. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab&nbsp;2.0.
-    </p>
-    <div class="links">
-      <a href="/">Accueil</a>
+    <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO INVEST ni les organismes cités. Aucune donnée patient n'est collectée. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab 2.0.</p>
+    <div class="footer-links">
       <a href="/configurer/">Rejoindre la bêta</a>
-      <a href="/api-docs/">API</a>
+      <a href="/compte/">Mon compte</a>
+      <a href="/sources/">Corpus</a>
       <a href="/mentions-legales/">Mentions légales</a>
       <a href="mailto:alim@holco.co">alim@holco.co</a>
       <a href="https://holco.co/">HOLCO</a>
-      <span style="color:#9aa6c4">© 2026 HOLCO</span>
+      <span>© 2026 HOLCO</span>
+    </div>
+      <div class="footer-dev-links" style="display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:14px; font:11px/1.4 JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.02em; color:rgba(104,112,131,.82)">
+      <span style="text-transform:uppercase; letter-spacing:.16em; color:rgba(104,112,131,.62)">dev</span>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/humans.txt">humans.txt</a>
+      <a href="/robots.txt">robots.txt</a>
+      <a href="/sitemap.xml">sitemap.xml</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <a href="/.well-known/ai-plugin.json">ai-plugin.json</a>
+      <a href="https://github.com/holco-apps/alim">github.com/holco-apps/alim</a>
     </div>
   </div>
 </footer>

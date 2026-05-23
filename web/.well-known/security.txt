@@ -1,0 +1,5 @@
+Contact: mailto:alim@holco.co
+Preferred-Languages: fr, en
+Canonical: https://alim.care/.well-known/security.txt
+Policy: https://alim.care/mentions-legales/
+

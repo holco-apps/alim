@@ -1,0 +1,30 @@
+/* TEAM */
+
+Owner: HOLCO INVEST
+Founder: Pierre Coquard
+Site: https://alim.care/
+Contact: alim@holco.co
+Company: https://holco.co/
+
+/* PRODUCT */
+
+Name: ALIM
+Purpose: Clinical recipe formulation assistant for nutrition professionals.
+Status: Private beta.
+Primary users: dietitians and nutrition professionals.
+
+/* TECHNOLOGY */
+
+Runtime: Node.js, static HTML/CSS/JS, nginx, SQLite.
+AI clients: ChatGPT Actions, Claude remote MCP connector.
+Clinical data: ANSES Ciqual 2025 and documented public references listed on /sources/.
+
+/* STANDARDS */
+
+llms.txt: /llms.txt
+robots.txt: /robots.txt
+sitemap.xml: /sitemap.xml
+security.txt: /.well-known/security.txt
+
+Last updated: 2026-05-23
+

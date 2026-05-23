@@ -1,0 +1,21 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "ALIM",
+  "name_for_model": "alim",
+  "description_for_human": "Assistant de formulation de fiches recettes cliniques pour professionnels de la nutrition.",
+  "description_for_model": "ALIM helps authorized nutrition professionals generate structured clinical recipe sheets from anonymized patient briefs. It requires account authorization and does not replace clinical judgment.",
+  "auth": {
+    "type": "oauth",
+    "client_url": "https://alim.care/oauth/authorize",
+    "scope": "alim.generate",
+    "authorization_url": "https://alim.care/oauth/token",
+    "authorization_content_type": "application/x-www-form-urlencoded"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://alim.care/chatgpt/openapi.yaml"
+  },
+  "logo_url": "https://alim.care/assets/alim-logo.png",
+  "contact_email": "alim@holco.co",
+  "legal_info_url": "https://alim.care/mentions-legales/"
+}

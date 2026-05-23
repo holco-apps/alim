@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://alim.care/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/configurer/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/compte/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/sources/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/install/chatgpt/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/install/claude/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/api-docs/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/mentions-legales/</loc>
+  </url>
+  <url>
+    <loc>https://alim.care/llms.txt</loc>
+  </url>
+</urlset>
+

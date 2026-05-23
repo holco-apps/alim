@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>ALIM — générateur bêta</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Application bêta ALIM : générer une fiche recette nutritionnelle cadrée avec une clé ALIM active.">
+<meta name="theme-color" content="#233872">
+<link rel="icon" href="/assets/alim-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#233872; --navy-deep:#172650; --gold:#f7da29; --gold-soft:#fff6b7;
+    --paper:#f5f0e8; --paper-alt:#fcfaf5; --white:#fff; --ink:#111827;
+    --ink-soft:#3f4860; --muted:#687083; --line:#ded8ca; --line-strong:#c4bba6;
+    --ok:#286c4d; --warn:#9a661f; --bad:#8a2a2a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink); font:15px/1.55 Inter, system-ui, sans-serif; -webkit-font-smoothing:antialiased}
+  a{color:var(--navy); text-decoration-thickness:1px; text-underline-offset:3px}
+  h1,h2,h3{margin:0; font-family:"Instrument Serif", Georgia, serif; font-weight:400; color:var(--navy-deep); line-height:1.08}
+  p{margin:0}
+  .shell{min-height:100vh; display:grid; grid-template-columns:280px 1fr}
+  aside{background:var(--navy-deep); color:#d6dded; padding:28px 24px; position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:24px}
+  .brand{display:flex; align-items:center; justify-content:space-between; gap:12px; color:#fff; text-decoration:none}
+  .brand svg{height:36px; width:auto}
+  .beta{font:600 11px/1 "JetBrains Mono", monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--gold)}
+  .side-copy{font-size:13px; color:#aeb8d4}
+  .side-nav{display:grid; gap:8px; margin-top:6px}
+  .side-nav a{color:#d6dded; text-decoration:none; padding:9px 10px; border-radius:6px; font-size:13px}
+  .side-nav a:hover,.side-nav a.current{background:rgba(255,255,255,.08); color:#fff}
+  .account-box{margin-top:auto; border:1px solid rgba(255,255,255,.14); border-radius:8px; padding:14px; background:rgba(255,255,255,.05)}
+  .account-name{font-weight:650; color:#fff}
+  .account-meta{margin-top:4px; font-size:12px; color:#aeb8d4}
+  .account-pill{display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:5px 8px; border-radius:999px; background:rgba(247,218,41,.12); color:var(--gold); font:600 11px/1 "JetBrains Mono", monospace}
+  main{padding:40px min(5vw,64px) 72px}
+  .topbar{display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:30px}
+  .kicker{font:600 11px/1 "JetBrains Mono", monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:12px}
+  h1{font-size:clamp(32px,4vw,52px); letter-spacing:-.02em}
+  .lede{margin-top:12px; max-width:65ch; color:var(--ink-soft); font-size:15.5px}
+  .button,.ghost{display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:10px 15px; border-radius:6px; font:650 13px/1 Inter, sans-serif; cursor:pointer; text-decoration:none}
+  .button{border:0; background:var(--navy); color:#fff}
+  .button:hover{background:var(--navy-deep)}
+  .button:disabled{background:#9ca3af; cursor:not-allowed}
+  .ghost{border:1px solid var(--line); background:#fff; color:var(--ink-soft)}
+  .ghost:hover{border-color:var(--navy); color:var(--navy)}
+  .layout{display:grid; grid-template-columns:minmax(360px,520px) minmax(0,1fr); gap:22px; align-items:start}
+  .panel{background:#fff; border:1px solid var(--line); border-radius:10px; padding:22px; box-shadow:0 18px 44px -36px rgba(23,38,80,.25)}
+  .panel h2{font-size:25px; margin-bottom:8px}
+  .panel-sub{color:var(--muted); font-size:13.5px; margin-bottom:18px}
+  .field{margin-top:16px}
+  label{display:block; font-weight:600; font-size:13px; margin-bottom:7px; color:var(--ink)}
+  input,select,textarea{width:100%; border:1px solid var(--line); border-radius:6px; background:var(--paper-alt); padding:10px 12px; font:14px/1.4 Inter, sans-serif; color:var(--ink)}
+  textarea{min-height:96px; resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:0; border-color:var(--navy); box-shadow:0 0 0 3px rgba(35,56,114,.12)}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{border:1px solid var(--line); background:var(--paper-alt); color:var(--ink-soft); border-radius:999px; padding:8px 12px; font:600 12px/1 Inter, sans-serif; cursor:pointer}
+  .chip[aria-pressed=true]{background:var(--navy); border-color:var(--navy); color:#fff}
+  .connect{display:flex; gap:8px; margin-top:14px}
+  .connect input{font-family:"JetBrains Mono", monospace}
+  .alert{margin-top:14px; padding:12px 14px; border-radius:7px; font-size:13px}
+  .alert.ok{background:#e6f5ec; border:1px solid #bfe2cd; color:var(--ok)}
+  .alert.warn{background:#fff5e6; border:1px solid #f4d199; color:#7a4d10}
+  .alert.bad{background:#fef2f2; border:1px solid #fca5a5; color:#991b1b}
+  .result{min-height:420px}
+  .empty{height:420px; display:grid; place-items:center; text-align:center; border:1px dashed var(--line); border-radius:8px; color:var(--muted); background:var(--paper-alt); padding:24px}
+  .output{display:none}
+  .output.is-visible{display:block}
+  .recipe-md{font-size:14px; color:var(--ink-soft)}
+  .recipe-md h2,.recipe-md h3{font-family:Inter, sans-serif; font-weight:700; letter-spacing:0; color:var(--ink); margin:22px 0 9px; line-height:1.25}
+  .recipe-md h2{font-size:22px; color:var(--navy-deep)}
+  .recipe-md h3{font-size:15px}
+  .recipe-md p{margin:8px 0}
+  .recipe-md ul,.recipe-md ol{padding-left:20px}
+  .recipe-md li{margin:5px 0}
+  .recipe-md table{width:100%; border-collapse:collapse; margin:10px 0 18px; font-size:13px}
+  .recipe-md th,.recipe-md td{border-bottom:1px solid var(--line); padding:8px; text-align:right}
+  .recipe-md th:first-child,.recipe-md td:first-child{text-align:left}
+  .result-actions{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+  .tag{display:inline-flex; border:1px solid var(--line); background:var(--paper-alt); color:var(--muted); border-radius:999px; padding:5px 9px; font:600 11px/1 "JetBrains Mono", monospace}
+  footer{background:var(--navy-deep); color:#d6dded; padding:36px 0 54px; font-size:13px}
+  footer a{color:var(--gold)}
+  footer .wrap{width:min(1120px, calc(100% - 40px)); margin:0 auto}
+  .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:16px}
+  @media (max-width:980px){
+    .shell{grid-template-columns:1fr}
+    aside{position:static; height:auto}
+    .layout{grid-template-columns:1fr}
+    .topbar{display:block}
+  }
+  @media print{
+    aside,.topbar,.panel:first-child,.result-actions{display:none}
+    .shell{display:block}
+    main{padding:0}
+    .panel{border:0; box-shadow:none}
+    .output{display:block}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <a class="brand" href="/" aria-label="ALIM">
+      <svg viewBox="0 0 130 44" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ALIM"><text x="0" y="34" font-family="Instrument Serif, Georgia, serif" font-size="36" font-weight="500" fill="currentColor" letter-spacing="0.5">ALIM</text><circle cx="120" cy="24" r="6" fill="#f7da29"/></svg>
+      <span class="beta">Bêta</span>
+    </a>
+    <p class="side-copy">Générez une fiche recette depuis le web quand ChatGPT ou Claude ne permettent pas encore l’installation simple.</p>
+    <nav class="side-nav">
+      <a class="current" href="/app/">Générer</a>
+      <a href="/compte/">Mon compte</a>
+      <a href="/sources/">Corpus</a>
+      <a href="/configurer/">Rejoindre la bêta</a>
+    </nav>
+    <div class="account-box">
+      <div class="account-name" id="sideName">Non connecté</div>
+      <div class="account-meta" id="sideMeta">Collez votre clé ALIM pour charger vos préférences.</div>
+      <span class="account-pill" id="sidePill">clé requise</span>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <p class="kicker">Application web</p>
+        <h1>Générer une fiche ALIM.</h1>
+        <p class="lede">Pour les pros qui utilisent ChatGPT gratuit, n’ont pas accès aux Actions, ou veulent simplement tester ALIM sans configuration technique.</p>
+      </div>
+      <a class="ghost" href="/compte/">Modifier mes préférences</a>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <h2>Connexion</h2>
+        <p class="panel-sub">Votre clé reste dans ce navigateur et sert uniquement à appeler votre compte ALIM.</p>
+        <div class="connect">
+          <input id="keyInput" type="text" placeholder="alim_live_..." autocomplete="off" spellcheck="false">
+          <button class="button" id="connectBtn" type="button">Charger</button>
+        </div>
+        <div id="connectAlert"></div>
+        <div class="meta-row" id="profileTags"></div>
+
+        <h2 style="margin-top:28px">Brief patient</h2>
+        <p class="panel-sub">Un appel génère une seule fiche. Pour plusieurs repas, lancez plusieurs générations.</p>
+
+        <div class="field">
+          <label>Situation couverte</label>
+          <div class="chips" id="scopeChips">
+            <button type="button" class="chip" data-scope="t2_hta" aria-pressed="true">Diabète T2 + HTA</button>
+            <button type="button" class="chip" data-scope="grossesse_dg" aria-pressed="false">Grossesse + diabète gestationnel</button>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label for="meal">Repas</label>
+            <select id="meal">
+              <option value="petit_dejeuner">Petit-déjeuner</option>
+              <option value="dejeuner">Déjeuner</option>
+              <option value="diner" selected>Dîner</option>
+              <option value="collation">Collation</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="diet">Préférence</label>
+            <select id="diet">
+              <option value="omnivore">Omnivore</option>
+              <option value="vegetarien" selected>Végétarien</option>
+              <option value="vegan">Végan</option>
+              <option value="pescetarien">Pescétarien</option>
+              <option value="sans_gluten">Sans gluten</option>
+              <option value="sans_lactose">Sans lactose</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label for="season">Saison</label>
+            <select id="season">
+              <option value="all">Toutes saisons</option>
+              <option value="printemps">Printemps</option>
+              <option value="ete">Été</option>
+              <option value="automne">Automne</option>
+              <option value="hiver">Hiver</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="portions">Portions</label>
+            <select id="portions">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Équipement disponible</label>
+          <div class="chips" id="equipmentChips">
+            <button type="button" class="chip" data-key="plaque" aria-pressed="true">Plaque</button>
+            <button type="button" class="chip" data-key="four" aria-pressed="true">Four</button>
+            <button type="button" class="chip" data-key="vapeur" aria-pressed="false">Vapeur</button>
+            <button type="button" class="chip" data-key="micro_ondes" aria-pressed="false">Micro-ondes</button>
+            <button type="button" class="chip" data-key="blender" aria-pressed="false">Blender</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Notes anonymisées</label>
+          <textarea id="notes" placeholder="Ex : fonction rénale conservée, dîner familial, peu de temps, pas de champignons. Aucun nom, téléphone, e-mail ou date de naissance.">fonction rénale conservée</textarea>
+        </div>
+
+        <button class="button" id="generateBtn" type="button" style="width:100%; margin-top:18px">Générer la fiche</button>
+        <div id="generateAlert"></div>
+      </section>
+
+      <section class="panel result">
+        <div class="result-actions">
+          <button class="ghost" id="copyBtn" type="button" disabled>Copier</button>
+          <button class="ghost" id="printBtn" type="button" disabled>Imprimer</button>
+          <a class="ghost" id="pdfBtn" href="#" target="_blank" rel="noopener" style="pointer-events:none; opacity:.45">PDF patient</a>
+        </div>
+        <div class="empty" id="emptyState">
+          <div>
+            <h2>Votre fiche apparaîtra ici.</h2>
+            <p style="margin-top:8px">Connectez votre clé, renseignez le brief patient, puis lancez la génération.</p>
+          </div>
+        </div>
+        <article class="output recipe-md" id="output"></article>
+      </section>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO INVEST ni les organismes cités. Aucune donnée patient n'est collectée. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab 2.0.</p>
+    <div class="footer-links">
+      <a href="/configurer/">Rejoindre la bêta</a>
+      <a href="/compte/">Mon compte</a>
+      <a href="/sources/">Corpus</a>
+      <a href="/mentions-legales/">Mentions légales</a>
+      <a href="mailto:alim@holco.co">alim@holco.co</a>
+      <a href="https://holco.co/">HOLCO</a>
+      <span>© 2026 HOLCO</span>
+    </div>
+      <div class="footer-dev-links" style="display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:14px; font:11px/1.4 JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.02em; color:rgba(104,112,131,.82)">
+      <span style="text-transform:uppercase; letter-spacing:.16em; color:rgba(104,112,131,.62)">dev</span>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/humans.txt">humans.txt</a>
+      <a href="/robots.txt">robots.txt</a>
+      <a href="/sitemap.xml">sitemap.xml</a>
+      <a href="/.well-known/security.txt">security.txt</a>
+      <a href="/.well-known/ai-plugin.json">ai-plugin.json</a>
+      <a href="https://github.com/holco-apps/alim">github.com/holco-apps/alim</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => Array.from(document.querySelectorAll(s));
+  const KEY_STORAGE = "alim_account_key";
+  let lastMarkdown = "";
+
+  function getKey(){ try { return localStorage.getItem(KEY_STORAGE) || ""; } catch { return ""; } }
+  function setKey(key){ try { localStorage.setItem(KEY_STORAGE, key); } catch {} }
+  function alertInto(target, kind, html){ $(target).innerHTML = html ? `<div class="alert ${kind}">${html}</div>` : ""; }
+  function bearerHeaders(){
+    const key = getKey();
+    return key ? { "Authorization": `Bearer ${key}` } : {};
+  }
+  function escapeHtml(text){
+    return String(text || "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  }
+  function markdownToHtml(md){
+    const lines = String(md || "").split("\n");
+    let html = "";
+    let inUl = false, inOl = false, inTable = false;
+    const closeLists = () => {
+      if (inUl) { html += "</ul>"; inUl = false; }
+      if (inOl) { html += "</ol>"; inOl = false; }
+    };
+    for (let i = 0; i < lines.length; i++) {
+      const raw = lines[i];
+      const line = raw.trim();
+      if (!line) { closeLists(); if (inTable) { html += "</tbody></table>"; inTable = false; } continue; }
+      if (line.startsWith("|") && line.endsWith("|")) {
+        closeLists();
+        if (i + 1 < lines.length && /^\|[-:\s|]+\|$/.test(lines[i + 1].trim())) {
+          const heads = line.split("|").slice(1, -1).map(h => `<th>${inline(h.trim())}</th>`).join("");
+          html += `<table><thead><tr>${heads}</tr></thead><tbody>`;
+          inTable = true; i++;
+          continue;
+        }
+        if (inTable) {
+          const cells = line.split("|").slice(1, -1).map(c => `<td>${inline(c.trim())}</td>`).join("");
+          html += `<tr>${cells}</tr>`;
+          continue;
+        }
+      }
+      if (inTable) { html += "</tbody></table>"; inTable = false; }
+      if (line.startsWith("## ")) { closeLists(); html += `<h2>${inline(line.slice(3))}</h2>`; continue; }
+      if (line.startsWith("### ")) { closeLists(); html += `<h3>${inline(line.slice(4))}</h3>`; continue; }
+      if (line.startsWith("- ")) {
+        if (!inUl) { closeLists(); html += "<ul>"; inUl = true; }
+        html += `<li>${inline(line.slice(2))}</li>`; continue;
+      }
+      if (/^\d+\.\s+/.test(line)) {
+        if (!inOl) { closeLists(); html += "<ol>"; inOl = true; }
+        html += `<li>${inline(line.replace(/^\d+\.\s+/, ""))}</li>`; continue;
+      }
+      closeLists();
+      html += `<p>${inline(line)}</p>`;
+    }
+    closeLists();
+    if (inTable) html += "</tbody></table>";
+    return html;
+  }
+  function inline(text){
+    return escapeHtml(text)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\[(.+?)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  }
+  function selectedChip(group, attr){
+    return $(`#${group} .chip[aria-pressed="true"]`)?.dataset[attr] || "";
+  }
+  function selectedKeys(group){
+    return $$(`#${group} .chip[aria-pressed="true"]`).map(b => b.dataset.key);
+  }
+  function pathologies(){
+    return selectedChip("scopeChips", "scope") === "grossesse_dg"
+      ? ["grossesse", "diabete_gestationnel"]
+      : ["diabete_t2", "hta"];
+  }
+  function buildPayload(){
+    return {
+      pathologies: pathologies(),
+      meal_slot: $("#meal").value,
+      diet_type: $("#diet").value,
+      season: $("#season").value,
+      portions: Number($("#portions").value || 1),
+      equipment: selectedKeys("equipmentChips"),
+      notes: $("#notes").value.trim()
+    };
+  }
+  async function loadAccount(key){
+    if (key) setKey(key);
+    const stored = getKey();
+    if (!stored) return;
+    $("#keyInput").value = stored;
+    alertInto("#connectAlert", "warn", "Chargement du compte...");
+    const res = await fetch("/api/v1/me", { headers: bearerHeaders() });
+    if (!res.ok) {
+      alertInto("#connectAlert", "bad", res.status === 403 ? "Compte non actif ou clé désactivée." : "Clé invalide ou compte introuvable.");
+      $("#sideName").textContent = "Non connecté";
+      $("#sideMeta").textContent = "Vérifiez votre clé ALIM.";
+      $("#sidePill").textContent = "erreur";
+      return;
+    }
+    const data = await res.json();
+    const account = data.account || {};
+    $("#sideName").textContent = account.display_name || account.email || "Compte ALIM";
+    $("#sideMeta").textContent = `${account.plan || "beta"} · ${account.usage_month ?? 0}/${account.quota_month ?? "?"} générations`;
+    $("#sidePill").textContent = "actif";
+    const p = account.practitioner_profile || {};
+    const tags = [
+      p.tone && `ton ${p.tone}`,
+      p.preferences?.source_display && `sources ${p.preferences.source_display}`,
+      p.preferences?.culinary_creativity && `créativité ${p.preferences.culinary_creativity}/5`
+    ].filter(Boolean);
+    $("#profileTags").innerHTML = tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("");
+    alertInto("#connectAlert", "ok", "Compte chargé. Vos préférences ALIM seront transmises avec la génération.");
+  }
+  async function generate(){
+    if (!getKey()) { alertInto("#generateAlert", "bad", "Collez d'abord votre clé ALIM."); return; }
+    $("#generateBtn").disabled = true;
+    $("#generateBtn").textContent = "Génération...";
+    alertInto("#generateAlert", "warn", "ALIM calcule la fiche...");
+    try {
+      const res = await fetch("/api/v1/generate", {
+        method: "POST",
+        headers: { ...bearerHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(buildPayload())
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.refused) {
+        alertInto("#generateAlert", "bad", data.refused?.reason_fr || `Erreur HTTP ${res.status}`);
+        return;
+      }
+      lastMarkdown = data.presentation_markdown_fr || data.professional_sheet?.presentation_markdown_fr || "";
+      $("#emptyState").style.display = "none";
+      $("#output").classList.add("is-visible");
+      $("#output").innerHTML = markdownToHtml(lastMarkdown || JSON.stringify(data, null, 2));
+      $("#copyBtn").disabled = false;
+      $("#printBtn").disabled = false;
+      if (data.pdf_url) {
+        $("#pdfBtn").href = data.pdf_url;
+        $("#pdfBtn").style.pointerEvents = "";
+        $("#pdfBtn").style.opacity = "";
+      }
+      alertInto("#generateAlert", "ok", "Fiche générée. À valider cliniquement avant transmission.");
+    } catch (err) {
+      alertInto("#generateAlert", "bad", `Erreur réseau : ${escapeHtml(err.message || err)}`);
+    } finally {
+      $("#generateBtn").disabled = false;
+      $("#generateBtn").textContent = "Générer la fiche";
+    }
+  }
+
+  $$("#scopeChips .chip").forEach(btn => btn.addEventListener("click", () => {
+    $$("#scopeChips .chip").forEach(b => b.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+    $("#notes").value = btn.dataset.scope === "grossesse_dg"
+      ? "trimestre et statut toxoplasmose à préciser si connus"
+      : "fonction rénale conservée";
+  }));
+  $$("#equipmentChips .chip").forEach(btn => btn.addEventListener("click", () => {
+    btn.setAttribute("aria-pressed", btn.getAttribute("aria-pressed") === "true" ? "false" : "true");
+  }));
+  $("#connectBtn").addEventListener("click", () => loadAccount($("#keyInput").value.trim()));
+  $("#generateBtn").addEventListener("click", generate);
+  $("#copyBtn").addEventListener("click", async () => navigator.clipboard?.writeText(lastMarkdown));
+  $("#printBtn").addEventListener("click", () => window.print());
+
+  const queryKey = new URLSearchParams(location.search).get("key");
+  if (queryKey) history.replaceState(null, "", location.pathname);
+  loadAccount(queryKey || getKey()).catch(() => {});
+})();
+</script>
+</body>
+</html>
