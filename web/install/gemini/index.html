@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ajouter ALIM dans Gemini — installation MCP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Activer ALIM dans Gemini via Gemini CLI et MCP : endpoint ALIM, clé Bearer, exemples de prompts et fonctions disponibles.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<meta name="theme-color" content="#233872">
+<link rel="icon" href="/assets/alim-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#233872; --navy-deep:#172650; --gold:#f7da29;
+    --paper:#f5f0e8; --paper-alt:#fcfaf5; --white:#fff;
+    --ink:#111827; --ink-soft:#3f4860; --muted:#687083;
+    --line:#ded8ca; --ok:#286c4d; --gemini:#4285f4; --gemini-soft:#e8f0fe;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:84px}
+  body{margin:0; color:var(--ink); background:var(--paper); font:16px/1.55 Inter, system-ui, sans-serif}
+  a{color:var(--navy); text-underline-offset:3px}
+  h1,h2,h3{margin:0; font-family:"Instrument Serif", Georgia, serif; font-weight:400; line-height:1.08; color:var(--navy-deep)}
+  p{margin:0}
+  code,pre{font-family:"JetBrains Mono", ui-monospace, monospace}
+  .nav{height:86px; width:min(1120px, calc(100% - 40px)); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px}
+  .site-header{position:sticky; top:0; z-index:10; background:rgba(252,250,245,.92); backdrop-filter:blur(14px); border-bottom:1px solid rgba(35,56,114,.10)}
+  .brand{display:flex; align-items:center; gap:10px; color:var(--navy); text-decoration:none; font-weight:700}
+  .brand img{width:36px; height:36px}
+  .nav-links{display:flex; gap:18px; font-size:14px}
+  .nav-links a{text-decoration:none; color:#4b5567}
+  .wrap{width:min(920px, calc(100% - 40px)); margin:0 auto}
+  main{padding:48px 0 88px}
+  .kicker{display:inline-flex; gap:8px; align-items:center; margin-bottom:14px; font:600 11px/1 "JetBrains Mono", monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
+  .pill{display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:999px; background:var(--gemini-soft); color:var(--gemini); border:1px solid rgba(66,133,244,.28)}
+  .dot{width:6px; height:6px; background:var(--gemini); border-radius:50%}
+  h1{font-size:clamp(34px, 5vw, 54px); letter-spacing:-.02em}
+  h1 em{font-style:italic; color:var(--navy)}
+  .lede{margin-top:16px; max-width:68ch; color:var(--ink-soft); font-size:16px}
+  .notice{margin-top:24px; padding:16px 18px; background:#fff; border:1px solid rgba(154,102,31,.25); border-left:4px solid #9a661f; border-radius:8px; color:var(--ink-soft); font-size:14px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:34px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}.nav-links{display:none}}
+  .card{background:#fff; border:1px solid var(--line); border-radius:12px; padding:22px}
+  .card h2{font-size:30px; margin-bottom:10px}
+  .card h3{font-size:24px; margin:22px 0 8px}
+  .steps{counter-reset:step; display:grid; gap:10px; margin-top:16px}
+  .step{position:relative; padding-left:36px; color:var(--ink-soft); font-size:14px}
+  .step:before{counter-increment:step; content:counter(step); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%; background:var(--gold); color:var(--navy-deep); display:grid; place-items:center; font-weight:700; font-size:12px}
+  .code{margin-top:14px; padding:16px; background:#111827; color:#e5e7eb; border-radius:10px; overflow:auto; font-size:13px; line-height:1.5}
+  .prompt{margin-top:10px; padding:13px 14px; border:1px solid var(--line); border-radius:8px; background:var(--paper-alt); color:var(--ink-soft); font-size:14px}
+  .tools{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; margin-top:14px}
+  @media (max-width:620px){.tools{grid-template-columns:1fr}}
+  .tool{padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--paper-alt)}
+  .tool code{font-size:12px; color:var(--navy-deep)}
+  .tool span{display:block; margin-top:4px; color:var(--muted); font-size:12px}
+  .cta{display:inline-flex; align-items:center; justify-content:center; margin-top:22px; min-height:44px; padding:0 18px; border-radius:8px; background:var(--navy); color:#fff; text-decoration:none; font-weight:700}
+  footer{border-top:1px solid var(--line); background:#fff; padding:26px 0; color:var(--muted); font-size:13px}
+</style>
+  <link rel="canonical" href="https://alim.care/install/gemini/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ALIM">
+  <meta property="og:title" content="Ajouter ALIM dans Gemini CLI — Remote MCP">
+  <meta property="og:description" content="Configuration MCP standard ALIM pour Gemini CLI. Authorization Bearer, endpoint /mcp/v1.">
+  <meta property="og:url" content="https://alim.care/install/gemini/">
+  <meta property="og:image" content="https://alim.care/assets/alim-logo.png">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ajouter ALIM dans Gemini CLI — Remote MCP">
+  <meta name="twitter:description" content="Configuration MCP standard ALIM pour Gemini CLI. Authorization Bearer, endpoint /mcp/v1.">
+  <meta name="twitter:image" content="https://alim.care/assets/alim-logo.png">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "HOLCO", "legalName": "HOLCO INVEST", "url": "https://holco.co/", "logo": "https://alim.care/assets/alim-logo.png", "sameAs": ["https://github.com/holco-apps"], "email": "alim@holco.co"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Ajouter ALIM dans Gemini CLI — Remote MCP", "description": "Configuration MCP standard ALIM pour Gemini CLI. Authorization Bearer, endpoint /mcp/v1.", "url": "https://alim.care/install/gemini/"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "HowTo", "name": "Ajouter ALIM dans Gemini CLI — Remote MCP", "description": "Configuration MCP standard ALIM pour Gemini CLI. Authorization Bearer, endpoint /mcp/v1.", "url": "https://alim.care/install/gemini/", "totalTime": "PT3M"}</script>
+</head>
+<body>
+<header class="site-header">
+  <nav class="nav">
+    <a class="brand" href="/"><img src="/assets/alim-logo.png" alt="">ALIM</a>
+    <div class="nav-links">
+      <a href="/install/chatgpt/">ChatGPT</a>
+      <a href="/install/claude/">Claude</a>
+      <a href="/compte/">Compte</a>
+      <a href="/api-docs/">API</a>
+    </div>
+  </nav>
+</header>
+<main>
+  <section class="wrap">
+    <p class="kicker">Installation <span class="pill"><span class="dot"></span>Gemini CLI</span></p>
+    <h1>Ajouter <em>ALIM dans Gemini</em>.</h1>
+    <p class="lede">
+      ALIM peut être utilisé par Gemini via MCP : Gemini garde la conversation et l'aide rédactionnelle, ALIM apporte les outils métier
+      côté serveur&nbsp;: profil compte, radar de brief, scan de recette, génération cadrée, bibliothèque et PDF.
+    </p>
+    <div class="notice">
+      <strong>Important.</strong> Cette V0 cible <strong>Gemini CLI</strong> et les clients Gemini compatibles MCP.
+      Ce n'est pas encore un bouton “Installer dans Gemini” dans l'application web/mobile Gemini grand public.
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <h2>Installation</h2>
+        <div class="steps">
+          <div class="step">Installez ou ouvrez Gemini CLI sur votre poste.</div>
+          <div class="step">Ajoutez le serveur MCP ALIM dans <code>~/.gemini/settings.json</code>.</div>
+          <div class="step">Collez votre clé ALIM personnelle dans le header Bearer.</div>
+          <div class="step">Relancez Gemini CLI et demandez explicitement d'utiliser ALIM.</div>
+        </div>
+        <pre class="code"><code>{
+  "mcpServers": {
+    "alim": {
+      "httpUrl": "https://alim.care/mcp/v1",
+      "headers": {
+        "Authorization": "Bearer alim_live_VOTRE_CLE"
+      },
+      "timeout": 30000,
+      "trust": false
+    }
+  }
+}</code></pre>
+        <a class="cta" href="/compte/">Ouvrir mon compte ALIM</a>
+      </article>
+
+      <article class="card" id="demarrer">
+        <h2>Démarrer</h2>
+        <p class="prompt">Utilise ALIM pour afficher mon profil praticien, mon plan et mon quota.</p>
+        <p class="prompt">Utilise ALIM pour scanner cette recette web pour un patient diabète T2 : [URL].</p>
+        <p class="prompt">Utilise ALIM pour préparer un brief avant génération : grossesse + diabète gestationnel, déjeuner, carence B12, aversion pois chiches.</p>
+        <p class="prompt">Utilise ALIM pour générer une fiche patient DT2 + HTA, dîner végétarien, fonction rénale conservée, 30 minutes.</p>
+      </article>
+    </div>
+
+    <article class="card" style="margin-top:18px">
+      <h2>Fonctions disponibles</h2>
+      <div class="tools">
+        <div class="tool"><code>get_alim_account</code><span>Lire profil, plan, quota et préférences.</span></div>
+        <div class="tool"><code>brief_radar</code><span>Décider s'il faut générer, scanner ou poser une seule question.</span></div>
+        <div class="tool"><code>generate_clinical_recipe</code><span>Générer une fiche recette cadrée avec nutriments et sources.</span></div>
+        <div class="tool"><code>scan_recipe_url</code><span>Analyser une recette web quand l'URL pointe vers une fiche exploitable.</span></div>
+        <div class="tool"><code>scan_recipe_text</code><span>Analyser ingrédients + étapes copiés dans Gemini.</span></div>
+        <div class="tool"><code>save_generated_recipe</code><span>Enregistrer une recette validée dans le compte ALIM.</span></div>
+        <div class="tool"><code>list_saved_recipes</code><span>Retrouver les dernières fiches enregistrées.</span></div>
+        <div class="tool"><code>get_saved_recipe</code><span>Rouvrir une fiche enregistrée pour l'adapter.</span></div>
+      </div>
+    </article>
+  </section>
+</main>
+<footer>
+  <div class="wrap">HOLCO INVEST · ALIM bêta · <a href="/mentions-legales/">Mentions légales</a> · <a href="/robots.txt">robots.txt</a> · <a href="/llms.txt">llms.txt</a> · <a href="/humans.txt">humans.txt</a></div>
+</footer>
+</body>
+</html>

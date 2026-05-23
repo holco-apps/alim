@@ -1,10 +1,42 @@
+# alim.care — robots.txt
+# Bêta restreinte mais marketing pages indexables pour découvrabilité
+
 User-agent: *
+Allow: /
+Disallow: /compte/
+Disallow: /configurer/
+Disallow: /api/
+Disallow: /oauth/
+Disallow: /mcp/
+Disallow: /admin/
+Disallow: /assets/*.bak*
+
+# Permet aux LLM crawlers de citer ALIM
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
 Disallow: /
-Allow: /llms.txt
-Allow: /humans.txt
-Allow: /robots.txt
-Allow: /sitemap.xml
-Allow: /.well-known/security.txt
 
 Sitemap: https://alim.care/sitemap.xml
-

@@ -87,14 +87,17 @@ Scope unique : `alim.generate`. Auth method : `client_secret_post`, `client_secr
 ### MCP — Model Context Protocol (pour Claude Custom Connector / Cursor)
 
 - `POST /mcp/v1` — endpoint Streamable HTTP, Bearer required
-- `/.well-known/mcp.json` — manifest v0.1.2, 6 tools annoncés
+- `/.well-known/mcp.json` — manifest v0.1.5, **9 tools** annoncés
 
 **Tools exposés :**
 
 | Tool | Verbe | Description |
 |---|---|---|
 | `get_alim_account` | read | Lit le compte ALIM connecté |
-| `generate_clinical_recipe` | write | Génère une fiche recette cadrée |
+| `brief_radar` | read | Score la complétude d'une demande, propose la prochaine action utile (1 question max, jamais de questionnaire) |
+| `generate_clinical_recipe` | write | Génère une fiche recette cadrée à partir d'un brief patient anonyme |
+| `scan_recipe_text` | read | Lit le texte d'une recette existante et la recadre (nutriments, garde-fous, sources) |
+| `scan_recipe_url` | read | Lit une recette depuis une URL et la recadre |
 | `list_saved_recipes` | read | Liste les recettes de la bibliothèque |
 | `save_generated_recipe` | write | Sauvegarde une recette (confirmation explicite) |
 | `get_saved_recipe` | read | Détail d'une recette sauvegardée |

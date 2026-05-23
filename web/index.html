@@ -5,7 +5,7 @@
 <title>ALIM — Brief patient, recette cadrée pour diététiciens libéraux</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="ALIM transforme un brief patient en recette praticable : portion, ingrédients, nutriments estimés et garde-fous activés. Prototype en validation documentaire pour diététiciens libéraux.">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
 <meta name="theme-color" content="#233872">
 <link rel="icon" href="/assets/alim-logo.png">
 <style>
@@ -1484,6 +1484,36 @@
     .install-steps{grid-template-columns:1fr; gap:14px}
   }
 
+  /* ---------- Manifesto band ---------- */
+  .manifesto-band{
+    background:linear-gradient(180deg, var(--paper) 0%, var(--paper-alt) 100%);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:36px 0;
+  }
+  .manifesto-band .wrap{text-align:center; max-width:780px}
+  .manifesto-band .mb-eyebrow{
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.18em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:14px;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .manifesto-band .mb-eyebrow::before, .manifesto-band .mb-eyebrow::after{
+    content:""; width:24px; height:1px; background:var(--line-strong);
+  }
+  .manifesto-band p{
+    font:400 clamp(20px, 2.2vw, 26px)/1.4 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-0.005em;
+  }
+  .manifesto-band p strong{color:var(--navy); font-weight:500; font-style:italic}
+  .manifesto-band .mb-sub{
+    margin-top:14px;
+    font:400 14px/1.55 Inter, ui-sans-serif, sans-serif;
+    color:var(--ink-soft);
+    max-width:60ch; margin-left:auto; margin-right:auto;
+  }
+
   /* ---------- Récap compact ---------- */
   .feature-recap-compact{background:var(--paper-alt); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
   .recap-compact-list{list-style:none; padding:0; margin-top:24px; display:grid; gap:14px}
@@ -1915,6 +1945,22 @@
   footer a{color:var(--gold)}
   .footer-links{display:flex; flex-wrap:wrap; gap:16px; margin-top:16px}
 </style>
+  <link rel="canonical" href="https://alim.care/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ALIM">
+  <meta property="og:title" content="ALIM — Brief patient, recette cadrée pour pros nutrition">
+  <meta property="og:description" content="ALIM s'imbrique dans votre ChatGPT ou Claude habituel comme couche métier : Ciqual 2025, garde-fous HAS / ANSES / EFSA, sources tracées. Bêta gratuite pour diététiciens libéraux.">
+  <meta property="og:url" content="https://alim.care/">
+  <meta property="og:image" content="https://alim.care/assets/alim-logo.png">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ALIM — Brief patient, recette cadrée pour pros nutrition">
+  <meta name="twitter:description" content="ALIM s'imbrique dans votre ChatGPT ou Claude habituel comme couche métier : Ciqual 2025, garde-fous HAS / ANSES / EFSA, sources tracées. Bêta gratuite pour diététiciens libéraux.">
+  <meta name="twitter:image" content="https://alim.care/assets/alim-logo.png">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "HOLCO", "legalName": "HOLCO INVEST", "url": "https://holco.co/", "logo": "https://alim.care/assets/alim-logo.png", "sameAs": ["https://github.com/holco-apps"], "email": "alim@holco.co"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "ALIM", "url": "https://alim.care/", "publisher": {"@type": "Organization", "name": "HOLCO"}, "inLanguage": "fr-FR"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "ALIM", "applicationCategory": "HealthApplication", "operatingSystem": "Web, ChatGPT, Claude, Gemini, Cursor (MCP)", "description": "Couche métier IA pour professionnels de la nutrition. Brief patient anonyme → recette cadrée Ciqual 2025 + HAS / ANSES / EFSA.", "url": "https://alim.care/", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR", "category": "Bêta gratuite"}, "audience": {"@type": "Audience", "audienceType": "Diététiciens, nutritionnistes, médecins de la nutrition"}, "softwareVersion": "0.1.5", "creator": {"@type": "Organization", "name": "HOLCO"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Qu'est-ce qu'ALIM ?", "acceptedAnswer": {"@type": "Answer", "text": "ALIM est une couche métier qui s'imbrique dans votre ChatGPT ou votre Claude habituel pour transformer un brief patient anonyme en fiche recette cadrée (ingrédients pesés, nutriments Ciqual 2025, garde-fous HAS/ANSES/EFSA, sources tracées). Ce n'est pas un logiciel dossier patient."}}, {"@type": "Question", "name": "Quelles IA sont supportées aujourd'hui ?", "acceptedAnswer": {"@type": "Answer", "text": "ChatGPT (Custom GPT public + OAuth), Claude.ai (Custom Connector MCP, plans Pro/Team/Enterprise), Gemini CLI, Cursor et tout client compatible MCP standard."}}, {"@type": "Question", "name": "Combien coûte la bêta ?", "acceptedAnswer": {"@type": "Answer", "text": "Rien. Pendant toute la phase de validation documentaire, l'accès est gratuit — aucune carte demandée, aucun engagement. En échange, vos retours terrain à J+7 et J+14."}}, {"@type": "Question", "name": "Mes données patient sont-elles transmises à ALIM ?", "acceptedAnswer": {"@type": "Answer", "text": "Non. ALIM accepte uniquement des briefs cliniques anonymes (pathologie, profil clinique synthétique, contraintes). Un filtre PII bloque automatiquement nom, prénom, e-mail, téléphone FR, date de naissance, numéro de sécurité sociale. Aucun brief n'est conservé au-delà de la réponse."}}, {"@type": "Question", "name": "Que se passe-t-il si je sors du périmètre couvert ?", "acceptedAnswer": {"@type": "Answer", "text": "ALIM refuse explicitement et l'enregistre. Le périmètre bêta couvre diabète T2 + HTA et grossesse + diabète gestationnel. L'insuffisance rénale chronique est hors périmètre et déclenche un refus."}}]}</script>
 </head>
 <body>
 
@@ -2040,6 +2086,17 @@
       <span class="orbit-particle p2" aria-hidden="true"></span>
       <span class="orbit-particle p3" aria-hidden="true"></span>
     </aside>
+  </div>
+</section>
+
+<!-- ============ MANIFESTO BAND — positionnement net ============ -->
+<section class="manifesto-band" aria-label="Positionnement produit ALIM">
+  <div class="wrap">
+    <p class="mb-eyebrow">Notre parti pris</p>
+    <p>
+      ALIM <strong>n'est pas un énième outil SaaS</strong>. Il s'imbrique <strong>discrètement</strong> dans votre ChatGPT ou votre Claude habituel.
+    </p>
+    <p class="mb-sub">Pas d'app de plus à apprendre, pas d'onglet supplémentaire, pas de tutoriel à suivre. Vous gardez votre flow IA — vous récupérez la rigueur clinique.</p>
   </div>
 </section>
 
@@ -2696,7 +2753,7 @@
       <p>Ce qu'ALIM fait, ce qui arrive bientôt, ce qu'ALIM ne fera jamais. Pour la doc complète&nbsp;: <a href="/api-docs/">/api-docs/</a> · <a href="/sources/">/sources/</a> · <a href="/mentions-legales/">/mentions-legales/</a>.</p>
     </div>
     <ul class="recap-compact-list">
-      <li><b class="ok">Aujourd'hui&nbsp;:</b> 2 situations cliniques (T2+HTA, grossesse+DG) · 27 règles cliniques sourcées · ChatGPT (OAuth) + Claude (Connector MCP) + Cursor · clé d'accès personnelle = compte sans mot de passe · démo Mirabelle publique · espace praticien sur <a href="/compte/">/compte/</a></li>
+      <li><b class="ok">Aujourd'hui&nbsp;:</b> 2 situations cliniques (T2+HTA, grossesse+DG) · 27 règles cliniques sourcées · ChatGPT (OAuth) + Claude (Connector MCP) + Gemini CLI / Cursor (MCP) · clé d'accès personnelle = compte sans mot de passe · démo Mirabelle publique · espace praticien sur <a href="/compte/">/compte/</a></li>
       <li><b class="soon">Bientôt (V1)&nbsp;:</b> PDF cabinet brandé généré depuis la conversation · bibliothèque personnelle de recettes · lien patient anonyme 30 jours · liste de courses auto · extension dyslipidémie · soumission au directory MCP Anthropic (1-clic install)</li>
       <li><b class="safe">Jamais&nbsp;:</b> diagnostic médical, prescription, interprétation de bilan biologique à visée médicale (art. L. 4161-1 CSP) · données nominatives patient · briefs conservés au-delà de la réponse · rate-limit dépassé en silence</li>
     </ul>
@@ -2716,7 +2773,7 @@
     </div>
     <div class="pricing-card">
       <div class="price">Gratuit<small>&nbsp;pendant la bêta</small></div>
-      <p>Une clé d'accès personnelle, ChatGPT ou Claude au choix, support par e-mail. Aucun engagement, aucune carte demandée.</p>
+      <p>Une clé d'accès personnelle, ChatGPT, Claude ou Gemini CLI au choix, support par e-mail. Aucun engagement, aucune carte demandée.</p>
       <p style="margin-top:16px"><a href="/configurer/" class="beta-cta">Rejoindre la bêta →</a></p>
     </div>
   </div>

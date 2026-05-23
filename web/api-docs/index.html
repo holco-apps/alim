@@ -5,7 +5,7 @@
 <title>API ALIM — documentation bêta</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Documentation API ALIM : endpoint generate_clinical_recipe, payload, modèle de réponse, refus hors périmètre, règles PII, périmètre bêta.">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
 <meta name="theme-color" content="#233872">
 <link rel="icon" href="/assets/alim-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -190,6 +190,20 @@
   @media (max-width:640px){
   }
 </style>
+  <link rel="canonical" href="https://alim.care/api-docs/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ALIM">
+  <meta property="og:title" content="API ALIM — documentation">
+  <meta property="og:description" content="Documentation API REST + OAuth + MCP ALIM. 9 tools disponibles. Bearer + OAuth 2.0 (RFC 8414/9728).">
+  <meta property="og:url" content="https://alim.care/api-docs/">
+  <meta property="og:image" content="https://alim.care/assets/alim-logo.png">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API ALIM — documentation">
+  <meta name="twitter:description" content="Documentation API REST + OAuth + MCP ALIM. 9 tools disponibles. Bearer + OAuth 2.0 (RFC 8414/9728).">
+  <meta name="twitter:image" content="https://alim.care/assets/alim-logo.png">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "HOLCO", "legalName": "HOLCO INVEST", "url": "https://holco.co/", "logo": "https://alim.care/assets/alim-logo.png", "sameAs": ["https://github.com/holco-apps"], "email": "alim@holco.co"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "API ALIM — documentation", "description": "Documentation API REST + OAuth + MCP ALIM. 9 tools disponibles. Bearer + OAuth 2.0 (RFC 8414/9728).", "url": "https://alim.care/api-docs/"}</script>
 </head>
 <body>
 
@@ -242,7 +256,7 @@
     <p>L'API est consommée par&nbsp;:</p>
     <ul>
       <li><strong>Custom GPT ALIM</strong> (ChatGPT) — action HTTPS configurée sur cette API ;</li>
-      <li><strong>Remote MCP ALIM</strong> (Claude, Cursor et clients compatibles) — endpoint Streamable HTTP sur <code>/mcp/v1</code> ;</li>
+      <li><strong>Remote MCP ALIM</strong> (Claude, Gemini CLI, Cursor et clients compatibles) — endpoint Streamable HTTP sur <code>/mcp/v1</code> ;</li>
       <li><strong>Mirabelle</strong>, l'agent de démo public sur <a href="/">alim.care</a> — appel orchestré côté serveur ALIM.</li>
     </ul>
 
@@ -264,8 +278,8 @@
       <p><strong>Phase actuelle</strong>&nbsp;: l'endpoint <code>POST /api/generate</code> reste accessible sans clé pour la démo web et le Custom GPT V0. Cet état est temporaire. La version authentifiée sera servie sur <code>/api/v1/generate</code> avec migration progressive du Custom GPT.</p>
     </div>
 
-    <h2 id="mcp-claude">MCP Claude</h2>
-    <p>ALIM expose aussi un connecteur <strong>Remote MCP</strong> pour Claude et les clients compatibles MCP Streamable HTTP.</p>
+    <h2 id="mcp-claude">MCP Claude, Gemini CLI et clients compatibles</h2>
+    <p>ALIM expose aussi un connecteur <strong>Remote MCP</strong> pour Claude, Gemini CLI, Cursor et les clients compatibles MCP Streamable HTTP.</p>
     <p class="endpoint">
       <span class="verb">POST</span>
       <code>https://alim.care/mcp/v1</code>
@@ -274,7 +288,7 @@
       <span class="verb get">GET</span>
       <code>https://alim.care/.well-known/mcp.json</code>
     </p>
-    <p>Tool exposé&nbsp;: <code>generate_clinical_recipe</code>.</p>
+    <p>Outils exposés&nbsp;: <code>get_alim_account</code>, <code>brief_radar</code>, <code>generate_clinical_recipe</code>, <code>scan_recipe_text</code>, <code>scan_recipe_url</code>, <code>list_saved_recipes</code>, <code>save_generated_recipe</code>, <code>get_saved_recipe</code>, <code>delete_saved_recipe</code>.</p>
     <ul>
       <li>Entrée identique à l'API <code>/api/generate</code> : pathologies, repas, régime, saison, équipement, notes anonymisées.</li>
       <li>Une génération = un repas. Pour petit-déjeuner + déjeuner + dîner, le client doit appeler le tool trois fois.</li>
@@ -284,6 +298,9 @@
     </ul>
     <div class="callout">
       <p><strong>Installation Claude</strong>&nbsp;: dans Claude, ouvrir Settings → Connectors → Add custom connector, renseigner <code>https://alim.care/mcp/v1</code>, puis ajouter la clé Bearer dès que les comptes ALIM actifs seront déployés.</p>
+    </div>
+    <div class="callout">
+      <p><strong>Installation Gemini CLI</strong>&nbsp;: voir <a href="/install/gemini/">/install/gemini/</a>. Configuration MCP&nbsp;: <code>httpUrl</code> = <code>https://alim.care/mcp/v1</code>, header <code>Authorization: Bearer alim_live_...</code>.</p>
     </div>
     <p>Test MCP minimal&nbsp;:</p>
     <pre class="code"><code>curl -sS https://alim.care/.well-known/mcp.json

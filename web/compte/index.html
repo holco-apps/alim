@@ -275,6 +275,82 @@
   .status-pill.is-unknown{background:var(--canvas); color:var(--muted); border:1px solid var(--line)}
   .status-pill .dot{width:6px; height:6px; border-radius:50%; background:currentColor}
 
+  /* Welcome */
+  .welcome-card{
+    background:linear-gradient(135deg, #fffdf0 0%, #ffffff 58%, #eef3fb 100%);
+    border:1px solid #e5d88d;
+    border-radius:14px;
+    box-shadow:0 14px 34px -26px rgba(23,38,80,.25);
+    overflow:hidden;
+  }
+  .welcome-inner{
+    padding:24px;
+    display:grid;
+    grid-template-columns:minmax(0, 1.1fr) minmax(280px, .9fr);
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:860px){.welcome-inner{grid-template-columns:1fr}}
+  .welcome-eyebrow{
+    font:700 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.18em; text-transform:uppercase;
+    color:var(--navy); margin-bottom:12px;
+  }
+  .welcome-card h2{
+    font-family:Instrument Serif, Georgia, serif;
+    font-size:34px; line-height:1.03; font-weight:400;
+    color:var(--navy-deep); margin-bottom:10px;
+    letter-spacing:0;
+  }
+  .welcome-card p{color:var(--ink-soft); font-size:14px; line-height:1.65}
+  .welcome-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .welcome-links{
+    margin-top:18px;
+    display:flex; flex-wrap:wrap; gap:8px;
+  }
+  .welcome-links a{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 10px; border:1px solid var(--line);
+    border-radius:999px; background:#fff;
+    text-decoration:none; font:600 12px/1 Inter, sans-serif;
+    color:var(--navy);
+  }
+  .welcome-panel{
+    background:rgba(255,255,255,.78);
+    border:1px solid rgba(214,217,223,.9);
+    border-radius:12px;
+    padding:16px;
+  }
+  .welcome-panel h3{
+    font-size:13px; color:var(--navy-deep); margin-bottom:12px;
+  }
+  .welcome-checklist{display:grid; gap:9px; margin:0; padding:0; list-style:none}
+  .welcome-checklist li{
+    display:flex; align-items:flex-start; gap:9px;
+    font-size:12.5px; color:var(--ink-soft); line-height:1.45;
+  }
+  .welcome-checklist .check{
+    width:18px; height:18px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#fff; border:1px solid var(--line-strong);
+    color:var(--muted); font-size:11px; flex:0 0 auto;
+  }
+  .welcome-checklist li.is-done .check{
+    background:var(--ok-soft); border-color:#bfe2cd; color:var(--ok);
+  }
+  .starter-prompts{
+    margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+    display:grid; gap:8px;
+  }
+  .starter-prompt{
+    width:100%; text-align:left; cursor:pointer;
+    border:1px solid var(--line); background:#fff;
+    border-radius:8px; padding:9px 10px;
+    color:var(--ink-soft);
+    font:500 12.5px/1.45 Inter, sans-serif;
+  }
+  .starter-prompt:hover{border-color:var(--navy); color:var(--navy-deep)}
+
   /* --- Forms --- */
   fieldset{border:0; padding:0; margin:0; display:grid; gap:18px}
   legend{display:none}
@@ -470,6 +546,20 @@
   @media (max-width:640px){
   }
 </style>
+  <link rel="canonical" href="https://alim.care/compte/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ALIM">
+  <meta property="og:title" content="Mon compte ALIM">
+  <meta property="og:description" content="Espace praticien ALIM — statut compte, clé d'accès, profil de pratique, identité cabinet pour les fiches imprimables.">
+  <meta property="og:url" content="https://alim.care/compte/">
+  <meta property="og:image" content="https://alim.care/assets/alim-logo.png">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mon compte ALIM">
+  <meta name="twitter:description" content="Espace praticien ALIM — statut compte, clé d'accès, profil de pratique, identité cabinet pour les fiches imprimables.">
+  <meta name="twitter:image" content="https://alim.care/assets/alim-logo.png">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "HOLCO", "legalName": "HOLCO INVEST", "url": "https://holco.co/", "logo": "https://alim.care/assets/alim-logo.png", "sameAs": ["https://github.com/holco-apps"], "email": "alim@holco.co"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Mon compte ALIM", "description": "Espace praticien ALIM — statut compte, clé d'accès, profil de pratique, identité cabinet pour les fiches imprimables.", "url": "https://alim.care/compte/"}</script>
 </head>
 <body class="not-connected">
 
@@ -529,6 +619,10 @@
   <aside class="app-sidebar">
     <h4>Navigation</h4>
     <nav class="app-nav" id="appNav">
+      <a href="#welcome" data-section="welcome" id="welcomeNavLink">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v5"/><path d="M12 17v5"/><path d="m4.93 4.93 3.54 3.54"/><path d="m15.53 15.53 3.54 3.54"/><path d="M2 12h5"/><path d="M17 12h5"/><path d="m4.93 19.07 3.54-3.54"/><path d="m15.53 8.47 3.54-3.54"/></svg>
+        Bien démarrer
+      </a>
       <a href="#overview" class="is-active" data-section="overview">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 12 3l9 9"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/></svg>
         Vue d'ensemble
@@ -558,6 +652,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-10 10"/><path d="M14 21H5a2 2 0 0 1-2-2v-9"/></svg>
         Installer dans ChatGPT
       </a>
+      <a href="/install/gemini/" class="app-nav-external">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-10 10"/><path d="M14 21H5a2 2 0 0 1-2-2v-9"/></svg>
+        Installer dans Gemini
+      </a>
       <a href="/mock-pdf/" target="_blank" rel="noopener" class="app-nav-external">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-10 10"/><path d="M14 21H5a2 2 0 0 1-2-2v-9"/></svg>
         Aperçu fiche PDF
@@ -577,6 +675,41 @@
         <button class="btn btn-secondary btn-icon" id="forgetBtnTop" type="button">Se déconnecter</button>
       </div>
     </div>
+
+    <!-- ============== WELCOME ============== -->
+    <section class="welcome-card hide" id="welcome">
+      <div class="welcome-inner">
+        <div>
+          <p class="welcome-eyebrow">Première connexion</p>
+          <h2>Bienvenue dans ALIM.</h2>
+          <p>
+            En deux minutes, vous pouvez relier votre compte à ChatGPT, Claude ou Gemini CLI, renseigner vos habitudes de pratique
+            et tester les bons réflexes de conversation. ALIM reste la couche métier&nbsp;: votre IA dialogue, ALIM calcule,
+            cadre, cite et refuse quand le périmètre n'est pas couvert.
+          </p>
+          <div class="welcome-actions">
+            <a class="btn" href="/install/chatgpt/">Installer dans ChatGPT</a>
+            <a class="btn btn-secondary" href="/install/claude/">Installer dans Claude</a>
+            <a class="btn btn-secondary" href="/install/gemini/">Installer dans Gemini</a>
+            <button class="btn btn-secondary" type="button" id="welcomeCompleteBtn">J'ai compris</button>
+          </div>
+          <div class="welcome-links" id="welcomeLinks">
+            <a href="/sources/">Sources ALIM</a>
+            <a href="/mock-pdf/">Aperçu PDF</a>
+            <a href="/install/chatgpt/#demarrer">Exemples de démarrage</a>
+            <a href="/install/gemini/">Gemini CLI</a>
+            <a href="mailto:alim@holco.co">Support bêta</a>
+          </div>
+        </div>
+        <aside class="welcome-panel">
+          <h3>Votre check-list bêta</h3>
+          <ul class="welcome-checklist" id="welcomeChecklist"></ul>
+          <div class="starter-prompts" id="starterPrompts">
+            <h3 style="margin-bottom:2px">Amorces utiles</h3>
+          </div>
+        </aside>
+      </div>
+    </section>
 
     <!-- ============== VUE D'ENSEMBLE ============== -->
     <section class="section-card" id="overview">
@@ -887,7 +1020,7 @@
           <button type="button" class="btn btn-danger btn-icon" id="rotateKeyBtn">Régénérer la clé</button>
         </div>
         <p class="field-hint" style="margin-top:16px;">
-          <strong style="color:var(--ink-soft); font-weight:600">Bonnes pratiques.</strong> Conservez votre clé dans un gestionnaire de mots de passe. Régénérez-la si vous suspectez une fuite (employé qui quitte, ordinateur perdu, partage par mégarde). Après régénération, pensez à mettre à jour votre Custom GPT (ChatGPT) et votre Connector ALIM (Claude).
+          <strong style="color:var(--ink-soft); font-weight:600">Bonnes pratiques.</strong> Conservez votre clé dans un gestionnaire de mots de passe. Régénérez-la si vous suspectez une fuite (employé qui quitte, ordinateur perdu, partage par mégarde). Après régénération, pensez à mettre à jour votre Custom GPT (ChatGPT), votre Connector ALIM (Claude) et votre configuration MCP Gemini si vous l'utilisez.
         </p>
       </div>
     </section>
@@ -897,14 +1030,14 @@
       <div class="section-head">
         <div class="sh-titles">
           <h2>Activité récente</h2>
-          <p>Vos dernières générations cadrées (ChatGPT, Claude, Cursor). Anonymisé.</p>
+          <p>Vos dernières générations cadrées (ChatGPT, Claude, Gemini CLI, Cursor). Anonymisé.</p>
         </div>
       </div>
       <div class="section-body" style="padding:0">
         <div class="activity-empty">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg>
           <strong>Suivi d'usage bientôt</strong>
-          Le journal de vos générations s'affichera ici en V1 : date, pathologie, statut (succès / refus traçable), canal (ChatGPT / Claude / Cursor).<br>
+          Le journal de vos générations s'affichera ici en V1 : date, pathologie, statut (succès / refus traçable), canal (ChatGPT / Claude / Gemini / Cursor).<br>
           Aucune donnée patient n'est ni stockée ni affichée.
         </div>
       </div>
@@ -950,6 +1083,7 @@
     me:       '/api/v1/me',
     update:   '/api/v1/account',
     rotate:   '/api/v1/account/regenerate-key',
+    onboarding: '/api/v1/onboarding/complete',
   };
 
   /* ---------- chips ---------- */
@@ -1186,7 +1320,58 @@
 
     setHeaderUser(account);
     populate(account);
+    renderWelcome(account.onboarding || {});
     markClean();
+  }
+
+  function renderWelcome(onboarding){
+    const card = $('#welcome');
+    const nav = $('#welcomeNavLink');
+    if (!card) return;
+    const show = Boolean(onboarding.show_welcome);
+    card.classList.toggle('hide', !show);
+    if (nav) nav.classList.toggle('hide', !show);
+
+    const checklist = $('#welcomeChecklist');
+    if (checklist) {
+      const items = Array.isArray(onboarding.checklist) ? onboarding.checklist : [];
+      checklist.innerHTML = items.map(item => `
+        <li class="${item.done ? 'is-done' : ''}">
+          <span class="check">${item.done ? '✓' : '•'}</span>
+          <span>${escapeHtml(item.label || '')}</span>
+        </li>
+      `).join('');
+    }
+
+    const prompts = $('#starterPrompts');
+    if (prompts) {
+      const starter = Array.isArray(onboarding.starter_prompts) ? onboarding.starter_prompts : [];
+      prompts.querySelectorAll('.starter-prompt').forEach(node => node.remove());
+      for (const prompt of starter.slice(0, 4)) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'starter-prompt';
+        btn.textContent = prompt;
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(prompt);
+            const original = btn.textContent;
+            btn.textContent = 'Copié — collez dans ChatGPT, Claude ou Gemini';
+            setTimeout(() => { btn.textContent = original; }, 1600);
+          } catch(_) {}
+        });
+        prompts.appendChild(btn);
+      }
+    }
+  }
+
+  function escapeHtml(value){
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   /* ---------- main connect ---------- */
@@ -1237,6 +1422,25 @@
   $('#forgetBtn').addEventListener('click', disconnect);
   $('#forgetBtnTop').addEventListener('click', disconnect);
 
+  $('#welcomeCompleteBtn')?.addEventListener('click', async () => {
+    try {
+      const res = await apiFetch(ENDPOINTS.onboarding, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'complete', last_step: 'welcome_card' })
+      });
+      if (!res.ok) {
+        showAlert('#globalAlert', 'error', `Impossible de fermer l'accueil (HTTP ${res.status}).`);
+        return;
+      }
+      const data = await res.json();
+      renderWelcome(data.account?.onboarding || {});
+      showAlert('#globalAlert', 'success', 'Accueil terminé. Vous pouvez le retrouver via les pages d’installation et la FAQ.');
+      setTimeout(() => showAlert('#globalAlert', '', ''), 3000);
+    } catch(err) {
+      showAlert('#globalAlert', 'error', `Erreur réseau : ${err.message || err}`);
+    }
+  });
+
   /* ---------- key utils ---------- */
   $('#copyKeyBtn').addEventListener('click', async () => {
     const raw = $('#keyDisplay').dataset.raw || getStoredKey();
@@ -1276,7 +1480,7 @@
         setStoredKey(data.api_key);
         $('#keyDisplay').dataset.raw = data.api_key;
         $('#keyDisplay').textContent = maskKey(data.api_key);
-        showAlert('#globalAlert', 'success', 'Nouvelle clé générée. <strong>Mettez-la à jour</strong> dans votre Custom GPT et Connector Claude.');
+        showAlert('#globalAlert', 'success', 'Nouvelle clé générée. <strong>Mettez-la à jour</strong> dans votre Custom GPT, Connector Claude et configuration Gemini si vous les utilisez.');
       }
     } catch(err){
       showAlert('#globalAlert', 'error', `Erreur réseau : ${err.message || err}`);

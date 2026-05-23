@@ -1,57 +1,90 @@
 # ALIM
 
-> ALIM is a HOLCO product for French nutrition professionals. It adds a clinical recipe-formulation layer to native AI assistants such as ChatGPT and Claude.
+> ALIM is a HOLCO product for French nutrition professionals. It adds a clinical recipe-formulation layer to native AI assistants such as ChatGPT, Claude, Gemini and any MCP-compatible client. ALIM is not a SaaS to learn or a patient-record system — it embeds into the AI conversation the practitioner already uses.
 
 ## Product
 
 ALIM helps dietitians and nutrition professionals turn an anonymized patient brief into a structured recipe sheet:
 
-- meal context and constraints;
-- weighted ingredients;
-- nutrition values per portion from ANSES Ciqual 2025;
-- clinical guardrails for the covered beta situations;
-- visible sources and references;
-- printable PDF output;
-- optional account-linked recipe library.
+- meal context and constraints
+- weighted ingredients (grams)
+- nutrition values per portion from ANSES Ciqual 2025
+- clinical guardrails for the covered beta situations (HAS, ANSES, EFSA, OMS, SFD, SFNCM)
+- visible sources with their documentary status (verified / consulted / pending)
+- printable PDF output branded to the practitioner's office
+- optional account-linked recipe library
 
-ALIM is not a diagnosis tool, not a medical device, and not a full patient-record or practice-management system. Outputs must be reviewed, adapted, or refused by the qualified professional.
+ALIM is **not** a diagnosis tool, **not** a medical device, **not** a full patient-record or practice-management system. Outputs must be reviewed, adapted, or refused by the qualified professional. The practitioner remains legally responsible (art. L. 4161-1 of the French Public Health Code).
 
-## Beta Scope
+## Beta Scope (2026)
 
-Current public beta scope:
+Current beta:
+- Type 2 diabetes + hypertension, adult, normal renal function, outside pregnancy
+- Pregnancy + gestational diabetes
 
-- type 2 diabetes + hypertension, adult, normal renal function, outside pregnancy;
-- pregnancy + gestational diabetes.
+Chronic kidney disease, dyslipidemia, paediatrics, eating disorders and other complex situations trigger an **explicit, traced refusal** rather than improvisation. Scope extension on the roadmap.
 
-Chronic kidney disease and other complex situations are out of public beta scope unless explicitly documented later.
+## Pricing
+
+Beta gratuite, sans engagement. No credit card. In exchange, structured feedback at J+7 and J+14.
+
+## Integration channels
+
+| Channel | Auth | URL |
+|---|---|---|
+| ChatGPT (Custom GPT public) | OAuth 2.0 | https://chatgpt.com/g/g-6a10d4e300f0819184833f4b467e53b7-alim-pro |
+| Claude.ai (Custom Connector MCP) | Bearer | https://alim.care/mcp/v1 |
+| Gemini CLI / clients MCP | Bearer | https://alim.care/mcp/v1 |
+| REST API | Bearer or OAuth token | https://alim.care/api/v1/ |
+
+## MCP Tools (v0.1.5 — 9 tools)
+
+| Tool | Verb | Purpose |
+|---|---|---|
+| get_alim_account | read | Read connected ALIM account (status, plan, quota, profile, branding) |
+| brief_radar | read | Score brief completeness, propose next useful action (1 question max, never a questionnaire) |
+| generate_clinical_recipe | write | Generate a clinically-framed recipe sheet from anonymized brief |
+| scan_recipe_text | read | Read existing recipe text and re-frame it (nutrients, guardrails, sources) |
+| scan_recipe_url | read | Read recipe from URL and re-frame it |
+| list_saved_recipes | read | List saved recipes in account library |
+| save_generated_recipe | write | Save a recipe to library (explicit confirmation required) |
+| get_saved_recipe | read | Detail of saved recipe |
+| delete_saved_recipe | write | Delete saved recipe (explicit confirmation required) |
+
+OpenAPI for ChatGPT Actions: https://alim.care/chatgpt/openapi.yaml
+MCP manifest: https://alim.care/.well-known/mcp.json
+
+## OAuth 2.0 endpoints
+
+- Authorization: https://alim.care/oauth/authorize
+- Token: https://alim.care/oauth/token
+- Metadata (RFC 8414): https://alim.care/.well-known/oauth-authorization-server
+- Resource metadata (RFC 9728): https://alim.care/.well-known/oauth-protected-resource
+- Scope: alim.generate
+- PKCE S256 supported
+
+## What ALIM does NOT do
+
+- No medical diagnosis, no prescription, no biological lab interpretation
+- No patient record management (use Doctolib, Nutrium, Nutrilog, Maela, etc.)
+- No CRM, no scheduling, no billing
+- No PII patient data (PII filter blocks email, phone FR, birth date, French SSN)
+- No silent failures (quota exceeded or network error → explicit message)
 
 ## Useful URLs
 
 - Home: https://alim.care/
-- Join beta: https://alim.care/configurer/
-- Account: https://alim.care/compte/
-- Sources and rules: https://alim.care/sources/
-- ChatGPT install: https://alim.care/install/chatgpt/
-- Claude install: https://alim.care/install/claude/
+- Beta signup: https://alim.care/configurer/
+- Practitioner account: https://alim.care/compte/
+- Sources corpus: https://alim.care/sources/
+- ChatGPT install guide: https://alim.care/install/chatgpt/
+- Claude install guide: https://alim.care/install/claude/
+- Gemini CLI install: https://alim.care/install/gemini/
 - API docs: https://alim.care/api-docs/
-- Legal notice: https://alim.care/mentions-legales/
-- Robots: https://alim.care/robots.txt
-- Sitemap: https://alim.care/sitemap.xml
-- Security: https://alim.care/.well-known/security.txt
+- Legal: https://alim.care/mentions-legales/
+- GitHub: https://github.com/holco-apps/alim
+- Contact: alim@holco.co
 
-## API Surfaces
+## Team
 
-- ChatGPT OpenAPI: https://alim.care/chatgpt/openapi.yaml
-- Claude MCP endpoint: https://alim.care/mcp/v1
-- OAuth authorization: https://alim.care/oauth/authorize
-- OAuth token: https://alim.care/oauth/token
-
-API access requires an active ALIM account and Bearer/OAuth authorization.
-
-## Contact
-
-ALIM is operated by HOLCO INVEST.
-
-- Email: alim@holco.co
-- Company: https://holco.co/
-
+ALIM is developed by HOLCO (Pierre Coquard) with two AI co-maintainers: Alan (Claude) for front + corpus + infrastructure, Nora (OpenAI Codex) for the Node service + MCP + validation.
