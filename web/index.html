@@ -1129,6 +1129,194 @@
   /* ---------- FAQ ---------- */
   .faq-section{background:var(--paper-alt); border-top:1px solid var(--line)}
 
+  /* ---------- V1 band — fonctions praticiennes depuis l'IA ---------- */
+  .v1-band{
+    background:linear-gradient(180deg, var(--paper-alt) 0%, var(--paper) 100%);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  .v1-band::before{
+    content:''; position:absolute;
+    right:-100px; top:-100px;
+    width:300px; height:300px; border-radius:50%;
+    background:radial-gradient(circle, rgba(247,218,41,.20), transparent 70%);
+    pointer-events:none;
+  }
+  .v1-layout{
+    display:grid;
+    grid-template-columns:1fr 0.85fr;
+    gap:32px;
+    margin-top:8px;
+    align-items:start;
+    position:relative;
+  }
+  @media (max-width:980px){
+    .v1-layout{grid-template-columns:1fr; gap:24px}
+  }
+  .v1-preview{
+    display:flex; flex-direction:column; align-items:center;
+    text-decoration:none;
+    perspective:1400px;
+  }
+  .v1-preview-shell{
+    width:100%; max-width:480px;
+    padding:18px;
+    background:linear-gradient(135deg, #f3e8d2 0%, #e2d6bb 100%);
+    border-radius:14px;
+    box-shadow:0 24px 60px -20px rgba(23,38,80,.30), 0 4px 14px rgba(23,38,80,.10);
+    transform:rotateY(-6deg) rotateX(2deg);
+    transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .v1-preview:hover .v1-preview-shell{transform:rotateY(0deg) rotateX(0deg)}
+  .v1-preview-page{
+    background:#fdfaf2; border-radius:6px;
+    padding:18px 20px;
+    font: 10px/1.45 Inter, sans-serif;
+    color:var(--ink);
+    aspect-ratio:210 / 297;
+    overflow:hidden;
+  }
+  .vp-head{display:flex; align-items:center; gap:8px; padding-bottom:6px; border-bottom:1.2px solid var(--gold); margin-bottom:8px}
+  .vp-logo{width:24px; height:24px; background:linear-gradient(135deg, var(--gold-soft) 0%, var(--gold) 100%); border-radius:5px; display:flex; align-items:center; justify-content:center; font:500 9px/1 "Instrument Serif", Georgia, serif; color:var(--navy-deep)}
+  .vp-cab{flex:1; display:flex; flex-direction:column; line-height:1.1}
+  .vp-cab-name{font:500 9.5px/1.1 "Instrument Serif", Georgia, serif; color:var(--navy-deep)}
+  .vp-cab-sub{font-size:7px; color:var(--ink-soft); margin-top:1px}
+  .vp-ref{font:500 7px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.05em; color:var(--muted)}
+  .vp-kicker{font:600 6.5px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.1em; text-transform:uppercase; color:#b5901c; margin:0 0 4px}
+  .vp-title{margin:0 0 2px; font:400 13px/1.15 "Instrument Serif", Georgia, serif; color:var(--navy-deep); letter-spacing:-.01em}
+  .vp-sub{margin:0 0 8px; font-size:8px; color:var(--ink-soft); font-style:italic}
+  .vp-profile{display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; padding:5px 6px; background:#fff; border:0.6px solid var(--line); border-radius:4px; margin-bottom:8px; font-size:7px}
+  .vp-profile span{display:flex; flex-direction:column; line-height:1.1}
+  .vp-profile b{color:var(--muted); font:500 5.5px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.06em; text-transform:uppercase; margin-bottom:1px}
+  .vp-body{display:grid; grid-template-columns:1.2fr 1fr; gap:8px}
+  .vp-h3{margin:0 0 3px; font:400 9px/1.1 "Instrument Serif", Georgia, serif; color:var(--navy-deep); border-bottom:0.5px solid var(--line); padding-bottom:2px}
+  .vp-list{list-style:none; padding:0; margin:0; display:grid; gap:2px; font-size:7.5px}
+  .vp-list li{display:grid; grid-template-columns:1fr auto; align-items:baseline; gap:4px; padding:2px 5px; background:#fff; border:0.5px solid var(--line); border-radius:3px}
+  .vp-list em{font:500 6.5px/1 "JetBrains Mono", ui-monospace, monospace; color:var(--navy-deep); background:var(--gold-soft); padding:1px 3px; border-radius:2px; font-style:normal}
+  .vp-nutri{display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-bottom:5px}
+  .vp-n{padding:3px 5px; background:#fff; border:0.5px solid var(--line); border-radius:3px; display:flex; flex-direction:column; line-height:1}
+  .vp-n.hi{background:linear-gradient(135deg, #fffdf3 0%, var(--gold-soft) 100%); border-color:var(--gold)}
+  .vp-n span{font:500 5.5px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:1px}
+  .vp-n b{font:500 9px/1 "Instrument Serif", Georgia, serif; color:var(--navy-deep)}
+  .vp-checks{list-style:none; padding:0; margin:0; display:grid; gap:2px; font-size:7px}
+  .vp-checks li{position:relative; padding:1.5px 4px 1.5px 11px; background:#fff; border:0.5px solid var(--line); border-radius:2px; color:var(--ink)}
+  .vp-checks li::before{content:'✓'; position:absolute; left:3px; top:1.5px; color:var(--ok); font-weight:700; font-size:7px}
+  .vp-foot{margin-top:8px; padding-top:5px; border-top:0.5px solid var(--line); display:flex; justify-content:space-between; gap:8px; font-size:6px; color:var(--muted)}
+  .vp-wm{font-weight:500}
+  .v1-preview-cta{
+    margin-top:18px;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:9px 16px;
+    background:var(--navy); color:#fff;
+    border-radius:6px;
+    font:600 13px/1 Inter, sans-serif;
+    transition:background .15s ease, transform .2s ease;
+  }
+  .v1-preview:hover .v1-preview-cta{background:var(--navy-deep); transform:translateY(-1px)}
+
+  .v1-functions{display:flex; flex-direction:column; gap:14px}
+  .v1-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    transition:transform .25s ease, border-color .25s ease, box-shadow .3s ease;
+    display:flex; gap:14px; align-items:flex-start;
+  }
+  .v1-card:hover{
+    transform:translateY(-2px);
+    border-color:var(--gold);
+    box-shadow:0 12px 26px -14px rgba(247,218,41,.28);
+  }
+  .v1-icon{
+    width:38px; height:38px; flex:0 0 38px;
+    border-radius:10px;
+    background:linear-gradient(135deg, var(--gold-soft) 0%, var(--gold) 100%);
+    color:var(--navy-deep);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .v1-icon svg{width:18px; height:18px}
+  .v1-card h3{
+    font:400 18px/1.2 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    margin:0 0 6px;
+    letter-spacing:-0.005em;
+  }
+  .v1-card p{font-size:13px; line-height:1.5; color:var(--ink-soft); margin:0}
+  .v1-card p em{color:var(--navy-deep); font-style:italic; background:var(--gold-soft); padding:0 4px; border-radius:3px}
+  .v1-note{
+    margin-top:28px;
+    text-align:center;
+    font-size:12.5px; color:var(--muted);
+    max-width:640px; margin-left:auto; margin-right:auto;
+  }
+  .v1-note code{
+    font:0.9em "JetBrains Mono", ui-monospace, monospace;
+    color:var(--navy-deep);
+    background:#fff;
+    padding:1px 6px; border-radius:3px;
+    border:1px solid var(--line);
+  }
+
+  /* ---------- Récap toutes les fonctions ---------- */
+  .feature-recap{
+    background:var(--paper-alt);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .recap-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:18px;
+    margin-top:8px;
+  }
+  .recap-col{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 24px;
+  }
+  .recap-col.recap-now{border-top:3px solid var(--ok)}
+  .recap-col.recap-soon{border-top:3px solid var(--gold)}
+  .recap-col.recap-safety{border-top:3px solid var(--navy)}
+  .recap-tag{
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.14em; text-transform:uppercase;
+    margin:0 0 14px;
+  }
+  .recap-now .recap-tag{color:var(--ok)}
+  .recap-soon .recap-tag{color:#7a5816}
+  .recap-safety .recap-tag{color:var(--navy)}
+  .recap-col ul{list-style:none; padding:0; margin:0; display:grid; gap:11px}
+  .recap-col li{
+    display:flex; align-items:flex-start; gap:10px;
+    font-size:13px; line-height:1.55;
+    color:var(--ink-soft);
+  }
+  .recap-col li b{color:var(--ink); font-weight:600}
+  .recap-col li a{color:var(--navy); text-decoration-color:rgba(35,56,114,.3)}
+  .rc-ico{
+    flex:0 0 18px; width:18px; height:18px;
+    border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font:700 11px/1 Inter, sans-serif;
+    margin-top:1px;
+  }
+  .recap-now .rc-ico{background:rgba(40,108,77,.12); color:var(--ok)}
+  .recap-soon .rc-ico{background:var(--gold-soft); color:#7a5816}
+  .recap-safety .rc-ico{background:rgba(35,56,114,.10); color:var(--navy)}
+  .recap-foot{
+    margin-top:24px;
+    text-align:center;
+    font-size:12.5px; color:var(--muted);
+  }
+  .recap-foot a{color:var(--navy); text-decoration-color:rgba(35,56,114,.3)}
+  @media (max-width:980px){
+    .recap-grid{grid-template-columns:1fr; gap:12px}
+  }
+
   /* ---------- cadre légal ---------- */
   .legal-section{background:var(--paper); border-top:1px solid var(--line)}
   .legal-list{
@@ -1196,6 +1384,7 @@
       <a href="/sources/">Corpus</a>
       <a href="#try">Tester</a>
       <a href="#faq">FAQ</a>
+      <a href="/compte/">Mon compte</a>
       <a class="nav-cta" href="/configurer/">Rejoindre la bêta</a>
     </nav>
   </div>
@@ -1230,20 +1419,20 @@
       <h1 class="h-display">Des recettes qui changent. <span class="accent">Un cadre qui tient.</span></h1>
       <p class="lede">
         ALIM s'ajoute à ChatGPT ou Claude pour aider les diététiciens à produire plus vite des fiches recettes
-        <strong>variées, calculées et sourcées</strong>, à partir d'un brief patient anonymisé.
+        <strong>variées, calculées et sourcées</strong>, à partir d'un profil patient anonyme.
       </p>
       <div class="hero-actions">
         <a class="button primary" href="/configurer/">Rejoindre la bêta</a>
         <a class="button tertiary" href="#" data-open-mirabelle="1">Parler à Mirabelle</a>
       </div>
-      <p class="hero-micro">Démo encadrée — diabète T2 + HTA · grossesse + diabète gestationnel</p>
+      <p class="hero-micro">Démo limitée à — diabète T2 + HTA · grossesse + diabète gestationnel</p>
       <p class="hero-rappel">ALIM prépare une proposition cadrée. Vous gardez la main : vous validez, adaptez ou refusez.</p>
       <div class="trust-line">
         <span><strong>Bêta restreinte</strong></span>
         <span class="dot-sep">·</span>
         <span>Aucune donnée patient</span>
         <span class="dot-sep">·</span>
-        <span>Validation documentaire en cours</span>
+        <span>Sources cliniques en cours de vérification</span>
       </div>
     </div>
 
@@ -1406,9 +1595,9 @@
     <div class="section-intro">
       <div>
         <div class="kicker">Bêta — deux situations couvertes</div>
-        <h2>Deux briefs cliniques, calculés en direct.</h2>
+        <h2>Deux cas cliniques, recette calculée en direct.</h2>
       </div>
-      <p>Cliquez pour voir la sortie complète.</p>
+      <p>Cliquez pour voir la recette complète générée par ALIM.</p>
     </div>
     <div class="sit-grid">
       <article class="sit">
@@ -1420,9 +1609,9 @@
           <ul class="sit-summary">
             <li>Glucides cadrés par repas, sel limité (recommandation OMS)</li>
             <li>Sucres ajoutés séparés des sucres totaux</li>
-            <li>Sources citées uniquement quand vérifiées avec verbatim PDF</li>
+            <li>Sources citées avec extrait du document de référence</li>
           </ul>
-          <button type="button" class="sit-toggle" id="toggle-demo1" aria-expanded="false" aria-controls="demo1-live">Charger la sortie complète</button>
+          <button type="button" class="sit-toggle" id="toggle-demo1" aria-expanded="false" aria-controls="demo1-live">Voir la recette complète</button>
           <div class="sit-live" id="demo1-live" role="region" aria-label="Sortie complète T2 + HTA">
             <div class="placeholder" id="demo1-body">Chargement de la sortie…</div>
           </div>
@@ -1437,9 +1626,9 @@
           <ul class="sit-summary">
             <li>Aliments à risque grossesse exclus (toxoplasmose, listériose)</li>
             <li>Glucides cadrés et folates suivis</li>
-            <li>Hors périmètre&nbsp;: CKD / insuffisance rénale, refus traçable</li>
+            <li>Hors périmètre&nbsp;: insuffisance rénale chronique, refus clair</li>
           </ul>
-          <button type="button" class="sit-toggle" id="toggle-demo2" aria-expanded="false" aria-controls="demo2-live">Charger la sortie complète</button>
+          <button type="button" class="sit-toggle" id="toggle-demo2" aria-expanded="false" aria-controls="demo2-live">Voir la recette complète</button>
           <div class="sit-live" id="demo2-live" role="region" aria-label="Sortie complète grossesse + DG">
             <div class="placeholder" id="demo2-body">Chargement de la sortie…</div>
           </div>
@@ -1457,7 +1646,7 @@
         <div class="kicker">Ce qu'ALIM fait, ce que votre IA ne fait pas</div>
         <h2>Formuler, calculer, vérifier, citer, refuser.</h2>
       </div>
-      <p>Cinq gestes simples, dans la conversation que vous tenez déjà avec votre IA.</p>
+      <p>5 actions concrètes, dans votre conversation IA habituelle.</p>
     </div>
     <div class="pillar-carousel" id="pillarCarousel">
       <div class="pc-viewport">
@@ -1480,12 +1669,12 @@
           <li class="pc-slide">
             <span class="pc-num">04</span>
             <h3>Citer ses sources</h3>
-            <p>Chaque règle activée est citée avec verbatim PDF, page, et organisme (ANSES, EFSA, HAS).</p>
+            <p>Chaque règle activée est citée avec son extrait du document de référence, sa page, et l'organisme (ANSES, EFSA, HAS).</p>
           </li>
           <li class="pc-slide">
             <span class="pc-num">05</span>
             <h3>Refuser proprement</h3>
-            <p>Hors périmètre (rein, brief incohérent), ALIM refuse au lieu d'improviser. Refus tracé.</p>
+            <p>Hors périmètre (rein, demande incohérente), ALIM refuse au lieu d'improviser. Refus clair, sans recette inventée.</p>
           </li>
         </ul>
       </div>
@@ -1547,16 +1736,35 @@
     <div class="section-intro">
       <div>
         <div class="kicker">Transparence</div>
-        <h2>L'état du corpus est affiché, pas masqué.</h2>
+        <h2>Toutes nos sources sont visibles.</h2>
       </div>
-      <p>27 règles cliniques. Seules les vérifiées sont citées en sortie.</p>
+      <p>27 règles cliniques au total. Seules les règles vérifiées avec extrait du document source apparaissent dans la recette générée.</p>
     </div>
-    <div class="corpus-row">
-      <div class="corpus-stat"><span class="n">6</span><span class="lbl"><strong>Vérifiées</strong><br>PDF, page, verbatim</span></div>
-      <div class="corpus-stat"><span class="n">5</span><span class="lbl"><strong>Dérivées</strong><br>pratique courante</span></div>
-      <div class="corpus-stat"><span class="n">16</span><span class="lbl"><strong>À vérifier</strong><br>audit en cours</span></div>
+    <div class="corpus-row" id="corpus-stats">
+      <div class="corpus-stat"><span class="n" id="stat-verified">10</span><span class="lbl"><strong>Vérifiées</strong><br>document source + extrait cité</span></div>
+      <div class="corpus-stat"><span class="n" id="stat-derived">12</span><span class="lbl"><strong>Dérivées</strong><br>pratique courante convergente</span></div>
+      <div class="corpus-stat"><span class="n" id="stat-toverify">5</span><span class="lbl"><strong>À vérifier</strong><br>revue documentaire en cours</span></div>
       <a class="button primary corpus-cta" href="/sources/">Explorer le corpus</a>
     </div>
+    <script>
+    // Met à jour dynamiquement les compteurs depuis le JSON corpus (au cas où Nora ajoute des règles)
+    (async () => {
+      try {
+        const r = await fetch('/sources/clinical_rules.json', { cache: 'no-cache' });
+        if (!r.ok) return;
+        const d = await r.json();
+        let v=0, dr=0, t=0;
+        Object.values(d.pathologies || {}).forEach(p => (p.rules || []).forEach(rule => {
+          if (rule.source_status === 'verified') v++;
+          else if (rule.source_status === 'derived') dr++;
+          else t++;
+        }));
+        document.getElementById('stat-verified').textContent = v;
+        document.getElementById('stat-derived').textContent = dr;
+        document.getElementById('stat-toverify').textContent = t;
+      } catch {}
+    })();
+    </script>
   </div>
 </section>
 
@@ -1574,13 +1782,13 @@
     <ol class="install-steps">
       <li>
         <span class="step-n">1</span>
-        <h3>Créez votre clé</h3>
-        <p>Sur <a href="/configurer/">alim.care/configurer</a> — une clé Bearer, en 30 secondes.</p>
+        <h3>Demandez votre accès</h3>
+        <p>Sur <a href="/configurer/">alim.care/configurer</a> — vous recevez votre clé d'accès personnelle par e-mail après validation manuelle.</p>
       </li>
       <li>
         <span class="step-n">2</span>
         <h3>Ajoutez ALIM à votre IA</h3>
-        <p>Custom GPT pour ChatGPT, ou serveur MCP local pour Claude. Une URL à coller, c'est tout.</p>
+        <p>Custom GPT pour ChatGPT, ou Connector ALIM pour Claude — un lien à ouvrir, votre clé à coller. C'est tout.</p>
       </li>
       <li>
         <span class="step-n">3</span>
@@ -1604,24 +1812,120 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 18c2-6 5-12 7-12s2 4 0 7-3 5 0 5"/><path d="M19 18c-2-6-5-12-7-12"/></svg>
           </span>
           <span class="lm-name">Claude</span>
-          <span class="lm-sub">Serveur MCP local</span>
-        </li>
-        <li class="logo-chip dark logo-mcp">
-          <span class="lm-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l5-3 5 3 5-3 5 3v10l-5 3-5-3-5 3-5-3V7Z"/><path d="M3 7l5 3M13 7l5 3M8 10v10M18 10v10"/></svg>
-          </span>
-          <span class="lm-name">Model Context Protocol</span>
-          <span class="lm-sub">standard Anthropic</span>
+          <span class="lm-sub">Connector 1-clic depuis Claude.ai</span>
         </li>
         <li class="logo-chip dark logo-cursor">
           <span class="lm-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l16 8-7 1-1 7-8-16Z"/></svg>
           </span>
           <span class="lm-name">Cursor &amp; autres</span>
-          <span class="lm-sub">tout client MCP-compatible</span>
+          <span class="lm-sub">clients avancés (à venir)</span>
         </li>
       </ul>
     </div>
+  </div>
+</section>
+
+<!-- ============ V1 — FONCTIONS PRATICIENNES (après installation) ============ -->
+<section class="section v1-band" id="fonctions-pro">
+  <div class="wrap">
+    <div class="section-intro">
+      <div>
+        <div class="kicker">Depuis votre IA habituelle</div>
+        <h2>PDF cabinet, bibliothèque, lien patient — sans changer d'outil.</h2>
+      </div>
+      <p>Une fois ALIM installé, vos fonctions praticiennes s'invoquent depuis la conversation. Vous demandez à ChatGPT ou Claude, ALIM exécute.</p>
+    </div>
+
+    <div class="v1-layout">
+      <!-- Aperçu PDF tiltable -->
+      <a class="v1-preview" href="/mock-pdf/" target="_blank" rel="noopener" aria-label="Ouvrir l'aperçu complet de la fiche PDF">
+        <div class="v1-preview-shell">
+          <div class="v1-preview-page">
+            <header class="vp-head">
+              <span class="vp-logo">G·C</span>
+              <div class="vp-cab">
+                <span class="vp-cab-name">Gaëlle Coquard</span>
+                <span class="vp-cab-sub">Diététicienne nutritionniste</span>
+              </div>
+              <span class="vp-ref">RC-2026-0142</span>
+            </header>
+            <p class="vp-kicker">Fiche recette personnalisée</p>
+            <h4 class="vp-title">Bol tiède lentilles, quinoa, brocoli et courgette citronnée</h4>
+            <p class="vp-sub">Dîner d'hiver · 1 portion (550 g)</p>
+            <div class="vp-profile">
+              <span><b>Profil</b>Adulte T2+HTA</span>
+              <span><b>Rénal</b>Conservé</span>
+              <span><b>Régime</b>Omnivore</span>
+              <span><b>Équipement</b>Plaque + four</span>
+            </div>
+            <div class="vp-body">
+              <div class="vp-col">
+                <p class="vp-h3">Ingrédients</p>
+                <ul class="vp-list">
+                  <li>Lentilles cuites sans sel<em>180 g</em></li>
+                  <li>Quinoa cuit<em>80 g</em></li>
+                  <li>Brocoli vapeur<em>160 g</em></li>
+                  <li>Courgette cuite<em>120 g</em></li>
+                  <li>Huile d'olive (au service)<em>10 g</em></li>
+                </ul>
+              </div>
+              <div class="vp-col">
+                <p class="vp-h3">Nutriments / portion</p>
+                <div class="vp-nutri">
+                  <div class="vp-n hi"><span>Énergie</span><b>513 kcal</b></div>
+                  <div class="vp-n"><span>Glucides</span><b>57 g</b></div>
+                  <div class="vp-n"><span>Fibres</span><b>23,6 g</b></div>
+                  <div class="vp-n hi"><span>Sel</span><b>0,2 g</b></div>
+                </div>
+                <p class="vp-h3" style="margin-top:6px">Garde-fous</p>
+                <ul class="vp-checks">
+                  <li>Aucun sel ajouté — HTA</li>
+                  <li>Glucides cadrés — T2</li>
+                  <li>Fibres &gt; 23 g</li>
+                </ul>
+              </div>
+            </div>
+            <footer class="vp-foot">
+              <span>Ciqual 2025 · WHO Sodium · Ameli.fr</span>
+              <span class="vp-wm">Généré avec ALIM · pour praticien.ne</span>
+            </footer>
+          </div>
+        </div>
+        <span class="v1-preview-cta">Voir l'aperçu PDF complet →</span>
+      </a>
+
+      <!-- 3 fonctions IA-native -->
+      <div class="v1-functions">
+        <article class="v1-card">
+          <span class="v1-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><path d="M9 12h6M9 16h6"/></svg>
+          </span>
+          <h3>PDF cabinet brandé</h3>
+          <p>Vous dites à votre IA <em>« génère le PDF »</em>. ALIM produit la fiche A4 avec votre logo, vos coordonnées, votre n° ADELI — directement dans la conversation, prête à imprimer.</p>
+        </article>
+
+        <article class="v1-card">
+          <span class="v1-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v15"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M9 7h6M9 11h6"/></svg>
+          </span>
+          <h3>Bibliothèque perso</h3>
+          <p>Dites <em>« sauve sous Dîner T2 hiver »</em>. La recette rejoint votre bibliothèque, accessible à tout moment par <em>« rappelle-moi mes recettes T2 »</em>. Aucune donnée patient stockée.</p>
+        </article>
+
+        <article class="v1-card">
+          <span class="v1-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51 8.59 10.49"/></svg>
+          </span>
+          <h3>Lien patient anonyme</h3>
+          <p>Demandez <em>« crée un lien pour la patiente »</em>. ALIM renvoie un lien court à 30 jours, à transmettre par SMS ou mail. Toujours sans donnée nominative.</p>
+        </article>
+      </div>
+    </div>
+
+    <p class="v1-note">
+      L'espace de paramétrage <code>alim.care/app</code> (logo, ADELI, biblio) sera ouvert dès la fin de bêta, sans surcoût pour les praticiennes inscrites.
+    </p>
   </div>
 </section>
 
@@ -1733,7 +2037,15 @@
       </div>
       <div class="faq-item">
         <p class="faq-q">Que se passe-t-il si je sors du périmètre couvert ?</p>
-        <p class="faq-a">ALIM refuse explicitement et trace le refus. Aujourd'hui le périmètre bêta couvre <em>diabète T2 + HTA</em> et <em>grossesse + diabète gestationnel</em>. L'insuffisance rénale (CKD) est hors périmètre et déclenche un refus.</p>
+        <p class="faq-a">ALIM refuse explicitement et l'enregistre. Aujourd'hui le périmètre bêta couvre <em>diabète T2 + HTA</em> et <em>grossesse + diabète gestationnel</em>. L'insuffisance rénale chronique est hors périmètre et déclenche un refus.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Comment se passe la connexion ? Faut-il un mot de passe ?</p>
+        <p class="faq-a">Non. Votre <strong>clé d'accès personnelle</strong> (reçue par e-mail après validation) <em>est</em> votre compte. Pas de SaaS à apprendre, pas de mot de passe à retenir. Vous la collez une fois dans ChatGPT ou Claude, et vous éditez votre profil de pratique et l'identité de votre cabinet sur <a href="/compte/">alim.care/compte/</a>.</p>
+      </div>
+      <div class="faq-item">
+        <p class="faq-q">Combien coûte la bêta ?</p>
+        <p class="faq-a"><strong>Rien.</strong> Pendant toute la phase de validation documentaire, l'accès est gratuit — aucune carte demandée, aucun engagement. En échange, vos retours terrain à J+7 et J+14. À la sortie de bêta, une tarification publique sera annoncée et les bêta-testeurs garderont un tarif privilégié.</p>
       </div>
     </div>
   </div>
@@ -1768,7 +2080,7 @@
       </li>
       <li>
         <strong>Refus traçable hors périmètre.</strong>
-        Toute situation hors des deux protocoles couverts (T2 + HTA, grossesse + DG) fait l'objet d'un refus tracé, pas d'une improvisation. L'insuffisance rénale (CKD) est explicitement hors périmètre.
+        Toute situation hors des deux protocoles couverts (T2 + HTA, grossesse + DG) fait l'objet d'un refus clair, pas d'une improvisation. L'insuffisance rénale chronique est explicitement hors périmètre.
       </li>
       <li>
         <strong>Démo publique &amp; bêta.</strong>
@@ -1792,19 +2104,81 @@
   <path d="M22 50 Q40 42 58 50" opacity="0.5"/>
 </svg>
 
+<!-- ============ TOUTES LES FONCTIONS (récap exhaustif) ============ -->
+<section class="section feature-recap">
+  <div class="wrap">
+    <div class="section-intro">
+      <div>
+        <div class="kicker">Toutes les fonctions ALIM</div>
+        <h2>Récapitulatif&nbsp;: ce qu'ALIM fait, et ce qui arrive bientôt.</h2>
+      </div>
+      <p>Vue d'ensemble du périmètre actuel et de la roadmap V1 — pour comprendre exactement ce que vous obtenez en rejoignant la bêta.</p>
+    </div>
+
+    <div class="recap-grid">
+      <article class="recap-col recap-now">
+        <p class="recap-tag">Disponible aujourd'hui</p>
+        <ul>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Génération de recettes cadrées</b> sur 2 situations bêta — diabète T2 + HTA, grossesse + diabète gestationnel</span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Calculs nutritionnels par portion</b> — énergie, glucides, fibres, sel, AGS, potassium, folates, sucres totaux et ajoutés (Ciqual 2025)</span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Activation des garde-fous</b> selon la pathologie — seuils HAS, ANSES, EFSA, SFD, OMS</span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Citation des sources</b> avec statut documentaire (vérifiée / consultée / en vérification) — 27 règles cliniques, consultables sur <a href="/sources/">/sources/</a></span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Refus clair hors périmètre</b> — insuffisance rénale chronique, dyslipidémie isolée, demande incohérente</span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Compatible ChatGPT</b> via Custom GPT ALIM</span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Mode consultatif</b> — Mirabelle pose 2-3 questions de cadrage avant de générer (trimestre, fonction rénale, équipement, préférences…)</span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Démo live publique</b> avec Mirabelle, sans installation, 1 recette par session</span></li>
+          <li><span class="rc-ico" aria-hidden="true">✓</span><span><b>Clé d'accès = compte</b> — pas de mot de passe, pas de SaaS. Profil de pratique et identité cabinet éditables sur <a href="/compte/">alim.care/compte/</a></span></li>
+        </ul>
+      </article>
+
+      <article class="recap-col recap-soon">
+        <p class="recap-tag">Disponible bientôt (V1)</p>
+        <ul>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Compatible Claude</b> — Connector ALIM 1-clic depuis Claude.ai (en finalisation)</span></li>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Export PDF cabinet brandé</b> — fiche A4 avec logo, coordonnées, ADELI, disclaimer L. 4161-1, depuis votre conversation IA <a href="/mock-pdf/" target="_blank" rel="noopener">(voir aperçu)</a></span></li>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Bibliothèque personnelle</b> — sauvegardez vos recettes générées sous un libellé que vous choisissez, ré-utilisables sans regénération</span></li>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Lien patient anonyme</b> — lien court à 30 jours, consultable sur smartphone, sans login, sans donnée nominative</span></li>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Liste de courses</b> — générée automatiquement à partir des ingrédients de la recette</span></li>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Espace cabinet</b> sur <code>alim.care/app</code> — paramètres branding, gestion bibliothèque, gestion des liens patients</span></li>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Compatible Cursor</b> et autres clients MCP avancés — connecteur local pour développeurs</span></li>
+          <li><span class="rc-ico soon" aria-hidden="true">→</span><span><b>Extension du périmètre clinique</b> — dyslipidémie (en revue documentaire), autres pathologies sur demande</span></li>
+        </ul>
+      </article>
+
+      <article class="recap-col recap-safety">
+        <p class="recap-tag">Cadre &amp; sécurité</p>
+        <ul>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>Aucune donnée nominative patient</b> — filtre automatique (e-mail, téléphone, date de naissance, n° de sécurité sociale) avant tout traitement</span></li>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>Disclaimer L. 4161-1 du Code de la santé publique</b> sur chaque sortie — pas de diagnostic, pas de prescription, pas d'interprétation de bilan biologique à visée médicale</span></li>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>Rate-limit anti-abus</b> — 20 messages/IP/jour côté démo publique, quota par clé en bêta</span></li>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>Briefs anonymes obligatoires</b> — pathologie + profil clinique synthétique + contraintes, sans identifiant patient</span></li>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>Données conservées zéro</b> — les briefs ne sont pas stockés au-delà de la réponse, sauf agrégation statistique anonyme</span></li>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>RGPD compliant</b> — droits accès / rectification / effacement / portabilité disponibles sur demande</span></li>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>Praticien souverain</b> — chaque recette est une proposition à valider, adapter ou refuser. Vous gardez la décision clinique.</span></li>
+          <li><span class="rc-ico ok" aria-hidden="true">●</span><span><b>Bêta gratuite</b> — aucun engagement, aucune carte demandée. Tarif privilégié verrouillé à la sortie de bêta pour les premiers praticiens.</span></li>
+        </ul>
+      </article>
+    </div>
+
+    <p class="recap-foot">
+      Documentation API complète sur <a href="/api-docs/">/api-docs/</a> · Corpus normatif détaillé sur <a href="/sources/">/sources/</a> · Mentions légales sur <a href="/mentions-legales/">/mentions-legales/</a>
+    </p>
+  </div>
+</section>
+
 <!-- ============ BÊTA RESTREINTE ============ -->
 <section class="section dark" id="beta">
   <div class="wrap beta-layout">
     <div>
       <div class="kicker">Bêta restreinte</div>
-      <h2>Une offre pour les premiers praticiens.</h2>
+      <h2>Premier cercle de praticiens — accès gratuit.</h2>
       <p style="margin-top:18px; color:#ccd4e5; font-size:14px; line-height:1.6; max-width:54ch">
-        Groupe restreint pendant la validation documentaire. Tarif verrouillé à vie tant que l'abonnement reste actif. Public à la sortie de bêta&nbsp;: 29 €/mois HT.
+        Pendant toute la phase de validation documentaire, l'accès reste <strong>gratuit</strong> pour les praticiens qui rejoignent la bêta. En échange&nbsp;: vos retours terrain, deux situations cliniques couvertes (T2 + HTA, grossesse + DG), un canal direct par e-mail. Une tarification publique sera annoncée à la sortie de bêta — les bêta-testeurs garderont un tarif privilégié.
       </p>
     </div>
     <div class="pricing-card">
-      <div class="price">9 €<small>&nbsp;/ mois HT</small></div>
-      <p>Verrouillé à vie. Accès aux deux situations couvertes, support par e-mail.</p>
+      <div class="price">Gratuit<small>&nbsp;pendant la bêta</small></div>
+      <p>Une clé d'accès personnelle, ChatGPT ou Claude au choix, support par e-mail. Aucun engagement, aucune carte demandée.</p>
       <p style="margin-top:16px"><a href="/configurer/" class="beta-cta">Rejoindre la bêta →</a></p>
     </div>
   </div>
@@ -1815,6 +2189,7 @@
     <p>ALIM est un outil d'aide à la formulation, réservé aux professionnels de santé. Les sorties produites ne remplacent pas le jugement clinique du praticien et n'engagent ni HOLCO INVEST ni les organismes cités. Aucune donnée patient n'est collectée. Données nutritionnelles&nbsp;: Anses. 2025. <em>Table de composition nutritionnelle des aliments Ciqual 2025</em>. <a href="https://doi.org/10.57745/RDMHWY">doi:10.57745/RDMHWY</a> — Licence Etalab 2.0.</p>
     <div class="footer-links">
       <a href="/configurer/">Rejoindre la bêta</a>
+      <a href="/compte/">Mon compte</a>
       <a href="/sources/">Corpus</a>
       <a href="/mentions-legales/">Mentions légales</a>
       <a href="mailto:alim@holco.co">alim@holco.co</a>
@@ -2397,7 +2772,7 @@
       <div class="alim-suggests">
         <button type="button" class="alim-suggest" data-suggest="Patient adulte avec diabète T2 et HTA. Dîner omnivore d'hiver, plaque et four. Pas d'allergie connue.">Diabète T2 + HTA · dîner d'hiver</button>
         <button type="button" class="alim-suggest" data-suggest="Patiente enceinte 2e trimestre, diabète gestationnel. Déjeuner végétarien d'été, simple, sans crudités à risque.">Grossesse + DG · déjeuner d'été</button>
-        <button type="button" class="alim-suggest" data-suggest="Patient avec insuffisance rénale chronique stade 3. Dîner sans sel.">Hors périmètre · CKD (test refus)</button>
+        <button type="button" class="alim-suggest" data-suggest="Patient avec insuffisance rénale chronique stade 3. Dîner sans sel.">Hors périmètre · insuffisance rénale (test refus)</button>
       </div>
     </div>
   </div>
@@ -2432,7 +2807,7 @@
       <li>ALIM <strong>ne se substitue pas</strong> à une consultation diététique ou médicale.</li>
     </ul>
 
-    <p><strong>Périmètre couvert.</strong> La démo et la bêta ne traitent que deux situations : diabète T2 + HTA, et grossesse + diabète gestationnel. L'insuffisance rénale (CKD) est explicitement hors périmètre. Tout brief hors périmètre fait l'objet d'un refus traçable.</p>
+    <p><strong>Périmètre couvert.</strong> La démo et la bêta ne traitent que deux situations : diabète T2 + HTA, et grossesse + diabète gestationnel. L'insuffisance rénale chronique est explicitement hors périmètre. Toute demande hors périmètre fait l'objet d'un refus clair.</p>
 
     <p><strong>Données échangées.</strong> Aucune donnée nominative patient ne doit transiter par Mirabelle. Vous envoyez un brief anonyme (pathologie, profil clinique synthétique, contraintes, équipement). Les messages ne sont pas conservés au-delà de la réponse, sauf agrégation statistique anonyme à des fins d'amélioration.</p>
 
@@ -2657,7 +3032,7 @@
               currentTool.classList.add('done');
               currentTool.innerHTML = `
                 <span aria-hidden="true">✓</span>
-                <span>${data.name} — ${data.ok ? 'sortie cadrée reçue' : 'refus traçable'}</span>`;
+                <span>${data.name} — ${data.ok ? 'recette cadrée reçue' : 'refus enregistré'}</span>`;
             }
             if (data.ok) {
               recipeUsed = true;

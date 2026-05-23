@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test:smoke": "node smoke-test.js"
+    "test:smoke": "node smoke-test.js",
+    "provision:account": "node provision-account.js"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.98.0"
+    "@anthropic-ai/sdk": "^0.98.0",
+    "@modelcontextprotocol/sdk": "^1.29.0"
   }
 }

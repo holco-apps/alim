@@ -212,6 +212,7 @@
     <ul>
       <li><a href="#vue-ensemble">Vue d'ensemble</a></li>
       <li><a href="#authentification">Authentification</a></li>
+      <li><a href="#mcp-claude">MCP Claude</a></li>
       <li><a href="#endpoint-generate">POST /api/generate</a></li>
       <li><a href="#payload">Payload</a></li>
       <li><a href="#reponse">Modèle de réponse</a></li>
@@ -236,7 +237,7 @@
     <p>L'API est consommée par&nbsp;:</p>
     <ul>
       <li><strong>Custom GPT ALIM</strong> (ChatGPT) — action HTTPS configurée sur cette API ;</li>
-      <li><strong>Serveur MCP local</strong> (Claude Desktop, Cursor) — appel relayé par le MCP wrapper ;</li>
+      <li><strong>Remote MCP ALIM</strong> (Claude, Cursor et clients compatibles) — endpoint Streamable HTTP sur <code>/mcp/v1</code> ;</li>
       <li><strong>Mirabelle</strong>, l'agent de démo public sur <a href="/">alim.care</a> — appel orchestré côté serveur ALIM.</li>
     </ul>
 
@@ -257,6 +258,35 @@
     <div class="callout">
       <p><strong>Phase actuelle</strong>&nbsp;: l'endpoint <code>POST /api/generate</code> reste accessible sans clé pour la démo web et le Custom GPT V0. Cet état est temporaire. La version authentifiée sera servie sur <code>/api/v1/generate</code> avec migration progressive du Custom GPT.</p>
     </div>
+
+    <h2 id="mcp-claude">MCP Claude</h2>
+    <p>ALIM expose aussi un connecteur <strong>Remote MCP</strong> pour Claude et les clients compatibles MCP Streamable HTTP.</p>
+    <p class="endpoint">
+      <span class="verb">POST</span>
+      <code>https://alim.care/mcp/v1</code>
+    </p>
+    <p class="endpoint">
+      <span class="verb get">GET</span>
+      <code>https://alim.care/.well-known/mcp.json</code>
+    </p>
+    <p>Tool exposé&nbsp;: <code>generate_clinical_recipe</code>.</p>
+    <ul>
+      <li>Entrée identique à l'API <code>/api/generate</code> : pathologies, repas, régime, saison, équipement, notes anonymisées.</li>
+      <li>Une génération = un repas. Pour petit-déjeuner + déjeuner + dîner, le client doit appeler le tool trois fois.</li>
+      <li>Sortie principale pour Claude : <code>presentation_markdown_fr</code>, à afficher sans résumer ni réécrire.</li>
+      <li>Sortie structurée : <code>professional_sheet</code>, utile pour PDF, fiche patient, liste de courses et exports.</li>
+      <li>Après la recette, afficher le lien <code>pdf_url</code> si le praticien veut l'aperçu imprimable.</li>
+    </ul>
+    <div class="callout">
+      <p><strong>Installation Claude</strong>&nbsp;: dans Claude, ouvrir Settings → Connectors → Add custom connector, renseigner <code>https://alim.care/mcp/v1</code>, puis ajouter la clé Bearer dès que les comptes ALIM actifs seront déployés.</p>
+    </div>
+    <p>Test MCP minimal&nbsp;:</p>
+    <pre class="code"><code>curl -sS https://alim.care/.well-known/mcp.json
+
+curl -sS https://alim.care/mcp/v1 \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code></pre>
 
     <h2 id="endpoint-generate">POST /api/generate</h2>
     <p>Génère une recette cadrée à partir d'un brief patient anonyme.</p>
@@ -317,6 +347,19 @@
     "saturated_fat_g": { "value": 1.8,  "source": "ciqual", "confidence": "high" },
     "salt_g":          { "value": 0.3,  "source": "ciqual", "confidence": "high" },
     "vit_b9_dfe_ug":   { "value": 290,  "source": "ciqual", "confidence": "high" }
+  },
+  "presentation_markdown_fr": "## Salade tiède quinoa...",
+  "pdf_url": "https://alim.care/pdf/?pathologies=...",
+  "professional_sheet": {
+    "title_fr": "Salade tiède quinoa, pois chiches et œuf dur",
+    "nutrition_panel_per_portion": [],
+    "ingredients_detailed_fr": [],
+    "preparation_steps_fr": [],
+    "export_blocks": {
+      "shopping_list_fr": [],
+      "substitutions_fr": [],
+      "serving_tips_fr": []
+    }
   },
   "rules": [
     {

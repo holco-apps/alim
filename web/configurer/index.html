@@ -188,6 +188,118 @@
   }
   .access-list{padding-left:20px; margin:14px 0}
   .access-list li{margin-bottom:6px; color:var(--ink-soft); font-size:14.5px}
+  /* Channels grid — 2 cards ChatGPT / Claude */
+  .channels-intro{
+    margin:28px 0 14px;
+    font:600 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted);
+    text-align:center;
+  }
+  .channels-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:640px){
+    .channels-grid{grid-template-columns:1fr}
+  }
+  .channel-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 24px;
+    display:flex; flex-direction:column;
+    transition:border-color .25s ease, transform .25s ease, box-shadow .3s ease;
+  }
+  .channel-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 32px -16px rgba(23,38,80,.18);
+  }
+  .channel-card.channel-chatgpt:hover{border-color:#10a37f}
+  .channel-card.channel-claude:hover{border-color:#cc785c}
+  .channel-head{
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:12px;
+  }
+  .channel-logo{
+    width:44px; height:44px;
+    border-radius:10px;
+    background:#000;
+    color:#fff;
+    display:inline-flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .channel-logo.claude-mark{background:#cc785c}
+  .channel-logo svg{width:24px; height:24px}
+  .channel-head h3{
+    font:400 24px/1.2 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .channel-tag{
+    font:500 12px/1.2 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.04em;
+    color:var(--muted);
+    margin:2px 0 0;
+  }
+  .channel-desc{
+    font-size:13.5px; line-height:1.55;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+  }
+  .channel-steps{
+    list-style:none;
+    counter-reset:cs;
+    padding:0;
+    margin:0 0 16px;
+    display:grid; gap:8px;
+  }
+  .channel-steps li{
+    counter-increment:cs;
+    position:relative;
+    padding-left:26px;
+    font-size:13px;
+    color:var(--ink);
+    line-height:1.5;
+  }
+  .channel-steps li::before{
+    content:counter(cs);
+    position:absolute; left:0; top:1px;
+    width:18px; height:18px; border-radius:50%;
+    background:var(--gold-soft);
+    color:var(--navy-deep);
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+    display:inline-flex; align-items:center; justify-content:center;
+    border:1px solid rgba(247,218,41,.5);
+  }
+  .channel-steps em{font-style:italic; color:var(--navy)}
+  .channel-steps code{
+    font:0.9em "JetBrains Mono", ui-monospace, monospace;
+    color:var(--navy-deep);
+    background:var(--paper);
+    padding:1px 5px; border-radius:3px;
+  }
+  .channel-cta-placeholder{
+    margin-top:auto;
+    display:inline-block;
+    padding:9px 14px;
+    background:var(--paper);
+    border:1px dashed var(--line);
+    border-radius:6px;
+    font:500 12px/1.2 Inter, sans-serif;
+    color:var(--muted);
+    text-align:center;
+    font-style:italic;
+  }
+  .channels-note{
+    margin-top:18px;
+    text-align:center;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .channels-note a{color:var(--navy)}
 
   footer{background:var(--navy-deep); color:#d6dded; padding:32px 0 48px; font-size:13px}
   footer a{color:var(--gold)}
@@ -218,7 +330,7 @@
       <p class="kicker">Bêta restreinte · Étape 1/2</p>
       <h1 class="h-display">Rejoindre la <em>bêta ALIM</em>.</h1>
       <p class="lede">
-        Groupe restreint pendant la validation documentaire. Tarif <strong>9&nbsp;€/mois HT verrouillé à vie</strong> tant que l'abonnement reste actif (29&nbsp;€/mois HT à la sortie). Chaque demande est validée manuellement — vous recevez votre clé d'installation par e-mail sous 24&nbsp;h.
+        Groupe restreint pendant la validation documentaire. <strong>Accès gratuit</strong> pendant toute la bêta — aucune carte, aucun engagement. Chaque demande est validée manuellement&nbsp;: vous recevez votre clé d'installation par e-mail sous 24&nbsp;h. Les bêta-testeurs garderont un tarif privilégié quand la version publique sortira.
       </p>
 
       <form id="form1" noValidate>
@@ -290,6 +402,65 @@
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend>Welcome ALIM — votre pratique</legend>
+          <p style="font-size:13.5px; color:var(--muted); margin:-4px 0 4px">
+            Ces réponses permettent à ALIM d'adapter son dialogue, ses fiches et ses PDF à votre façon de travailler.
+          </p>
+          <div>
+            <label for="specialites">Patientèles et sujets fréquents</label>
+            <textarea id="specialites" name="specialites" placeholder="Ex. : diabète T2, HTA, grossesse, perte de poids, végétarien, sportifs, familles, petit budget…"></textarea>
+          </div>
+          <div class="grid2">
+            <div>
+              <label for="style_support">Style de support préféré</label>
+              <select id="style_support" name="style_support">
+                <option value="">Choisir…</option>
+                <option value="pedagogique_chaleureux">Pédagogique et chaleureux</option>
+                <option value="clinique_synthetique">Clinique et synthétique</option>
+                <option value="tres_pratique">Très pratique, orienté action</option>
+                <option value="motivationnel">Motivationnel, non culpabilisant</option>
+              </select>
+            </div>
+            <div>
+              <label for="niveau_detail">Niveau de détail attendu</label>
+              <select id="niveau_detail" name="niveau_detail">
+                <option value="">Choisir…</option>
+                <option value="court_patient">Court côté patient</option>
+                <option value="equilibre">Équilibré patient + praticien</option>
+                <option value="detaille_clinique">Détaillé côté clinique</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="formats_utiles">Formats utiles au quotidien</label>
+            <textarea id="formats_utiles" name="formats_utiles" placeholder="Ex. : fiche PDF patient, variantes, liste de courses, message de suivi WhatsApp, courrier médecin, version batch cooking…"></textarea>
+          </div>
+          <div>
+            <label for="contextes_patients">Contraintes de terrain récurrentes</label>
+            <textarea id="contextes_patients" name="contextes_patients" placeholder="Ex. : peu de temps, petit budget, repas familial, patients peu équipés, cuisine méditerranéenne, cuisine maghrébine, aversions fréquentes…"></textarea>
+          </div>
+          <div class="grid2">
+            <div>
+              <label for="sources_pref">Affichage des sources</label>
+              <select id="sources_pref" name="sources_pref">
+                <option value="">Choisir…</option>
+                <option value="detaillees_praticien_discretes_patient">Détaillées praticien, discrètes patient</option>
+                <option value="visibles_patient">Visibles aussi côté patient</option>
+                <option value="annexe">En annexe uniquement</option>
+              </select>
+            </div>
+            <div>
+              <label for="branding_pdf">Identité PDF</label>
+              <input id="branding_pdf" name="branding_pdf" type="text" placeholder="Nom, titre, ADELI/RPPS, ville…">
+            </div>
+          </div>
+          <div>
+            <label for="documents_note">Documents à intégrer plus tard (optionnel)</label>
+            <textarea id="documents_note" name="documents_note" placeholder="Ex. : mes fiches recettes Word, trames Canva, modèle de compte-rendu, liste d'équivalences. Upload sécurisé à venir."></textarea>
+          </div>
+        </fieldset>
+
         <div id="error-1" class="alert alert-error" hidden></div>
 
         <button type="button" class="btn" id="btn-step2">Continuer vers les conditions →</button>
@@ -332,7 +503,7 @@
         <p>En tant que professionnel de santé, vous restez seul responsable de l'usage clinique des sorties produites par ALIM. Toute recette générée doit être <strong>revue, ajustée et validée par vos soins</strong> avant communication au patient.</p>
 
         <h3>6. Tarif bêta</h3>
-        <p>Le tarif <strong>9 € HT/mois</strong> est verrouillé à vie tant que l'abonnement reste actif sans interruption. Tarif public à la sortie de bêta&nbsp;: 29 € HT/mois. Aucune facturation pendant la phase de validation documentaire en cours.</p>
+        <p>L'accès à ALIM est <strong>entièrement gratuit</strong> pendant la phase bêta. Aucune carte bancaire demandée, aucun engagement. À la sortie de bêta, une tarification publique sera annoncée — les bêta-testeurs conserveront un tarif privilégié verrouillé tant que l'abonnement reste actif.</p>
 
         <h3>7. Engagement de retour</h3>
         <p>En rejoignant la bêta, vous vous engagez à fournir <strong>un retour structuré à J+7 et J+14</strong> sur l'usage réel de l'outil&nbsp;: ce qui fonctionne, ce qui manque, ce qui doit être corrigé. Format léger, par e-mail ou appel court.</p>
@@ -385,13 +556,70 @@
       <div class="access-card">
         <h2>Ce qui se passe maintenant</h2>
         <ul class="access-list">
-          <li>Notre équipe vérifie votre demande (manuel, sous 24 h ouvrées).</li>
-          <li>Vous recevez votre <strong>clé d'installation ALIM</strong> à l'adresse e-mail indiquée.</li>
-          <li>Vous suivez le guide pour brancher ALIM dans votre IA habituelle (ChatGPT, Claude…).</li>
+          <li>Notre équipe vérifie votre demande manuellement (sous 24 h ouvrées).</li>
+          <li>Vous recevez par e-mail votre <strong>clé d'accès personnelle</strong> (<code>alim_live_…</code>) — c'est aussi votre compte, pas de mot de passe à retenir.</li>
+          <li>Vous activez ALIM dans ChatGPT ou Claude en 1 clic via le lien du même e-mail.</li>
+          <li>Vous éditez votre <a href="/compte/"><strong>profil de pratique</strong></a> (patientèles, ton, formats, identité cabinet pour les PDF). Mirabelle et vos fiches imprimables s'y adapteront automatiquement.</li>
           <li>À J+7 et J+14, nous reprenons contact pour votre retour structuré.</li>
         </ul>
         <p>Référence de votre demande&nbsp;:</p>
         <div class="ref-token" id="ref-token">—</div>
+      </div>
+
+      <p class="channels-intro">Au choix — 1 clic depuis votre mail dans les deux cas&nbsp;:</p>
+
+      <div class="channels-grid">
+        <article class="channel-card channel-chatgpt">
+          <div class="channel-head">
+            <span class="channel-logo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.84a5.94 5.94 0 0 0-.51-4.88 6 6 0 0 0-6.47-2.88 6 6 0 0 0-10.18 2.18A5.96 5.96 0 0 0 1.71 7.4a6 6 0 0 0 .74 7.04 5.94 5.94 0 0 0 .51 4.88 6 6 0 0 0 6.47 2.88 6 6 0 0 0 10.18-2.18 5.96 5.96 0 0 0 3.41-3.14 6 6 0 0 0-.74-7.04Zm-8.97 12.55a4.44 4.44 0 0 1-2.86-1.04l.14-.08 4.78-2.76a.78.78 0 0 0 .4-.68v-6.75l2.02 1.17a.07.07 0 0 1 .04.05v5.59a4.46 4.46 0 0 1-4.52 4.5Z"/></svg>
+            </span>
+            <div>
+              <h3>ChatGPT</h3>
+              <p class="channel-tag">Custom GPT ALIM</p>
+            </div>
+          </div>
+          <p class="channel-desc">Ouvrez le Custom GPT ALIM, collez votre clé une fois, demandez vos recettes dans votre conversation habituelle.</p>
+          <ol class="channel-steps">
+            <li>Cliquez sur le lien <em>Ouvrir ALIM dans ChatGPT</em> reçu par e-mail</li>
+            <li>Collez votre clé <code>alim_live_…</code> quand le GPT le demande</li>
+            <li>C'est prêt — chaque génération est cadrée Ciqual + HAS</li>
+          </ol>
+          <span class="channel-cta-placeholder">Lien transmis après validation</span>
+        </article>
+
+        <article class="channel-card channel-claude">
+          <div class="channel-head">
+            <span class="channel-logo claude-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.5 17.5 9 7h2l3.5 10.5h-2L11.7 15H8.3l-.8 2.5h-2Zm3.3-4h2.4L10 9.7l-1.2 3.8Zm10.7 4V7h-2v10.5h2Z"/></svg>
+            </span>
+            <div>
+              <h3>Claude</h3>
+              <p class="channel-tag">Connector ALIM</p>
+            </div>
+          </div>
+          <p class="channel-desc">Ajoutez le Connector ALIM dans Claude.ai (web ou Desktop), autorisez avec votre clé, utilisez ALIM directement dans Claude.</p>
+          <ol class="channel-steps">
+            <li>Dans Claude → Settings → Connectors → <em>Add custom connector</em></li>
+            <li>Collez l'URL <code>https://alim.care/mcp/v1</code> et votre clé <code>alim_live_…</code></li>
+            <li>L'outil <code>generate_clinical_recipe</code> apparaît dans Claude</li>
+          </ol>
+          <span class="channel-cta-placeholder">Lien transmis après validation</span>
+        </article>
+      </div>
+
+      <p class="channels-note">
+        Vous utilisez Cursor ou un autre client MCP avancé&nbsp;? Documentation technique sur <a href="/api-docs/">alim.care/api-docs</a>.
+      </p>
+
+      <div class="access-card" style="margin-top:28px; border-left-color:var(--navy)">
+        <h2>Votre espace praticien</h2>
+        <p style="font-size:14.5px; color:var(--ink-soft); line-height:1.6">
+          Dès réception de votre clé, allez sur <a href="/compte/"><strong>alim.care/compte/</strong></a> pour décrire votre pratique : patientèles fréquentes, ton préféré, formats utiles, et identité de votre cabinet (nom, qualification, ADELI, ville) pour les fiches imprimables. Tout est facultatif et modifiable à tout moment.
+        </p>
+        <p style="margin-top:12px; font-size:13px; color:var(--muted)">
+          Votre clé reste sur votre navigateur. Aucun mot de passe, aucune session côté serveur — la clé suffit.
+        </p>
       </div>
 
       <p style="margin-top:24px; font-size:14px; color:var(--muted)">
@@ -428,6 +656,9 @@
     cabinet_name:'', ville:'', exercice:'', annees:'',
     prenom:'', nom:'', email:'',
     ia_preferee:'', motif:'',
+    specialites:'', style_support:'', niveau_detail:'',
+    formats_utiles:'', contextes_patients:'', sources_pref:'',
+    branding_pdf:'', documents_note:'',
     cguScrolled:false, check1:false, check2:false, submitting:false,
   };
 
@@ -449,6 +680,14 @@
     state.nom = f.nom.value.trim();
     state.email = f.email.value.trim();
     state.motif = f.motif.value.trim();
+    state.specialites = f.specialites.value.trim();
+    state.style_support = f.style_support.value;
+    state.niveau_detail = f.niveau_detail.value;
+    state.formats_utiles = f.formats_utiles.value.trim();
+    state.contextes_patients = f.contextes_patients.value.trim();
+    state.sources_pref = f.sources_pref.value;
+    state.branding_pdf = f.branding_pdf.value.trim();
+    state.documents_note = f.documents_note.value.trim();
     return state.cabinet_name && state.ville && state.exercice && state.annees
       && state.prenom && state.nom && /\S+@\S+\.\S+/.test(state.email)
       && state.ia_preferee;
@@ -527,6 +766,16 @@
           email: state.email,
           ia_preferee: state.ia_preferee,
           motif: state.motif,
+          practitioner_profile: {
+            specialites: state.specialites,
+            style_support: state.style_support,
+            niveau_detail: state.niveau_detail,
+            formats_utiles: state.formats_utiles,
+            contextes_patients: state.contextes_patients,
+            sources_pref: state.sources_pref,
+            branding_pdf: state.branding_pdf,
+            documents_note: state.documents_note,
+          },
           cgu_accepted: true,
           engagement_feedback: true,
           source: 'alim.care/configurer',

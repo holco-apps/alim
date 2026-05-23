@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mock PDF — Fiche recette ALIM (aperçu praticien)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#233872">
+<link rel="icon" href="/assets/alim-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#233872;
+    --navy-deep:#172650;
+    --gold:#f7da29;
+    --gold-deep:#b5901c;
+    --gold-soft:#fff6b7;
+    --paper:#fdfaf2;
+    --ink:#1a1f14;
+    --ink-soft:#4a5040;
+    --muted:#7a8070;
+    --line:#e2d6bb;
+    --ok:#286c4d;
+  }
+  *{box-sizing:border-box}
+  html{background:#e8e2d2}
+  body{
+    margin:0; padding:32px 20px;
+    color:var(--ink);
+    font: 14px/1.55 Inter, ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; align-items:center; gap:24px;
+  }
+  /* Toolbar de prévisualisation */
+  .toolbar{
+    width:100%; max-width:980px;
+    display:flex; flex-wrap:wrap; gap:12px;
+    align-items:center; justify-content:space-between;
+    padding:16px 22px;
+    background:#fff; border:1px solid #d8cfb8; border-radius:12px;
+    box-shadow:0 4px 16px -10px rgba(0,0,0,.12);
+  }
+  .toolbar-info{display:flex; flex-direction:column; gap:4px}
+  .toolbar-info b{
+    font:600 14px/1.2 Inter, sans-serif;
+    color:var(--navy-deep);
+  }
+  .toolbar-info span{
+    font:500 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--muted); letter-spacing:.08em;
+  }
+  .toolbar-actions{display:flex; gap:8px}
+  .tbtn{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:9px 16px;
+    border:1px solid var(--line); border-radius:8px;
+    background:var(--paper);
+    color:var(--navy-deep);
+    font:600 13px/1 Inter, sans-serif;
+    cursor:pointer;
+    text-decoration:none;
+    transition:background .15s, border-color .15s;
+  }
+  .tbtn:hover{background:#fff; border-color:var(--navy)}
+  .tbtn.primary{background:var(--navy); color:#fff; border-color:var(--navy)}
+  .tbtn.primary:hover{background:var(--navy-deep)}
+
+  /* Feuille A4 */
+  .sheet{
+    width:210mm;
+    min-height:297mm;
+    background:var(--paper);
+    box-shadow:0 8px 40px -8px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.06);
+    padding:18mm 16mm 14mm;
+    position:relative;
+    display:flex; flex-direction:column;
+  }
+
+  /* ====== HEADER CABINET ====== */
+  .pdf-header{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding-bottom:14px;
+    border-bottom:1.5px solid var(--gold);
+    margin-bottom:18px;
+  }
+  .cabinet-block{display:flex; align-items:center; gap:14px}
+  .cabinet-logo{
+    width:54px; height:54px;
+    background:linear-gradient(135deg, var(--gold-soft) 0%, var(--gold) 100%);
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font:500 22px/1 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-.02em;
+  }
+  .cabinet-info h2{
+    margin:0;
+    font:400 20px/1.1 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-.01em;
+  }
+  .cabinet-info p{
+    margin:2px 0 0;
+    font-size:11px; color:var(--ink-soft); line-height:1.4;
+  }
+  .header-right{text-align:right}
+  .header-right .ref{
+    font:500 10.5px/1.2 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--muted);
+    letter-spacing:.08em;
+  }
+  .header-right .ref b{color:var(--ink); font-weight:600}
+  .header-right .date{
+    margin-top:4px;
+    font-size:11px; color:var(--ink-soft);
+  }
+
+  /* ====== TITRE ====== */
+  .pdf-title-block{margin-bottom:18px}
+  .pdf-kicker{
+    display:inline-flex; align-items:center; gap:8px;
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.14em; text-transform:uppercase;
+    color:var(--gold-deep);
+    margin-bottom:8px;
+  }
+  .pdf-kicker::before{
+    content:''; width:14px; height:1.5px; background:var(--gold-deep);
+  }
+  .pdf-title{
+    margin:0;
+    font:400 32px/1.1 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-.015em;
+  }
+  .pdf-subtitle{
+    margin:6px 0 0;
+    color:var(--ink-soft);
+    font-size:13px;
+    font-style:italic;
+  }
+
+  /* ====== PROFIL PATIENT (anonyme) ====== */
+  .profile-band{
+    display:grid; grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+    padding:12px 14px;
+    background:#fff;
+    border:1px solid var(--line); border-radius:8px;
+    margin-bottom:18px;
+  }
+  .profile-band .pf{display:flex; flex-direction:column}
+  .profile-band .pf-lbl{
+    font:600 9.5px/1.2 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:3px;
+  }
+  .profile-band .pf-val{
+    font:500 12.5px/1.3 Inter, sans-serif;
+    color:var(--ink);
+  }
+
+  /* ====== CONTENU 2 COLONNES ====== */
+  .pdf-body{
+    display:grid;
+    grid-template-columns:1.4fr 1fr;
+    gap:24px;
+    flex:1;
+  }
+  .col h3{
+    margin:0 0 8px;
+    font:400 17px/1.2 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-.005em;
+    padding-bottom:5px;
+    border-bottom:1px solid var(--line);
+  }
+  .col + .col h3:first-of-type{margin-top:0}
+  .col-section{margin-bottom:18px}
+  .col-section:last-child{margin-bottom:0}
+
+  /* Ingrédients */
+  .ingredients-list{
+    list-style:none; padding:0; margin:0;
+    display:grid; gap:6px;
+  }
+  .ingredients-list li{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:baseline; gap:8px;
+    padding:6px 10px;
+    background:#fff;
+    border:1px solid var(--line); border-radius:5px;
+    font-size:12.5px;
+  }
+  .ingredients-list .ing-name{color:var(--ink)}
+  .ingredients-list .ing-qty{
+    font:600 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--navy-deep);
+    background:var(--gold-soft);
+    padding:3px 7px; border-radius:4px;
+  }
+
+  /* Étapes */
+  .steps-list{
+    list-style:none; padding:0; margin:0;
+    counter-reset:s;
+    display:grid; gap:10px;
+  }
+  .steps-list li{
+    counter-increment:s;
+    position:relative;
+    padding:10px 12px 10px 38px;
+    background:#fff;
+    border:1px solid var(--line); border-radius:6px;
+    font-size:12.5px; line-height:1.55;
+    color:var(--ink);
+  }
+  .steps-list li::before{
+    content:counter(s);
+    position:absolute; left:10px; top:10px;
+    width:20px; height:20px;
+    background:var(--navy-deep); color:var(--gold);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  /* Nutriments */
+  .nutri-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  .nutri-cell{
+    padding:10px 12px;
+    background:#fff;
+    border:1px solid var(--line); border-radius:6px;
+    display:flex; flex-direction:column;
+  }
+  .nutri-cell.hi{background:linear-gradient(135deg, #fffdf3 0%, var(--gold-soft) 100%); border-color:var(--gold)}
+  .nutri-lbl{
+    font:500 10px/1.1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:3px;
+  }
+  .nutri-val{
+    font:500 15px/1.1 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep);
+    letter-spacing:-.01em;
+  }
+  .nutri-val b{font-weight:500}
+  .nutri-val small{font-size:11px; color:var(--ink-soft); margin-left:3px}
+
+  /* Garde-fous */
+  .checks-list{
+    list-style:none; padding:0; margin:0;
+    display:grid; gap:5px;
+  }
+  .checks-list li{
+    position:relative;
+    padding:7px 10px 7px 28px;
+    background:#fff;
+    border:1px solid var(--line); border-radius:5px;
+    font-size:11.5px; line-height:1.5;
+    color:var(--ink);
+  }
+  .checks-list li::before{
+    content:'✓';
+    position:absolute; left:10px; top:7px;
+    color:var(--ok); font-weight:700;
+  }
+
+  /* Sources */
+  .sources-list{
+    list-style:none; padding:0; margin:0;
+    display:grid; gap:5px;
+    font-size:11px;
+  }
+  .sources-list li{
+    padding:6px 9px;
+    background:#fff;
+    border-left:2px solid var(--gold);
+    border-radius:0 4px 4px 0;
+    color:var(--ink-soft);
+    line-height:1.45;
+  }
+  .sources-list li b{color:var(--ink); font-weight:600}
+
+  /* Courses (sidebar bonus) */
+  .shopping-list{
+    list-style:none; padding:0; margin:0;
+    columns:1; column-gap:0;
+    display:grid; gap:3px;
+    font-size:11.5px;
+  }
+  .shopping-list li{
+    display:flex; align-items:center; gap:6px;
+    padding:3px 0;
+    color:var(--ink);
+  }
+  .shopping-list li::before{
+    content:''; width:11px; height:11px;
+    border:1.3px solid var(--muted); border-radius:2px;
+    flex:0 0 auto;
+  }
+
+  /* ====== FOOTER ====== */
+  .pdf-footer{
+    margin-top:24px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+  .pdf-disclaimer{
+    font-size:9.5px; line-height:1.5;
+    color:var(--muted);
+    font-style:italic;
+    margin:0 0 8px;
+    max-width:100%;
+  }
+  .pdf-footer-line{
+    display:flex; justify-content:space-between; align-items:center;
+    gap:12px;
+    font-size:9.5px; color:var(--muted);
+  }
+  .alim-watermark{
+    display:inline-flex; align-items:center; gap:5px;
+    font:500 10px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.08em;
+    color:var(--muted);
+  }
+  .alim-watermark .wm-dot{
+    display:inline-block; width:5px; height:5px; border-radius:50%;
+    background:var(--gold);
+  }
+  .alim-watermark a{color:var(--navy); text-decoration:none}
+
+  /* ====== PRINT ====== */
+  @media print{
+    html{background:#fff}
+    body{
+      padding:0;
+      display:block;
+    }
+    .toolbar{display:none}
+    .sheet{
+      width:auto; min-height:0;
+      box-shadow:none;
+      padding:14mm 14mm;
+      margin:0;
+    }
+    @page{
+      size:A4;
+      margin:0;
+    }
+  }
+  @media (max-width:880px){
+    .sheet{width:100%; padding:24px 18px}
+    .pdf-body{grid-template-columns:1fr}
+    .profile-band{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- Toolbar (cachée à l'impression) -->
+<div class="toolbar">
+  <div class="toolbar-info">
+    <b>Aperçu PDF — Fiche recette ALIM</b>
+    <span>MOCKUP V1 · ROADMAP · NON FONCTIONNEL EN BÊTA</span>
+  </div>
+  <div class="toolbar-actions">
+    <a class="tbtn" href="/">← Retour ALIM</a>
+    <button class="tbtn primary" onclick="window.print()">Imprimer / Sauver en PDF</button>
+  </div>
+</div>
+
+<!-- Feuille A4 -->
+<article class="sheet">
+
+  <!-- HEADER CABINET BRANDABLE -->
+  <header class="pdf-header">
+    <div class="cabinet-block">
+      <div class="cabinet-logo">G·C</div>
+      <div class="cabinet-info">
+        <h2>Gaëlle Coquard · Diététicienne nutritionniste</h2>
+        <p>23 rue de la République, 69001 Lyon · 04 78 00 00 00 · gaelle@cabinet-coquard.fr</p>
+        <p>N° ADELI 691234567 · Diét. D.E.</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="ref">RÉF&nbsp;: <b>RC-2026-0142</b></div>
+      <div class="date">Émise le 22 mai 2026</div>
+    </div>
+  </header>
+
+  <!-- TITRE RECETTE -->
+  <section class="pdf-title-block">
+    <p class="pdf-kicker">Fiche recette personnalisée</p>
+    <h1 class="pdf-title">Bol tiède lentilles, quinoa, brocoli et courgette citronnée</h1>
+    <p class="pdf-subtitle">Dîner d'hiver — 1 portion (550 g)</p>
+  </section>
+
+  <!-- PROFIL PATIENT ANONYMISÉ -->
+  <section class="profile-band">
+    <div class="pf">
+      <span class="pf-lbl">Profil</span>
+      <span class="pf-val">Adulte · Diabète T2 + HTA</span>
+    </div>
+    <div class="pf">
+      <span class="pf-lbl">Fonction rénale</span>
+      <span class="pf-val">Conservée</span>
+    </div>
+    <div class="pf">
+      <span class="pf-lbl">Régime</span>
+      <span class="pf-val">Omnivore</span>
+    </div>
+    <div class="pf">
+      <span class="pf-lbl">Équipement</span>
+      <span class="pf-val">Plaque + four</span>
+    </div>
+  </section>
+
+  <!-- BODY 2 COLONNES -->
+  <div class="pdf-body">
+    <!-- COLONNE GAUCHE : Ingrédients + Étapes -->
+    <section class="col">
+      <div class="col-section">
+        <h3>Ingrédients</h3>
+        <ul class="ingredients-list">
+          <li><span class="ing-name">Lentilles cuites sans sel</span><span class="ing-qty">180 g</span></li>
+          <li><span class="ing-name">Quinoa cuit sans sel</span><span class="ing-qty">80 g</span></li>
+          <li><span class="ing-name">Brocoli vapeur</span><span class="ing-qty">160 g</span></li>
+          <li><span class="ing-name">Courgette cuite</span><span class="ing-qty">120 g</span></li>
+          <li><span class="ing-name">Huile d'olive vierge extra (en fin de service)</span><span class="ing-qty">10 g</span></li>
+          <li><span class="ing-name">Citron, ail, persil frais, poivre</span><span class="ing-qty">qsp</span></li>
+        </ul>
+      </div>
+
+      <div class="col-section">
+        <h3>Préparation</h3>
+        <ol class="steps-list">
+          <li>Réchauffer les lentilles, le quinoa, le brocoli vapeur et la courgette cuite sans ajout de sel.</li>
+          <li>Assaisonner avec le jus de citron, l'ail finement haché, le persil frais et le poivre.</li>
+          <li>Ajouter l'huile d'olive au service pour préserver les acides gras insaturés. Servir tiède.</li>
+        </ol>
+      </div>
+
+      <div class="col-section">
+        <h3>Liste de courses</h3>
+        <ul class="shopping-list">
+          <li>Lentilles vertes du Puy (sachet 250 g)</li>
+          <li>Quinoa blanc (sachet 250 g)</li>
+          <li>Brocoli (1 tête, ~400 g)</li>
+          <li>Courgette (1 moyenne, ~200 g)</li>
+          <li>Huile d'olive vierge extra</li>
+          <li>1 citron · 2 gousses d'ail · 1 botte persil plat</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- COLONNE DROITE : Nutriments + Garde-fous + Sources -->
+    <section class="col">
+      <div class="col-section">
+        <h3>Nutriments par portion</h3>
+        <div class="nutri-grid">
+          <div class="nutri-cell hi">
+            <span class="nutri-lbl">Énergie</span>
+            <span class="nutri-val"><b>513</b> <small>kcal</small></span>
+          </div>
+          <div class="nutri-cell">
+            <span class="nutri-lbl">Glucides</span>
+            <span class="nutri-val"><b>57</b> <small>g</small></span>
+          </div>
+          <div class="nutri-cell">
+            <span class="nutri-lbl">Fibres</span>
+            <span class="nutri-val"><b>23,6</b> <small>g</small></span>
+          </div>
+          <div class="nutri-cell">
+            <span class="nutri-lbl">Sucres totaux</span>
+            <span class="nutri-val"><b>3,5</b> <small>g</small></span>
+          </div>
+          <div class="nutri-cell">
+            <span class="nutri-lbl">AG saturés</span>
+            <span class="nutri-val"><b>2,3</b> <small>g</small></span>
+          </div>
+          <div class="nutri-cell hi">
+            <span class="nutri-lbl">Sel</span>
+            <span class="nutri-val"><b>0,2</b> <small>g</small></span>
+          </div>
+          <div class="nutri-cell">
+            <span class="nutri-lbl">Potassium</span>
+            <span class="nutri-val"><b>1393</b> <small>mg</small></span>
+          </div>
+          <div class="nutri-cell">
+            <span class="nutri-lbl">Sucres ajoutés</span>
+            <span class="nutri-val"><b>0</b> <small>g</small></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-section">
+        <h3>Garde-fous activés</h3>
+        <ul class="checks-list">
+          <li>Aucun sel ajouté à la recette — sodium compatible HTA</li>
+          <li>Glucides cadrés par repas — diabète T2 stable</li>
+          <li>Sucres ajoutés à 0 g, sucres totaux faibles</li>
+          <li>Fibres &gt; 23 g pour un effet glycémique amorti</li>
+          <li>Acides gras saturés sous seuil pour la journée</li>
+        </ul>
+      </div>
+
+      <div class="col-section">
+        <h3>Sources</h3>
+        <ul class="sources-list">
+          <li><b>ANSES Ciqual 2025</b> — Table de composition nutritionnelle (Licence Etalab 2.0)</li>
+          <li><b>WHO Sodium Guideline 2012</b> — Apports adultes &lt; 5 g/jour</li>
+          <li><b>Ameli.fr</b> — Diabète et alimentation au quotidien</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="pdf-footer">
+    <p class="pdf-disclaimer">
+      Cette fiche est un outil d'aide à la formulation, à valider par votre praticien.
+      Les apports nutritionnels indiqués sont des estimations issues de la base Ciqual 2025 et ne se substituent pas
+      à un avis médical individualisé. En cas de symptômes nouveaux, persistants ou inquiétants, consultez votre médecin traitant.
+      Article L. 4161-1 du Code de la santé publique respecté&nbsp;: aucun diagnostic n'est posé, aucun traitement n'est prescrit.
+    </p>
+    <div class="pdf-footer-line">
+      <span class="alim-watermark">
+        <span class="wm-dot"></span>
+        Généré avec <a href="https://alim.care/">ALIM</a> · cadré Ciqual + HAS · pour praticien.ne
+      </span>
+      <span>Page 1 / 1</span>
+    </div>
+  </footer>
+</article>
+
+</body>
+</html>

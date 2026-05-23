@@ -9,100 +9,67 @@ info:
 servers:
   - url: https://alim.care
 paths:
-  /api/generate:
+  /api/v1/me:
+    get:
+      operationId: getAlimAccount
+      summary: Vérifier le compte ALIM actif
+      description: Vérifie la clé ALIM, le statut du compte et le quota restant.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Compte actif
+        "401":
+          description: Clé manquante ou invalide
+        "403":
+          description: Compte non actif ou clé désactivée
+  /api/v1/generate:
     post:
       operationId: generateClinicalRecipe
       summary: Générer une recette nutritionnelle cadrée
-      description: >
-        Génère une recette avec ingrédients en grammes, nutriments par portion,
-        garde-fous appliqués, sources et avertissements. Refuse les cas hors
-        périmètre bêta. À appeler seulement après un brief patient anonymisé
-        cadré par le GPT : pathologies, repas, préférences, équipement et
-        précautions clés selon le profil.
+      description: Génère une fiche ALIM v1 avec nutrition, garde-fous, sources et lien PDF. Nécessite une clé ALIM active.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: false
-              properties:
-                pathologies:
-                  type: array
-                  minItems: 1
-                  maxItems: 4
-                  items:
-                    type: string
-                    enum:
-                      - diabete_t2
-                      - hta
-                      - diabete_gestationnel
-                      - grossesse
-                  description: >
-                    Pathologies ou situations couvertes. Combinaisons bêta :
-                    [diabete_t2, hta] ou [grossesse, diabete_gestationnel].
-                diet_type:
-                  type: string
-                  enum:
-                    - omnivore
-                    - vegetarien
-                    - vegan
-                    - pescetarien
-                    - sans_gluten
-                    - sans_lactose
-                  default: omnivore
-                season:
-                  type: string
-                  enum:
-                    - printemps
-                    - ete
-                    - automne
-                    - hiver
-                    - all
-                  default: all
-                meal_slot:
-                  type: string
-                  enum:
-                    - petit_dejeuner
-                    - dejeuner
-                    - diner
-                    - collation
-                  default: dejeuner
-                portions:
-                  type: integer
-                  minimum: 1
-                  maximum: 8
-                  default: 1
-                equipment:
-                  type: array
-                  maxItems: 8
-                  items:
-                    type: string
-                    enum:
-                      - plaque
-                      - four
-                      - vapeur
-                      - micro_ondes
-                      - blender
-                  description: >
-                    Équipement réellement disponible chez le patient. Si inconnu
-                    et si le praticien demande de faire avec, utiliser plaque et
-                    four par défaut.
-                notes:
-                  type: string
-                  maxLength: 600
-                  description: >
-                    Brief anonymisé : goûts, saison, contraintes culinaires,
-                    budget, temps disponible, préférences, allergies non
-                    complexes, hypothèses utilisées. Pour T2+HTA, préciser si
-                    fonction rénale conservée ; si insuffisance rénale/CKD/MRC,
-                    ne pas appeler cette action. Pour grossesse+DG, préciser
-                    trimestre et statut toxoplasmose si connus. Ne jamais
-                    inclure nom, prénom, date de naissance, téléphone, e-mail,
-                    NIR ou tout identifiant patient.
-              required:
-                - pathologies
-                - meal_slot
+              $ref: "#/components/schemas/AlimRecipeRequest"
+      responses:
+        "200":
+          description: Recette cadrée générée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlimRecipeResponse"
+        "401":
+          description: Clé manquante ou invalide
+        "403":
+          description: Compte ALIM non actif ou clé désactivée
+        "422":
+          description: Brief refusé ou hors périmètre bêta
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlimRefusalResponse"
+        "429":
+          description: Quota atteint
+        "500":
+          description: Erreur interne ALIM
+  /api/generate:
+    post:
+      operationId: generateClinicalRecipeDemo
+      summary: Générer une recette nutritionnelle cadrée
+      description: >
+        Endpoint démo temporaire sans compte. Utiliser /api/v1/generate pour
+        le Custom GPT protégé.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlimRecipeRequest"
       responses:
         "200":
           description: Recette cadrée générée
@@ -121,7 +88,85 @@ paths:
         "500":
           description: Erreur interne ALIM
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >
+        À activer avec /api/v1/generate quand les clés ALIM par cabinet seront
+        disponibles. /api/generate reste l'endpoint de démonstration publique.
   schemas:
+    AlimRecipeRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        pathologies:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items:
+            type: string
+            enum:
+              - diabete_t2
+              - hta
+              - diabete_gestationnel
+              - grossesse
+          description: >
+            Pathologies ou situations couvertes. Combinaisons bêta :
+            [diabete_t2, hta] ou [grossesse, diabete_gestationnel].
+        diet_type:
+          type: string
+          enum:
+            - omnivore
+            - vegetarien
+            - vegan
+            - pescetarien
+            - sans_gluten
+            - sans_lactose
+          default: omnivore
+        season:
+          type: string
+          enum:
+            - printemps
+            - ete
+            - automne
+            - hiver
+            - all
+          default: all
+        meal_slot:
+          type: string
+          enum:
+            - petit_dejeuner
+            - dejeuner
+            - diner
+            - collation
+          default: dejeuner
+        portions:
+          type: integer
+          minimum: 1
+          maximum: 8
+          default: 1
+        equipment:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            enum:
+              - plaque
+              - four
+              - vapeur
+              - micro_ondes
+              - blender
+          description: Équipement réellement disponible chez le patient.
+        notes:
+          type: string
+          maxLength: 600
+          description: >
+            Brief anonymisé : goûts, contraintes, préférences, allergies simples,
+            hypothèses utilisées. Ne jamais inclure de donnée patient nominative.
+      required:
+        - pathologies
+        - meal_slot
     NutrientValue:
       type: object
       properties:
@@ -150,6 +195,169 @@ components:
         - name_fr
         - quantity_g
         - ciqual_code
+    NutritionPanelItem:
+      type: object
+      properties:
+        key:
+          type: string
+        label_fr:
+          type: string
+        value:
+          type: number
+        unit:
+          type: string
+        source:
+          type: string
+        confidence:
+          type: string
+      required:
+        - key
+        - label_fr
+        - value
+        - unit
+    IngredientDetailed:
+      type: object
+      properties:
+        label_fr:
+          type: string
+        name_fr:
+          type: string
+        quantity_g:
+          type: number
+        ciqual_code:
+          type:
+            - string
+            - "null"
+      required:
+        - label_fr
+        - name_fr
+        - quantity_g
+        - ciqual_code
+    ProfessionalSheet:
+      type: object
+      description: >
+        Fiche structurée à présenter au praticien et à réutiliser pour export
+        PDF patient après validation clinique.
+      properties:
+        title_fr:
+          type: string
+        meal_slot:
+          type: string
+        meal_slot_label_fr:
+          type: string
+        portions:
+          type: integer
+        portion_g:
+          type: number
+        prep_time_min:
+          type:
+            - integer
+            - "null"
+        cooking_time_min:
+          type:
+            - integer
+            - "null"
+        total_time_min:
+          type: integer
+        difficulty_fr:
+          type: string
+        nutrition_panel_per_portion:
+          type: array
+          items:
+            $ref: "#/components/schemas/NutritionPanelItem"
+        macros_per_portion:
+          type: object
+          properties:
+            calories_kcal:
+              type:
+                - number
+                - "null"
+            protein_g:
+              type:
+                - number
+                - "null"
+            carb_g:
+              type:
+                - number
+                - "null"
+            fat_g:
+              type:
+                - number
+                - "null"
+            fiber_g:
+              type:
+                - number
+                - "null"
+            salt_g:
+              type:
+                - number
+                - "null"
+        ingredients_detailed_fr:
+          type: array
+          items:
+            $ref: "#/components/schemas/IngredientDetailed"
+        preparation_steps_fr:
+          type: array
+          items:
+            type: string
+        clinical_adaptations_fr:
+          type: array
+          items:
+            type: string
+        micronutrition_highlights_fr:
+          type: array
+          items:
+            type: object
+            properties:
+              focus_fr:
+                type: string
+              detail_fr:
+                type: string
+              nutrients:
+                type: array
+                items:
+                  type: string
+        patient_explanation_fr:
+          type: string
+        presentation_markdown_fr:
+          type: string
+          description: >
+            Version Markdown complète prête à afficher au praticien. Le Custom
+            GPT doit l'utiliser comme réponse principale sans la résumer.
+        export_blocks:
+          type: object
+          properties:
+            shopping_list_fr:
+              type: array
+              items:
+                type: string
+            substitutions_fr:
+              type: array
+              items:
+                type: string
+            serving_tips_fr:
+              type: array
+              items:
+                type: string
+            practitioner_footer_fr:
+              type: string
+        quality:
+          type: object
+          properties:
+            ciqual_coverage:
+              $ref: "#/components/schemas/CoverageSummary"
+            disclaimer_fr:
+              type: string
+      required:
+        - title_fr
+        - meal_slot_label_fr
+        - portion_g
+        - nutrition_panel_per_portion
+        - macros_per_portion
+        - ingredients_detailed_fr
+        - preparation_steps_fr
+        - clinical_adaptations_fr
+        - export_blocks
     Source:
       type: object
       properties:
@@ -160,6 +368,53 @@ components:
       required:
         - citation
         - url
+    ReferenceConsulted:
+      type: object
+      properties:
+        citation:
+          type: string
+        url:
+          type: string
+        status:
+          type: string
+          enum:
+            - derived
+            - to_verify
+      required:
+        - citation
+        - url
+        - status
+    CoverageSummary:
+      type: object
+      properties:
+        matched:
+          type: integer
+        unmatched:
+          type: integer
+        estimated:
+          type: integer
+        missing_nutrients:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              properties:
+                ciqual_code:
+                  type: string
+                name_fr:
+                  type: string
+        overall_confidence:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+      required:
+        - matched
+        - unmatched
+        - estimated
+        - overall_confidence
     AlimRecipeResponse:
       type: object
       properties:
@@ -174,6 +429,16 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Ingredient"
+            prep_time_min:
+              type:
+                - integer
+                - "null"
+            cooking_time_min:
+              type:
+                - integer
+                - "null"
+            difficulty_fr:
+              type: string
             steps_fr:
               type: array
               items:
@@ -187,8 +452,18 @@ components:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/NutrientValue"
+        professional_sheet:
+          $ref: "#/components/schemas/ProfessionalSheet"
+        presentation_markdown_fr:
+          type: string
+          description: >
+            Fiche recette complète en Markdown, prête à afficher. À privilégier
+            côté Custom GPT pour éviter une réponse trop pauvre.
+        pdf_url:
+          type: string
+          description: URL de fiche imprimable ALIM à ouvrir pour sauvegarde PDF.
         coverage_summary:
-          type: object
+          $ref: "#/components/schemas/CoverageSummary"
         rules_applied:
           type: array
           items:
@@ -197,6 +472,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Source"
+        references_consulted:
+          type: array
+          description: >
+            Références consultées pour des règles dérivées ou en vérification.
+            Ne pas les présenter comme sources officielles directes.
+          items:
+            $ref: "#/components/schemas/ReferenceConsulted"
         warnings:
           type: array
           items:
@@ -204,6 +486,8 @@ components:
       required:
         - recipe
         - nutrients_per_portion
+        - professional_sheet
+        - pdf_url
         - coverage_summary
         - rules_applied
         - sources

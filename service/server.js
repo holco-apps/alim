@@ -1,7 +1,12 @@
 import { createServer } from "node:http";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash, randomBytes } from "node:crypto";
+import { DatabaseSync } from "node:sqlite";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import * as z from "zod/v4";
 
 // Load /etc/alim.env if present (systemd unit ne charge pas EnvironmentFile pour l'instant)
 const ENV_FILE = process.env.ALIM_ENV_FILE || "/etc/alim.env";
@@ -30,7 +35,9 @@ const rules = JSON.parse(readFileSync(resolve(ROOT, "rules/clinical_rules.json")
 
 const nutrientKeys = [
   "energy_kcal",
+  "protein_g",
   "carb_g",
+  "fat_g",
   "sugar_g",
   "fiber_g",
   "saturated_fat_g",
@@ -42,23 +49,133 @@ const nutrientKeys = [
 
 const demoRecipes = {
   t2_hta: {
+    profile_id: "t2_hta",
     match: (brief) => hasAll(brief.pathologies, ["diabete_t2", "hta"]),
-    recipe: {
-      name_fr: "Bol tiède lentilles, quinoa, brocoli et courgette citronnée",
-      portion_g: 550,
-      ingredients: [
-        { name_fr: "Lentilles cuites sans sel", quantity_g: 180, ciqual_code: "20360" },
-        { name_fr: "Quinoa cuit sans sel", quantity_g: 80, ciqual_code: "9341" },
-        { name_fr: "Brocoli vapeur", quantity_g: 160, ciqual_code: "20304" },
-        { name_fr: "Courgette cuite", quantity_g: 120, ciqual_code: "20021" },
-        { name_fr: "Huile d'olive vierge extra", quantity_g: 10, ciqual_code: "17270" },
-        { name_fr: "Citron, ail, persil, poivre", quantity_g: 0, ciqual_code: null }
-      ],
-      steps_fr: [
-        "Réchauffer les lentilles, le quinoa, le brocoli vapeur et la courgette cuite sans ajout de sel.",
-        "Assaisonner avec citron, ail, herbes fraîches et poivre.",
-        "Ajouter l'huile d'olive au service pour préserver les acides gras insaturés."
-      ]
+    recipes_by_meal: {
+      petit_dejeuner: {
+        name_fr: "Bol d'avoine crémeux, fromage blanc, framboises et chia",
+        portion_g: 527,
+        prep_time_min: 8,
+        cooking_time_min: 3,
+        difficulty_fr: "Très simple",
+        ingredients: [
+          { name_fr: "Flocons d'avoine cuits à l'eau", quantity_g: 250, ciqual_code: "9313" },
+          { name_fr: "Fromage blanc nature 2-3% MG", quantity_g: 130, ciqual_code: "19646" },
+          { name_fr: "Framboises fraîches", quantity_g: 100, ciqual_code: "13015" },
+          { name_fr: "Graines de chia", quantity_g: 12, ciqual_code: "15047" },
+          { name_fr: "Amandes sans sel concassées", quantity_g: 15, ciqual_code: "15000" },
+          { name_fr: "Cannelle, vanille, zeste de citron", quantity_g: 0, ciqual_code: null }
+        ],
+        steps_fr: [
+          "Réchauffer les flocons d'avoine déjà cuits avec 2 à 3 cuillères à soupe d'eau, à feu doux, jusqu'à obtenir une texture crémeuse.",
+          "Hors du feu, incorporer le fromage blanc pour garder une texture fraîche et limiter l'ajout de matière grasse.",
+          "Ajouter les framboises, les graines de chia et les amandes concassées.",
+          "Parfumer avec cannelle, vanille ou zeste de citron, sans sucre, miel ni sirop ajouté.",
+          "Servir dans un bol. Si le patient préfère une texture plus fluide, détendre avec un peu d'eau ou de lait écrémé non compté dans cette version."
+        ],
+        patient_note_fr: "Petit-déjeuner rassasiant, doux et non salé, pensé pour limiter le grignotage de fin de matinée.",
+        shopping_list_fr: [
+          "Flocons d'avoine nature",
+          "Fromage blanc nature 2-3% MG",
+          "Framboises fraîches ou surgelées non sucrées",
+          "Graines de chia",
+          "Amandes sans sel",
+          "Cannelle, vanille ou citron"
+        ],
+        substitutions_fr: [
+          "Framboises → myrtilles ou kiwi en quantité comparable.",
+          "Amandes → noisettes sans sel, en gardant une petite portion.",
+          "Fromage blanc → yaourt nature non sucré si mieux toléré."
+        ],
+        serving_tips_fr: [
+          "Ne pas ajouter de miel, sirop d'agave ou confiture.",
+          "Ajouter cannelle ou vanille pour renforcer la perception sucrée sans sucre ajouté."
+        ]
+      },
+      dejeuner: {
+        name_fr: "Assiette pois chiches, quinoa, aubergine rôtie et herbes citronnées",
+        portion_g: 555,
+        prep_time_min: 15,
+        cooking_time_min: 25,
+        difficulty_fr: "Simple",
+        ingredients: [
+          { name_fr: "Pois chiches cuits rincés", quantity_g: 140, ciqual_code: "20507" },
+          { name_fr: "Quinoa cuit sans sel", quantity_g: 60, ciqual_code: "9341" },
+          { name_fr: "Aubergine rôtie sans sel", quantity_g: 190, ciqual_code: "20300" },
+          { name_fr: "Épinards cuits", quantity_g: 120, ciqual_code: "20027" },
+          { name_fr: "Oignon poêlé sans matière grasse", quantity_g: 35, ciqual_code: "20322" },
+          { name_fr: "Huile d'olive vierge extra", quantity_g: 10, ciqual_code: "17270" },
+          { name_fr: "Citron, ail, cumin, coriandre, poivre", quantity_g: 0, ciqual_code: null }
+        ],
+        steps_fr: [
+          "Couper l'aubergine en dés, mélanger avec cumin, ail, poivre et un filet d'eau, puis rôtir au four ou à la poêle sans sel ajouté.",
+          "Rincer soigneusement les pois chiches s'ils sont en conserve, puis les réchauffer avec l'oignon poêlé.",
+          "Ajouter les épinards cuits et le quinoa, puis mélanger doucement pour garder une texture d'assiette composée.",
+          "Hors du feu, ajouter l'huile d'olive, beaucoup de citron et les herbes fraîches.",
+          "Servir tiède. Le goût doit venir des épices, du citron et des herbes, pas du sel."
+        ],
+        patient_note_fr: "Déjeuner végétarien complet, riche en fibres, avec légumineuse + céréale en portion maîtrisée.",
+        shopping_list_fr: [
+          "Pois chiches cuits sans sel ou rincés",
+          "Quinoa nature",
+          "Aubergine",
+          "Épinards",
+          "Oignon",
+          "Huile d'olive",
+          "Citron, ail, cumin, coriandre, poivre"
+        ],
+        substitutions_fr: [
+          "Aubergine → courgette ou poivron selon saison.",
+          "Pois chiches → lentilles cuites si meilleure tolérance digestive.",
+          "Quinoa → riz basmati en portion similaire."
+        ],
+        serving_tips_fr: [
+          "Rincer les légumineuses en conserve pour réduire le sel résiduel.",
+          "Préparer l'aubergine à l'avance pour faciliter le repas de midi."
+        ]
+      },
+      diner: {
+        name_fr: "Curry doux lentilles, épinards et riz basmati citronné",
+        portion_g: 510,
+        prep_time_min: 12,
+        cooking_time_min: 12,
+        difficulty_fr: "Simple",
+        ingredients: [
+          { name_fr: "Lentilles cuites sans sel", quantity_g: 160, ciqual_code: "20360" },
+          { name_fr: "Riz basmati cuit sans sel", quantity_g: 70, ciqual_code: "9125" },
+          { name_fr: "Épinards cuits", quantity_g: 150, ciqual_code: "20027" },
+          { name_fr: "Carotte cuite à l'eau", quantity_g: 80, ciqual_code: "20305" },
+          { name_fr: "Oignon poêlé sans matière grasse", quantity_g: 40, ciqual_code: "20322" },
+          { name_fr: "Huile d'olive vierge extra", quantity_g: 8, ciqual_code: "17270" },
+          { name_fr: "Curry doux, gingembre, citron vert, coriandre", quantity_g: 2, ciqual_code: "11005" }
+        ],
+        steps_fr: [
+          "Faire revenir l'oignon avec curry doux, gingembre et un fond d'eau pendant 3 à 4 minutes, sans sel ajouté.",
+          "Ajouter les lentilles cuites, les épinards et la carotte. Réchauffer doucement 5 minutes pour obtenir une texture de curry épais.",
+          "Ajouter l'huile d'olive hors du feu, puis citron vert et coriandre fraîche.",
+          "Servir avec le riz basmati cuit sans sel. Garder le riz en accompagnement mesuré, pas en base dominante.",
+          "Ajuster avec citron, gingembre ou herbes si le patient trouve le plat trop fade."
+        ],
+        patient_note_fr: "Dîner chaud, végétarien et rassasiant, construit sans sel ajouté ni lait de coco pour limiter sel et graisses saturées.",
+        shopping_list_fr: [
+          "Lentilles cuites sans sel",
+          "Riz basmati",
+          "Épinards",
+          "Carotte",
+          "Oignon",
+          "Huile d'olive",
+          "Curry doux, gingembre, citron vert, coriandre"
+        ],
+        substitutions_fr: [
+          "Épinards → brocoli ou haricots verts selon saison.",
+          "Riz basmati → quinoa si le patient préfère.",
+          "Lentilles → pois chiches rincés, en gardant une portion similaire."
+        ],
+        serving_tips_fr: [
+          "Éviter bouillon cube, sauce soja, pâte de curry salée et lait de coco.",
+          "Batch cooking possible : cuire lentilles et riz à l'avance, puis assembler au dernier moment."
+        ]
+      }
     },
     rules_applied: [
       "hta_salt_per_day_max",
@@ -74,15 +191,19 @@ const demoRecipes = {
     ],
     warnings: [
       "Apport en sel maîtrisé par les aliments intrinsèques ; aucun sel ajouté dans la recette.",
-      "Repas adapté à un dîner ; les autres repas doivent rester compatibles avec l'objectif de 5 g de sel par jour.",
+      "Les autres repas doivent rester compatibles avec l'objectif de 5 g de sel par jour.",
       DISCLAIMER
     ]
   },
   grossesse_dg: {
+    profile_id: "grossesse_dg",
     match: (brief) => hasAll(brief.pathologies, ["diabete_gestationnel", "grossesse"]),
     recipe: {
       name_fr: "Salade d'été pois chiches, quinoa, épinards lavés et tofu",
       portion_g: 493,
+      prep_time_min: 15,
+      cooking_time_min: 0,
+      difficulty_fr: "Simple",
       ingredients: [
         { name_fr: "Pois chiches cuits rincés", quantity_g: 130, ciqual_code: "20507" },
         { name_fr: "Quinoa cuit sans sel", quantity_g: 50, ciqual_code: "9341" },
@@ -188,13 +309,17 @@ function refused(reason_fr, status = 422) {
 
 function selectRecipe(brief) {
   for (const config of Object.values(demoRecipes)) {
-    if (config.match(brief)) return config;
+    if (!config.match(brief)) continue;
+    const mealRecipe = config.recipes_by_meal?.[brief.meal_slot];
+    if (mealRecipe) return { ...config, recipe: mealRecipe };
+    return config;
   }
   return null;
 }
 
 function computeNutrients(recipe) {
   const totals = Object.fromEntries(nutrientKeys.map((key) => [key, 0]));
+  const missingNutrients = {};
   let matched = 0;
   let unmatched = 0;
 
@@ -207,25 +332,39 @@ function computeNutrients(recipe) {
     }
     matched += 1;
     for (const key of nutrientKeys) {
-      totals[key] += ((food.nutrients_per_100g[key] ?? 0) * ingredient.quantity_g) / 100;
+      const value = food.nutrients_per_100g[key];
+      if (value === undefined || value === null) {
+        missingNutrients[key] ||= [];
+        missingNutrients[key].push({
+          ciqual_code: ingredient.ciqual_code,
+          name_fr: ingredient.name_fr
+        });
+        continue;
+      }
+      totals[key] += (value * ingredient.quantity_g) / 100;
     }
   }
 
   totals.added_sugar_g = detectAddedSugar(recipe) ? 10 : 0;
+  const missingKeys = Object.keys(missingNutrients);
   return {
     nutrients: formatNutrients(totals),
     coverage_summary: {
       matched,
       unmatched,
       estimated: 0,
-      overall_confidence: unmatched === 0 ? "high" : "medium"
+      missing_nutrients: missingNutrients,
+      overall_confidence: unmatched === 0 && missingKeys.length === 0 ? "high" : "medium"
     }
   };
 }
 
 function detectAddedSugar(recipe) {
-  const text = recipe.ingredients.map((ingredient) => ingredient.name_fr).join(" ").toLowerCase();
-  return /\b(sucre|miel|sirop|confiture|cassonade)\b/.test(text);
+  return recipe.ingredients.some((ingredient) => {
+    const name = ingredient.name_fr.toLowerCase();
+    if (/\bsans\s+sucres?\s+ajout[ée]s?\b/.test(name)) return false;
+    return /\b(sucre|miel|sirop|confiture|cassonade|agave|érable|erable)\b/.test(name);
+  });
 }
 
 function formatNutrients(totals) {
@@ -246,6 +385,242 @@ function round(value, decimals) {
   return Math.round((value + Number.EPSILON) * factor) / factor;
 }
 
+const mealLabels = {
+  petit_dejeuner: "Petit-déjeuner",
+  dejeuner: "Déjeuner",
+  diner: "Dîner",
+  collation: "Collation"
+};
+
+const nutrientLabels = {
+  energy_kcal: "Calories",
+  protein_g: "Protéines",
+  carb_g: "Glucides",
+  fat_g: "Lipides",
+  fiber_g: "Fibres",
+  saturated_fat_g: "Acides gras saturés",
+  sugar_g_total: "Sucres totaux",
+  added_sugar_g: "Sucres ajoutés estimés",
+  salt_g: "Sel",
+  potassium_mg: "Potassium",
+  vit_b9_dfe_ug: "Folates"
+};
+
+const nutrientUnits = {
+  energy_kcal: "kcal",
+  protein_g: "g",
+  carb_g: "g",
+  fat_g: "g",
+  fiber_g: "g",
+  saturated_fat_g: "g",
+  sugar_g_total: "g",
+  added_sugar_g: "g",
+  salt_g: "g",
+  potassium_mg: "mg",
+  vit_b9_dfe_ug: "µg"
+};
+
+function nutrientValue(nutrients, key) {
+  return nutrients[key]?.value ?? null;
+}
+
+function buildNutritionPanel(nutrients) {
+  const keys = [
+    "energy_kcal",
+    "protein_g",
+    "carb_g",
+    "fat_g",
+    "fiber_g",
+    "saturated_fat_g",
+    "sugar_g_total",
+    "added_sugar_g",
+    "salt_g",
+    "potassium_mg",
+    "vit_b9_dfe_ug"
+  ];
+  return keys
+    .filter((key) => nutrients[key])
+    .map((key) => ({
+      key,
+      label_fr: nutrientLabels[key] || key,
+      value: nutrients[key].value,
+      unit: nutrientUnits[key] || "",
+      source: nutrients[key].source,
+      confidence: nutrients[key].confidence
+    }));
+}
+
+function buildClinicalAdaptations(config, nutrients) {
+  if (config.profile_id === "t2_hta") {
+    return [
+      `Glucides par portion : ${nutrientValue(nutrients, "carb_g")} g, dans la plage moteur v0 T2.`,
+      `Fibres : ${nutrientValue(nutrients, "fiber_g")} g par portion, avec légumineuses, céréales complètes ou fruits entiers selon le repas.`,
+      `Sel : ${nutrientValue(nutrients, "salt_g")} g par portion, sans sel ajouté dans la formulation.`,
+      `Graisses saturées : ${nutrientValue(nutrients, "saturated_fat_g")} g par portion, sous le plafond de garde-fou HTA v0.`,
+      "Aucun sucre ajouté détecté dans la liste d'ingrédients."
+    ];
+  }
+  if (config.profile_id === "grossesse_dg") {
+    return [
+      `Glucides par portion : ${nutrientValue(nutrients, "carb_g")} g, dans la plage moteur v0 diabète gestationnel.`,
+      `Fibres : ${nutrientValue(nutrients, "fiber_g")} g par portion pour ralentir l'absorption glucidique.`,
+      "Aucun alcool, aliment cru à risque, fromage au lait cru, poisson cru, viande crue ou oeuf cru dans la formulation.",
+      "Les végétaux crus doivent être lavés soigneusement avant découpe.",
+      "Les folates alimentaires ne remplacent pas une supplémentation prescrite."
+    ];
+  }
+  return [];
+}
+
+function buildMicronutritionHighlights(recipe, nutrients) {
+  const names = recipe.ingredients.map((ingredient) => ingredient.name_fr.toLowerCase()).join(" ");
+  const highlights = [];
+  if (/(lentilles|pois chiches|quinoa|avoine)/.test(names)) {
+    highlights.push({
+      focus_fr: "Fibres et satiété",
+      detail_fr: "La base céréale complète ou légumineuse contribue à une meilleure satiété et à une réponse glycémique plus progressive.",
+      nutrients: ["fiber_g", "carb_g"]
+    });
+  }
+  if (/(épinards|epinards|persil|framboises)/.test(names)) {
+    highlights.push({
+      focus_fr: "Micronutriments végétaux",
+      detail_fr: "Les légumes verts, herbes fraîches ou fruits rouges apportent folates, potassium et composés végétaux utiles à la qualité globale du repas.",
+      nutrients: ["vit_b9_dfe_ug", "potassium_mg"]
+    });
+  }
+  if (/(huile d'olive|amandes|chia|avocat)/.test(names)) {
+    highlights.push({
+      focus_fr: "Qualité lipidique",
+      detail_fr: "Les matières grasses sont apportées par des sources végétales non salées, avec une attention portée aux graisses saturées.",
+      nutrients: ["fat_g", "saturated_fat_g"]
+    });
+  }
+  return highlights.slice(0, 3);
+}
+
+function buildProfessionalSheet(config, brief, nutrients, coverage_summary) {
+  const recipe = config.recipe;
+  return {
+    title_fr: recipe.name_fr,
+    meal_slot: brief.meal_slot,
+    meal_slot_label_fr: mealLabels[brief.meal_slot] || brief.meal_slot,
+    portions: brief.portions,
+    portion_g: recipe.portion_g,
+    prep_time_min: recipe.prep_time_min ?? null,
+    cooking_time_min: recipe.cooking_time_min ?? null,
+    total_time_min: (recipe.prep_time_min ?? 0) + (recipe.cooking_time_min ?? 0),
+    difficulty_fr: recipe.difficulty_fr || "Simple",
+    nutrition_panel_per_portion: buildNutritionPanel(nutrients),
+    macros_per_portion: {
+      calories_kcal: nutrientValue(nutrients, "energy_kcal"),
+      protein_g: nutrientValue(nutrients, "protein_g"),
+      carb_g: nutrientValue(nutrients, "carb_g"),
+      fat_g: nutrientValue(nutrients, "fat_g"),
+      fiber_g: nutrientValue(nutrients, "fiber_g"),
+      salt_g: nutrientValue(nutrients, "salt_g")
+    },
+    ingredients_detailed_fr: recipe.ingredients.map((ingredient) => ({
+      label_fr: ingredient.quantity_g > 0
+        ? `${ingredient.name_fr} — ${ingredient.quantity_g} g`
+        : ingredient.name_fr,
+      name_fr: ingredient.name_fr,
+      quantity_g: ingredient.quantity_g,
+      ciqual_code: ingredient.ciqual_code
+    })),
+    preparation_steps_fr: recipe.steps_fr || [],
+    clinical_adaptations_fr: buildClinicalAdaptations(config, nutrients),
+    micronutrition_highlights_fr: buildMicronutritionHighlights(recipe, nutrients),
+    patient_explanation_fr: recipe.patient_note_fr || "",
+    export_blocks: {
+      shopping_list_fr: recipe.shopping_list_fr || [],
+      substitutions_fr: recipe.substitutions_fr || [],
+      serving_tips_fr: recipe.serving_tips_fr || [],
+      practitioner_footer_fr: "Proposition technique générée par ALIM. À valider, adapter ou refuser par le professionnel selon le contexte clinique complet."
+    },
+    quality: {
+      ciqual_coverage: coverage_summary,
+      disclaimer_fr: DISCLAIMER
+    }
+  };
+}
+
+function formatMacro(value, unit = "g") {
+  if (value === null || value === undefined) return "n/d";
+  return `${value} ${unit}`;
+}
+
+function buildPresentationMarkdown(sheet, sources, warnings) {
+  const m = sheet.macros_per_portion;
+  const lines = [
+    `## ${sheet.title_fr}`,
+    "",
+    `**${sheet.meal_slot_label_fr} · ${sheet.total_time_min} min · ${sheet.difficulty_fr} · 1 portion (${sheet.portion_g} g)**`,
+    "",
+    "### Valeurs nutritionnelles par portion",
+    "",
+    "| Énergie | Protéines | Glucides | Lipides | Fibres | Sel |",
+    "|---:|---:|---:|---:|---:|---:|",
+    `| ${formatMacro(m.calories_kcal, "kcal")} | ${formatMacro(m.protein_g)} | ${formatMacro(m.carb_g)} | ${formatMacro(m.fat_g)} | ${formatMacro(m.fiber_g)} | ${formatMacro(m.salt_g)} |`,
+    "",
+    "### Ingrédients pesés",
+    "",
+    ...sheet.ingredients_detailed_fr.map((ingredient) => `- ${ingredient.label_fr}`),
+    "",
+    "### Préparation",
+    "",
+    ...sheet.preparation_steps_fr.map((step, index) => `${index + 1}. ${step}`),
+    "",
+    "### Pourquoi cette recette est adaptée",
+    "",
+    ...sheet.clinical_adaptations_fr.map((item) => `- ${item}`),
+    "",
+    "### Repères micro-nutritionnels",
+    "",
+    ...sheet.micronutrition_highlights_fr.map((item) => `- **${item.focus_fr}** : ${item.detail_fr}`),
+    "",
+    "### Message patient",
+    "",
+    sheet.patient_explanation_fr || "Recette à adapter selon les habitudes, la tolérance et le contexte clinique du patient.",
+    "",
+    "### Conseils pratiques",
+    "",
+    ...sheet.export_blocks.serving_tips_fr.map((tip) => `- ${tip}`),
+    "",
+    "### Substitutions possibles",
+    "",
+    ...sheet.export_blocks.substitutions_fr.map((substitution) => `- ${substitution}`),
+    "",
+    "### Liste de courses",
+    "",
+    ...sheet.export_blocks.shopping_list_fr.map((item) => `- ${item}`),
+    "",
+    "### Sources",
+    "",
+    ...sources.map((source) => `- ${source.citation}`),
+    "",
+    "### Points de vigilance",
+    "",
+    ...warnings.map((warning) => `- ${warning}`),
+    "",
+    "**Sous votre validation clinique.**"
+  ];
+
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+function buildPdfUrl(brief) {
+  const params = new URLSearchParams();
+  for (const pathology of brief.pathologies) params.append("pathologies", pathology);
+  params.set("meal_slot", brief.meal_slot);
+  params.set("diet_type", brief.diet_type);
+  params.set("season", brief.season);
+  params.set("portions", String(brief.portions));
+  for (const item of brief.equipment) params.append("equipment", item);
+  if (brief.notes) params.set("notes", brief.notes);
+  return `https://alim.care/pdf/?${params.toString()}`;
+}
+
 function validateRecipe(config, nutrients) {
   const failures = [];
   const warnings = [...config.warnings];
@@ -257,7 +632,7 @@ function validateRecipe(config, nutrients) {
     if ((n[field]?.value ?? -Infinity) < limit) failures.push(`${label} < ${limit}`);
   };
 
-  if (config === demoRecipes.t2_hta) {
+  if (config.profile_id === "t2_hta") {
     max("salt_g", 1.6, "sel");
     max("carb_g", 60, "glucides");
     min("carb_g", 30, "glucides");
@@ -267,9 +642,11 @@ function validateRecipe(config, nutrients) {
     if ((n.sugar_g_total?.value ?? 0) > 25) warnings.push("Sucres totaux élevés : vérifier la source des sucres naturels.");
   }
 
-  if (config === demoRecipes.grossesse_dg) {
+  if (config.profile_id === "grossesse_dg") {
     max("carb_g", 45, "glucides");
     min("carb_g", 20, "glucides");
+    // Choix moteur v0 démo : zéro sucre ajouté dans les recettes DG générées.
+    // Ce n'est pas une interdiction clinique générale des produits sucrés.
     max("added_sugar_g", 0, "sucres ajoutés");
     min("fiber_g", 7, "fibres");
     min("vit_b9_dfe_ug", 130, "folates");
@@ -299,6 +676,22 @@ function buildSources(ruleIds) {
   return dedupeSources(sources);
 }
 
+function buildReferencesConsulted(ruleIds) {
+  const allRules = Object.values(rules.pathologies).flatMap((p) => p.rules);
+  const byId = new Map(allRules.map((rule) => [rule.id, rule]));
+  const references = [];
+  for (const id of ruleIds) {
+    const rule = byId.get(id);
+    if (!rule || !rule.source_url || rule.source_status === "verified") continue;
+    references.push({
+      citation: rule.source_fr,
+      url: rule.source_url,
+      status: rule.source_status
+    });
+  }
+  return dedupeSources(references);
+}
+
 function dedupeSources(sources) {
   const seen = new Set();
   return sources.filter((source) => {
@@ -324,15 +717,28 @@ function generate(brief) {
     return refused(`Recette refusée par validation déterministe : ${failures.join(", ")}.`, 422);
   }
 
+  const sources = buildSources(config.rules_applied);
+  const references_consulted = buildReferencesConsulted(config.rules_applied);
+  const professional_sheet = buildProfessionalSheet(config, brief, nutrients, coverage_summary);
+  const presentation_markdown_fr = buildPresentationMarkdown(professional_sheet, sources, warnings);
+  const pdf_url = buildPdfUrl(brief);
+
   return {
     ok: true,
     status: 200,
     payload: {
       recipe: config.recipe,
       nutrients_per_portion: nutrients,
+      professional_sheet: {
+        ...professional_sheet,
+        presentation_markdown_fr
+      },
+      presentation_markdown_fr,
+      pdf_url,
       coverage_summary,
       rules_applied: config.rules_applied,
-      sources: buildSources(config.rules_applied),
+      sources,
+      references_consulted,
       warnings
     }
   };
@@ -402,6 +808,7 @@ async function handleOnboardingSubmit(input) {
     email,
     ia_preferee: clampStr(data.ia_preferee),
     motif: clampStr(data.motif || ""),
+    practitioner_profile: normalizePractitionerProfile(data.practitioner_profile),
     cgu_accepted: true,
     engagement_feedback: true,
     source: clampStr(data.source || "alim.care/configurer"),
@@ -418,6 +825,20 @@ async function handleOnboardingSubmit(input) {
   return { status: 200, payload: { ok: true, token } };
 }
 
+function normalizePractitionerProfile(input) {
+  const data = (input && typeof input === "object") ? input : {};
+  return {
+    specialites: clampStr(data.specialites || ""),
+    style_support: clampStr(data.style_support || ""),
+    niveau_detail: clampStr(data.niveau_detail || ""),
+    formats_utiles: clampStr(data.formats_utiles || ""),
+    contextes_patients: clampStr(data.contextes_patients || ""),
+    sources_pref: clampStr(data.sources_pref || ""),
+    branding_pdf: clampStr(data.branding_pdf || ""),
+    documents_note: clampStr(data.documents_note || "")
+  };
+}
+
 async function notifyResend(record) {
   const html = `
 <p>Nouvelle demande bêta ALIM — <strong>${escapeHtml(record.cabinet_name)}</strong></p>
@@ -427,6 +848,7 @@ async function notifyResend(record) {
   <li>Exercice : ${escapeHtml(record.exercice)} · ${escapeHtml(record.annees)}</li>
   <li>IA préférée : ${escapeHtml(record.ia_preferee)}</li>
   <li>Motif : ${escapeHtml(record.motif || "—")}</li>
+  <li>Profil ALIM : <pre>${escapeHtml(JSON.stringify(record.practitioner_profile || {}, null, 2))}</pre></li>
   <li>Token : <code>${record.token}</code></li>
 </ul>`.trim();
   await fetch("https://api.resend.com/emails", {
@@ -446,6 +868,402 @@ async function notifyResend(record) {
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ----- Auth comptes ALIM (API v1 / Custom GPT / MCP) ---------------------
+const ALIM_DATA_DIR = process.env.ALIM_DATA_DIR || "/var/lib/alim";
+const ALIM_DB_FILE = process.env.ALIM_DB_FILE || `${ALIM_DATA_DIR}/alim.sqlite`;
+const DEFAULT_DAILY_QUOTA = Number(process.env.ALIM_DEFAULT_DAILY_QUOTA || 20);
+let authDb = null;
+
+function getAuthDb() {
+  if (authDb) return authDb;
+  mkdirSync(ALIM_DATA_DIR, { recursive: true });
+  authDb = new DatabaseSync(ALIM_DB_FILE);
+  authDb.exec(`
+    PRAGMA journal_mode = WAL;
+    PRAGMA foreign_keys = ON;
+    CREATE TABLE IF NOT EXISTS accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      display_name TEXT NOT NULL DEFAULT '',
+      cabinet_name TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pending',
+      plan TEXT NOT NULL DEFAULT 'beta',
+      quota_daily INTEGER NOT NULL DEFAULT ${DEFAULT_DAILY_QUOTA},
+      practitioner_profile TEXT NOT NULL DEFAULT '{}',
+      cabinet_branding TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS api_keys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      prefix TEXT NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'active',
+      label TEXT NOT NULL DEFAULT 'default',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      last_used_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS api_usage_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      api_key_id INTEGER REFERENCES api_keys(id) ON DELETE SET NULL,
+      ts TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      day TEXT NOT NULL,
+      route TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      status INTEGER NOT NULL,
+      pathologies TEXT NOT NULL DEFAULT '[]',
+      meal_slot TEXT NOT NULL DEFAULT '',
+      request_hash TEXT NOT NULL DEFAULT '',
+      refusal_reason TEXT NOT NULL DEFAULT '',
+      latency_ms INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX IF NOT EXISTS idx_usage_account_day ON api_usage_logs(account_id, day);
+    CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(token_hash);
+  `);
+  return authDb;
+}
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function keyHash(token) {
+  return createHash("sha256").update(String(token || ""), "utf8").digest("hex");
+}
+
+function requestHash(input) {
+  return createHash("sha256")
+    .update(JSON.stringify(input || {}), "utf8")
+    .digest("hex")
+    .slice(0, 24);
+}
+
+function generateAlimApiKey() {
+  return `alim_live_${randomBytes(24).toString("base64url")}`;
+}
+
+function readBearerToken(req) {
+  const auth = String(req.headers.authorization || "");
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || "";
+}
+
+function safeJsonParse(value, fallback) {
+  try {
+    return JSON.parse(value || "");
+  } catch {
+    return fallback;
+  }
+}
+
+function findAccountByBearer(req) {
+  const token = readBearerToken(req);
+  if (!token) {
+    return { ok: false, status: 401, payload: { ok: false, error: "Clé Bearer ALIM manquante." } };
+  }
+  const db = getAuthDb();
+  const row = db.prepare(`
+    SELECT
+      a.id AS account_id, a.email, a.display_name, a.cabinet_name, a.status AS account_status,
+      a.plan, a.quota_daily, a.practitioner_profile, a.cabinet_branding,
+      k.id AS api_key_id, k.prefix, k.status AS key_status
+    FROM api_keys k
+    JOIN accounts a ON a.id = k.account_id
+    WHERE k.token_hash = ?
+  `).get(keyHash(token));
+
+  if (!row) {
+    return { ok: false, status: 401, payload: { ok: false, error: "Clé ALIM invalide." } };
+  }
+  if (row.key_status !== "active") {
+    return { ok: false, status: 403, payload: { ok: false, error: "Clé ALIM désactivée." } };
+  }
+  if (row.account_status !== "active") {
+    return {
+      ok: false,
+      status: 403,
+      payload: {
+        ok: false,
+        error: "Compte ALIM non actif.",
+        account_status: row.account_status,
+        action_required: "Activez ou régularisez l'abonnement ALIM."
+      }
+    };
+  }
+  db.prepare("UPDATE api_keys SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.api_key_id);
+  return { ok: true, account: row };
+}
+
+function usageForToday(accountId) {
+  const db = getAuthDb();
+  const day = todayIso();
+  const row = db.prepare(`
+    SELECT COUNT(*) AS used
+    FROM api_usage_logs
+    WHERE account_id = ? AND day = ? AND route IN ('/api/v1/generate', '/mcp/v1')
+  `).get(accountId, day);
+  return Number(row?.used || 0);
+}
+
+function accountPayload(row) {
+  const used_today = usageForToday(row.account_id);
+  const quota_daily = Number(row.quota_daily || DEFAULT_DAILY_QUOTA);
+  const practitioner_profile = safeJsonParse(row.practitioner_profile, {});
+  const cabinet_branding = safeJsonParse(row.cabinet_branding, {});
+  return {
+    ok: true,
+    account: {
+      id: `acct_${row.account_id}`,
+      email: row.email,
+      display_name: row.display_name,
+      cabinet_name: row.cabinet_name,
+      status: row.account_status,
+      plan: row.plan,
+      quota_daily,
+      quota_month: quota_daily,
+      used_today,
+      usage_month: used_today,
+      remaining_today: Math.max(0, quota_daily - used_today),
+      practitioner_profile,
+      cabinet_branding
+    },
+    disclaimer: DISCLAIMER
+  };
+}
+
+function normalizeStringArray(value, allowed = null, max = 16) {
+  if (!Array.isArray(value)) return [];
+  const allow = allowed ? new Set(allowed) : null;
+  return value
+    .map((item) => cleanText(String(item), 80))
+    .filter((item) => item && (!allow || allow.has(item)))
+    .slice(0, max);
+}
+
+function normalizeAccountUpdate(input) {
+  const data = input && typeof input === "object" ? input : {};
+  const p = data.practitioner_profile && typeof data.practitioner_profile === "object"
+    ? data.practitioner_profile
+    : {};
+  const b = data.cabinet_branding && typeof data.cabinet_branding === "object"
+    ? data.cabinet_branding
+    : {};
+
+  return {
+    practitioner_profile: {
+      metier: cleanText(p.metier || "", 64),
+      cadre_exercice: cleanText(p.cadre_exercice || "", 64),
+      tone: cleanText(p.tone || "", 64),
+      detail_level: cleanText(p.detail_level || "", 64),
+      patienteles: normalizeStringArray(p.patienteles, ["DT2", "HTA", "grossesse", "DG", "surpoids", "senior", "pediatrie", "sport"]),
+      formats: normalizeStringArray(p.formats, ["fiche_patient_pdf", "variantes", "liste_courses", "tableau_nutritionnel", "message_patient", "substitutions"]),
+      contraintes: normalizeStringArray(p.contraintes, ["petit_budget", "repas_familial", "cuisine_minimale", "batch_cooking", "halal", "casher", "vegetarien", "vegan"]),
+      notes: cleanText(p.notes || "", 1000)
+    },
+    cabinet_branding: {
+      name: cleanText(b.name || "", 120),
+      qualification: cleanText(b.qualification || "", 120),
+      adeli: cleanText(b.adeli || "", 40),
+      city: cleanText(b.city || "", 80),
+      contact: cleanText(b.contact || "", 160)
+    }
+  };
+}
+
+function logApiUsage({ account, route, channel, status, input, output, latencyMs }) {
+  const normalized = input && typeof input === "object" ? normalizeBrief(input) : null;
+  const brief = normalized?.ok ? normalized.brief : null;
+  const refusal = output?.refused?.reason_fr || "";
+  getAuthDb().prepare(`
+    INSERT INTO api_usage_logs (
+      account_id, api_key_id, day, route, channel, status,
+      pathologies, meal_slot, request_hash, refusal_reason, latency_ms
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    account.account_id,
+    account.api_key_id,
+    todayIso(),
+    route,
+    channel,
+    Number(status || 0),
+    JSON.stringify(brief?.pathologies || []),
+    brief?.meal_slot || "",
+    requestHash(input),
+    String(refusal).slice(0, 500),
+    Number(latencyMs || 0)
+  );
+}
+
+function quotaOk(account) {
+  const quota = Number(account.quota_daily || DEFAULT_DAILY_QUOTA);
+  const used = usageForToday(account.account_id);
+  if (used >= quota) {
+    return {
+      ok: false,
+      used,
+      quota,
+      payload: {
+        refused: {
+          reason_fr: `Quota ALIM atteint pour aujourd'hui (${used}/${quota}).`
+        },
+        quota: { used_today: used, quota_daily: quota, remaining_today: 0 },
+        warnings: [DISCLAIMER]
+      }
+    };
+  }
+  return { ok: true, used, quota };
+}
+
+async function handleV1Me(req, res) {
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+  return sendJson(res, 200, accountPayload(auth.account));
+}
+
+async function handleV1AccountUpdate(req, res) {
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+
+  let input;
+  try {
+    input = await readJson(req);
+  } catch (error) {
+    return sendJson(res, error.status || 400, {
+      ok: false,
+      error: error.status ? error.message : "Body JSON invalide."
+    });
+  }
+
+  const update = normalizeAccountUpdate(input);
+  const db = getAuthDb();
+  db.prepare(`
+    UPDATE accounts
+    SET practitioner_profile = ?,
+        cabinet_branding = ?,
+        cabinet_name = COALESCE(NULLIF(?, ''), cabinet_name),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(
+    JSON.stringify(update.practitioner_profile),
+    JSON.stringify(update.cabinet_branding),
+    update.cabinet_branding.name,
+    auth.account.account_id
+  );
+
+  const refreshed = db.prepare(`
+    SELECT
+      a.id AS account_id, a.email, a.display_name, a.cabinet_name, a.status AS account_status,
+      a.plan, a.quota_daily, a.practitioner_profile, a.cabinet_branding,
+      ? AS api_key_id, ? AS prefix, 'active' AS key_status
+    FROM accounts a
+    WHERE a.id = ?
+  `).get(auth.account.api_key_id, auth.account.prefix, auth.account.account_id);
+
+  return sendJson(res, 200, accountPayload(refreshed));
+}
+
+async function handleV1RegenerateKey(req, res) {
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+
+  const db = getAuthDb();
+  const token = generateAlimApiKey();
+  const prefix = token.slice(0, 18);
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    db.prepare("UPDATE api_keys SET status = 'rotated' WHERE account_id = ? AND status = 'active'")
+      .run(auth.account.account_id);
+    db.prepare(`
+      INSERT INTO api_keys (account_id, prefix, token_hash, status, label)
+      VALUES (?, ?, ?, 'active', 'rotated')
+    `).run(auth.account.account_id, prefix, keyHash(token));
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+
+  return sendJson(res, 200, {
+    ok: true,
+    api_key: token,
+    key_prefix: prefix
+  });
+}
+
+async function handleV1Generate(req, res) {
+  const startedAt = Date.now();
+  const auth = findAccountByBearer(req);
+  if (!auth.ok) return sendJson(res, auth.status, auth.payload);
+
+  const quota = quotaOk(auth.account);
+  if (!quota.ok) {
+    logApiUsage({
+      account: auth.account,
+      route: "/api/v1/generate",
+      channel: "api_v1",
+      status: 429,
+      input: {},
+      output: quota.payload,
+      latencyMs: Date.now() - startedAt
+    });
+    return sendJson(res, 429, quota.payload);
+  }
+
+  let input;
+  try {
+    input = await readJson(req);
+  } catch (error) {
+    const payload = {
+      refused: { reason_fr: error.status ? error.message : "Body JSON invalide." },
+      warnings: [DISCLAIMER]
+    };
+    logApiUsage({
+      account: auth.account,
+      route: "/api/v1/generate",
+      channel: "api_v1",
+      status: error.status || 400,
+      input: {},
+      output: payload,
+      latencyMs: Date.now() - startedAt
+    });
+    return sendJson(res, error.status || 400, payload);
+  }
+
+  const normalized = normalizeBrief(input);
+  const result = normalized.ok ? generate(normalized.brief) : {
+    status: normalized.status,
+    payload: normalized.payload
+  };
+  const payload = {
+    ...result.payload,
+    account_context: {
+      practitioner_profile: safeJsonParse(auth.account.practitioner_profile, {}),
+      cabinet_branding: safeJsonParse(auth.account.cabinet_branding, {})
+    },
+    account: {
+      plan: auth.account.plan,
+      quota_daily: quota.quota,
+      quota_month: quota.quota,
+      used_today: quota.used + 1,
+      usage_month: quota.used + 1,
+      remaining_today: Math.max(0, quota.quota - quota.used - 1)
+    }
+  };
+  logApiUsage({
+    account: auth.account,
+    route: "/api/v1/generate",
+    channel: "api_v1",
+    status: result.status,
+    input,
+    output: payload,
+    latencyMs: Date.now() - startedAt
+  });
+  return sendJson(res, result.status, payload);
 }
 
 // ===== Demo chat (alim.care widget) =====================================
@@ -856,6 +1674,317 @@ async function handleDemoChat(req, res) {
 }
 // ========================================================================
 
+// ===== Remote MCP connector (Claude / MCP clients) =======================
+const MCP_ENDPOINT = "/mcp/v1";
+const MCP_DISCOVERY = "/.well-known/mcp.json";
+const MCP_TOOL_NAME = "generate_clinical_recipe";
+const MCP_RATE_LIMIT_PER_IP_PER_DAY = 60;
+const MCP_RATE_LIMIT_GLOBAL_PER_HOUR = 300;
+const mcpIpRl = new Map();
+const mcpGlobalRl = { count: 0, resetAt: 0 };
+const MCP_AUTH_REQUIRED = process.env.ALIM_MCP_AUTH_REQUIRED === "1";
+const MCP_BEARER_TOKENS = new Set(
+  String(process.env.ALIM_MCP_BEARER_TOKENS || "")
+    .split(",")
+    .map((token) => token.trim())
+    .filter(Boolean)
+);
+const API_GENERATE_RATE_LIMIT_PER_IP_PER_DAY = 200;
+const API_GENERATE_RATE_LIMIT_GLOBAL_PER_HOUR = 1000;
+const apiGenerateIpRl = new Map();
+const apiGenerateGlobalRl = { count: 0, resetAt: 0 };
+
+const mcpInputSchema = {
+  pathologies: z.array(z.enum(["diabete_t2", "hta", "diabete_gestationnel", "grossesse"]))
+    .min(1)
+    .max(4)
+    .describe("Pathologies couvertes. Combinaisons v0 : diabete_t2+hta ou grossesse+diabete_gestationnel."),
+  meal_slot: z.enum(["petit_dejeuner", "dejeuner", "diner", "collation"])
+    .describe("Repas concerné."),
+  diet_type: z.enum(["omnivore", "vegetarien", "vegan", "pescetarien", "sans_gluten", "sans_lactose"])
+    .default("omnivore")
+    .describe("Préférence alimentaire principale."),
+  season: z.enum(["printemps", "ete", "automne", "hiver", "all"])
+    .default("all")
+    .describe("Saison ou all si inconnue."),
+  equipment: z.array(z.enum(["plaque", "four", "vapeur", "micro_ondes", "blender"]))
+    .max(8)
+    .default(["plaque", "four"])
+    .describe("Équipement disponible chez le patient."),
+  portions: z.number().int().min(1).max(8).default(1),
+  notes: z.string()
+    .max(600)
+    .default("")
+    .describe("Brief anonymisé : goûts, contraintes, allergies simples, hypothèses. Jamais de donnée nominative.")
+};
+
+function createAlimMcpServer(account = null) {
+  const server = new McpServer({
+    name: "ALIM",
+    title: "ALIM — recettes nutritionnelles cadrées",
+    version: "0.1.0"
+  });
+
+  server.registerTool(MCP_TOOL_NAME, {
+    title: "Générer une recette clinique cadrée",
+    description: [
+      "Génère une fiche recette ALIM professionnelle prête à présenter au praticien.",
+      "La réponse contient presentation_markdown_fr pour l'affichage conversationnel, professional_sheet pour export/édition, pdf_url pour l'aperçu imprimable, ingrédients en grammes, nutriments par portion, garde-fous et sources.",
+      "Réservé aux professionnels de la nutrition. Périmètre v0 : diabète T2 + HTA, grossesse + diabète gestationnel.",
+      "Appeler après cadrage du brief patient anonymisé. Une demande multi-repas doit être traitée en plusieurs appels, un meal_slot à la fois.",
+      "Toujours rappeler que la sortie reste sous validation clinique du praticien."
+    ].join(" "),
+    inputSchema: mcpInputSchema
+  }, async (args) => {
+    const startedAt = Date.now();
+    const quota = account ? quotaOk(account) : { ok: true };
+    if (!quota.ok) {
+      logApiUsage({
+        account,
+        route: "/mcp/v1",
+        channel: "mcp",
+        status: 429,
+        input: args || {},
+        output: quota.payload,
+        latencyMs: Date.now() - startedAt
+      });
+      return {
+        isError: true,
+        structuredContent: quota.payload,
+        content: [{ type: "text", text: JSON.stringify(quota.payload, null, 2) }]
+      };
+    }
+
+    const normalized = normalizeBrief(args || {});
+    let status = 200;
+    let payload;
+
+    if (!normalized.ok) {
+      status = normalized.status || 422;
+      payload = normalized.payload;
+    } else {
+      const result = generate(normalized.brief);
+      status = result.status;
+      payload = result.payload;
+    }
+
+    payload = {
+      ...payload,
+      meta: {
+        channel: "mcp",
+        status,
+        latency_ms: Date.now() - startedAt,
+        disclaimer: DISCLAIMER
+      }
+    };
+
+    if (account) {
+      logApiUsage({
+        account,
+        route: "/mcp/v1",
+        channel: "mcp",
+        status,
+        input: args || {},
+        output: payload,
+        latencyMs: Date.now() - startedAt
+      });
+    }
+
+    return {
+      isError: status >= 400,
+      structuredContent: payload,
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(payload, null, 2)
+        }
+      ]
+    };
+  });
+
+  return server;
+}
+
+async function handleMcpRequest(req, res) {
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+      "Access-Control-Allow-Headers": "content-type, authorization, mcp-session-id, mcp-protocol-version",
+      "Access-Control-Expose-Headers": "mcp-session-id",
+      "Access-Control-Max-Age": "86400"
+    });
+    return res.end();
+  }
+
+  if (req.method === "GET") {
+    res.writeHead(405, {
+      "content-type": "application/json; charset=utf-8",
+      "allow": "POST, OPTIONS",
+      "Access-Control-Allow-Origin": "*"
+    });
+    return res.end(JSON.stringify({
+      jsonrpc: "2.0",
+      error: { code: -32000, message: "Method not allowed. Use POST for MCP Streamable HTTP." },
+      id: null
+    }));
+  }
+
+  if (req.method !== "POST") {
+    res.writeHead(405, { "allow": "POST, OPTIONS" });
+    return res.end();
+  }
+
+  const mcpAuth = mcpAuthResult(req);
+  if (!mcpAuth.ok) {
+    res.writeHead(401, {
+      "content-type": "application/json; charset=utf-8",
+      "www-authenticate": "Bearer",
+      "Access-Control-Allow-Origin": "*"
+    });
+    return res.end(JSON.stringify({
+      jsonrpc: "2.0",
+      error: { code: -32001, message: "ALIM MCP nécessite une clé Bearer active." },
+      id: null
+    }));
+  }
+
+  const rl = mcpRateLimitOk(getClientIp(req));
+  if (!rl.ok) {
+    res.writeHead(429, {
+      "content-type": "application/json; charset=utf-8",
+      "Access-Control-Allow-Origin": "*"
+    });
+    return res.end(JSON.stringify({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: rl.reason === "global"
+          ? "ALIM MCP est temporairement saturé. Réessayez dans une heure."
+          : "Quota démo MCP atteint. Demandez un accès bêta dédié sur /configurer/."
+      },
+      id: null
+    }));
+  }
+
+  const server = createAlimMcpServer(mcpAuth.account || null);
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true
+  });
+
+  try {
+    await server.connect(transport);
+    await transport.handleRequest(req, res);
+    res.on("close", () => {
+      transport.close();
+      server.close();
+    });
+  } catch (error) {
+    console.error("[mcp] error:", error.message);
+    if (!res.headersSent) {
+      res.writeHead(500, {
+        "content-type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*"
+      });
+      res.end(JSON.stringify({
+        jsonrpc: "2.0",
+        error: { code: -32603, message: "Internal server error" },
+        id: null
+      }));
+    } else {
+      res.end();
+    }
+  }
+}
+
+function mcpAuthResult(req) {
+  if (!MCP_AUTH_REQUIRED) return { ok: true, account: null };
+  const auth = String(req.headers.authorization || "");
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  if (match && MCP_BEARER_TOKENS.has(match[1])) return { ok: true, account: null };
+  const accountAuth = findAccountByBearer(req);
+  if (accountAuth.ok) return { ok: true, account: accountAuth.account };
+  return { ok: false };
+}
+
+function mcpRateLimitOk(ip) {
+  return rollingRateLimitOk(
+    ip,
+    mcpIpRl,
+    mcpGlobalRl,
+    MCP_RATE_LIMIT_PER_IP_PER_DAY,
+    MCP_RATE_LIMIT_GLOBAL_PER_HOUR
+  );
+}
+
+function apiGenerateRateLimitOk(ip) {
+  return rollingRateLimitOk(
+    ip,
+    apiGenerateIpRl,
+    apiGenerateGlobalRl,
+    API_GENERATE_RATE_LIMIT_PER_IP_PER_DAY,
+    API_GENERATE_RATE_LIMIT_GLOBAL_PER_HOUR
+  );
+}
+
+function rollingRateLimitOk(ip, ipMap, globalState, perIpPerDay, globalPerHour) {
+  const now = Date.now();
+  if (now > globalState.resetAt) {
+    globalState.count = 0;
+    globalState.resetAt = now + 60 * 60 * 1000;
+  }
+  if (globalState.count >= globalPerHour) {
+    return { ok: false, reason: "global" };
+  }
+  const ipState = ipMap.get(ip) || { count: 0, resetAt: now + 24 * 60 * 60 * 1000 };
+  if (now > ipState.resetAt) {
+    ipState.count = 0;
+    ipState.resetAt = now + 24 * 60 * 60 * 1000;
+  }
+  if (ipState.count >= perIpPerDay) {
+    return { ok: false, reason: "ip", resetAt: ipState.resetAt };
+  }
+  ipState.count += 1;
+  ipMap.set(ip, ipState);
+  globalState.count += 1;
+  return { ok: true };
+}
+
+function mcpDiscoveryPayload(hostname = "alim.care") {
+  return {
+    name: "ALIM",
+    title: "ALIM — recettes nutritionnelles cadrées",
+    version: "0.1.0",
+    transport: "streamable-http",
+    endpoint: `https://${hostname}${MCP_ENDPOINT}`,
+    auth: MCP_AUTH_REQUIRED ? "bearer" : "prototype-no-auth",
+    authorization_header: MCP_AUTH_REQUIRED ? "Authorization: Bearer alim_live_..." : null,
+    tools: [
+      {
+        name: MCP_TOOL_NAME,
+        title: "Générer une recette clinique cadrée",
+        output_contract: [
+          "presentation_markdown_fr : rendu prêt à afficher dans Claude",
+          "professional_sheet : blocs structurés pour fiche patient, PDF et export",
+          "pdf_url : lien vers l'aperçu imprimable ALIM",
+          "sources / references_consulted : citations séparées par statut documentaire",
+          "refused : refus traçable si brief hors périmètre"
+        ]
+      }
+    ],
+    beta_scope: ["diabete_t2+hta", "grossesse+diabete_gestationnel"],
+    privacy: "No patient identifiers. Briefs must stay anonymized.",
+    client_guidance: [
+      "Ask concise clinical framing questions before calling the tool.",
+      "Call one meal_slot per tool call.",
+      "Render presentation_markdown_fr first, then offer pdf_url.",
+      "Do not invent nutrition values outside the tool output."
+    ],
+    support: "alim@holco.co"
+  };
+}
+
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
@@ -873,18 +2002,43 @@ const server = createServer(async (req, res) => {
     return sendJson(res, 200, { ok: true, service: "alim", version: "0.1.0" });
   }
 
+  if (req.method === "GET" && url.pathname === MCP_DISCOVERY) {
+    return sendJson(res, 200, mcpDiscoveryPayload(url.hostname || "alim.care"));
+  }
+
+  if (url.pathname === MCP_ENDPOINT) {
+    return handleMcpRequest(req, res);
+  }
+
   if (req.method === "GET" && url.pathname === "/api/v1/me") {
-    return sendJson(res, 200, {
-      ok: true,
-      service: "ALIM",
-      mode: "prototype",
-      scopes: ["generate:demo"],
-      disclaimer: DISCLAIMER
-    });
+    return handleV1Me(req, res);
+  }
+
+  if (req.method === "PUT" && url.pathname === "/api/v1/account") {
+    return handleV1AccountUpdate(req, res);
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/v1/account/regenerate-key") {
+    return handleV1RegenerateKey(req, res);
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/v1/generate") {
+    return handleV1Generate(req, res);
   }
 
   if (req.method === "POST" && url.pathname === "/api/generate") {
     try {
+      const rl = apiGenerateRateLimitOk(getClientIp(req));
+      if (!rl.ok) {
+        return sendJson(res, 429, {
+          refused: {
+            reason_fr: rl.reason === "global"
+              ? "ALIM est temporairement saturé. Réessayez dans une heure."
+              : "Quota démo atteint sur /api/generate. Demandez un accès bêta dédié sur /configurer/."
+          },
+          warnings: [DISCLAIMER]
+        });
+      }
       const input = await readJson(req);
       const normalized = normalizeBrief(input);
       if (!normalized.ok) return sendJson(res, normalized.status, normalized.payload);

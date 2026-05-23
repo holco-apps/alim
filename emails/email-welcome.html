@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bienvenue dans la bêta ALIM — votre clé d'accès</title>
+</head>
+<body style="margin:0; padding:0; background:#f5f0e8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif; color:#111827; -webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f0e8;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; background:#ffffff; border-radius:12px; box-shadow:0 1px 2px rgba(23,38,80,.04); overflow:hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding:28px 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" style="vertical-align:middle;">
+                    <span style="font-family: Georgia, 'Times New Roman', serif; font-size:30px; line-height:1; color:#172650; letter-spacing:-0.5px;">ALIM</span>
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f7da29; margin-left:6px; vertical-align:middle;"></span>
+                  </td>
+                  <td align="right" style="vertical-align:middle; font-family: 'Courier New', monospace; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#687083;">
+                    Bêta · Accès activé
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding:32px 32px 0;">
+              <h1 style="margin:0; font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size:30px; line-height:1.15; letter-spacing:-0.5px; color:#172650;">
+                Bienvenue dans la bêta ALIM, {{first_name}}.
+              </h1>
+              <p style="margin:10px 0 0; font-size:14px; color:#687083;">
+                Votre accès <strong style="color:#3f4860;">{{cabinet_name}}</strong> a été validé. Tout est prêt pour vos premières recettes.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Clé -->
+          <tr>
+            <td style="padding:28px 32px 0;">
+              <div style="font-family:'Courier New', monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#687083; margin-bottom:10px;">Votre clé d'accès personnelle</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fcfaf5; border:1px dashed #c4bba6; border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 18px; font-family:'Courier New', monospace; font-size:14px; line-height:1.4; color:#172650; word-break:break-all;">
+                    {{api_key}}
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:10px 0 0; font-size:12.5px; color:#687083; line-height:1.5;">
+                Cette clé est personnelle, ne la partagez pas. Elle <strong>est</strong> votre compte ALIM — pas de mot de passe à retenir. En cas de fuite, régénérez-la depuis <a href="{{compte_url}}" style="color:#233872;">votre espace compte</a>.
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA principal -->
+          <tr>
+            <td align="center" style="padding:28px 32px 0;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="background:#233872; border-radius:8px;">
+                    <a href="{{compte_url}}" style="display:inline-block; padding:14px 26px; font-size:15px; font-weight:600; color:#ffffff; text-decoration:none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif;">
+                      Ouvrir mon espace compte →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:10px 0 0; font-size:12px; color:#687083;">
+                Votre clé est pré-remplie sur ce lien. Décrivez votre pratique et votre cabinet pour adapter Mirabelle et les fiches PDF.
+              </p>
+            </td>
+          </tr>
+
+          <!-- 2 channels -->
+          <tr>
+            <td style="padding:36px 32px 0;">
+              <div style="font-family:'Courier New', monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#687083; margin-bottom:14px; text-align:center;">Activez ALIM dans votre IA habituelle</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <!-- Card ChatGPT -->
+                  <td width="50%" valign="top" style="padding-right:8px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border:1px solid #ded8ca; border-radius:10px;">
+                      <tr>
+                        <td style="padding:18px 18px 16px;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td style="vertical-align:middle;">
+                                <span style="display:inline-block; width:34px; height:34px; line-height:34px; background:#10a37f; color:#ffffff; border-radius:8px; text-align:center; font-weight:700; font-size:16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif;">G</span>
+                              </td>
+                              <td style="padding-left:10px; vertical-align:middle;">
+                                <div style="font-family: Georgia, 'Times New Roman', serif; font-size:18px; color:#172650; line-height:1.1;">ChatGPT</div>
+                                <div style="font-family:'Courier New',monospace; font-size:11px; color:#687083;">Custom GPT ALIM</div>
+                              </td>
+                            </tr>
+                          </table>
+                          <p style="margin:12px 0 0; font-size:12.5px; line-height:1.5; color:#3f4860;">
+                            Ouvrez le Custom GPT, collez votre clé une fois, demandez vos recettes dans votre conversation habituelle.
+                          </p>
+                          <p style="margin:14px 0 0;">
+                            <a href="https://chat.openai.com/g/g-alim" style="display:inline-block; padding:8px 14px; background:#fff6b7; color:#172650; text-decoration:none; border-radius:6px; font-size:13px; font-weight:600;">
+                              Ouvrir ALIM dans ChatGPT →
+                            </a>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <!-- Card Claude -->
+                  <td width="50%" valign="top" style="padding-left:8px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff; border:1px solid #ded8ca; border-radius:10px;">
+                      <tr>
+                        <td style="padding:18px 18px 16px;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td style="vertical-align:middle;">
+                                <span style="display:inline-block; width:34px; height:34px; line-height:34px; background:#cc785c; color:#ffffff; border-radius:8px; text-align:center; font-weight:700; font-size:16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif;">C</span>
+                              </td>
+                              <td style="padding-left:10px; vertical-align:middle;">
+                                <div style="font-family: Georgia, 'Times New Roman', serif; font-size:18px; color:#172650; line-height:1.1;">Claude</div>
+                                <div style="font-family:'Courier New',monospace; font-size:11px; color:#687083;">Connector ALIM</div>
+                              </td>
+                            </tr>
+                          </table>
+                          <p style="margin:12px 0 0; font-size:12.5px; line-height:1.5; color:#3f4860;">
+                            Ajoutez le Connector ALIM dans Claude.ai (Settings → Connectors), autorisez avec votre clé.
+                          </p>
+                          <p style="margin:14px 0 0; font-size:12px; line-height:1.5; color:#3f4860;">
+                            URL&nbsp;: <code style="font-family:'Courier New',monospace; font-size:11.5px; background:#f5f0e8; padding:1px 5px; border-radius:3px;">https://alim.care/mcp/v1</code>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:14px 0 0; text-align:center; font-size:12px; color:#687083;">
+                Cursor ou autre client MCP&nbsp;? Doc technique sur <a href="https://alim.care/api-docs/" style="color:#233872;">alim.care/api-docs</a>.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Périmètre v0 -->
+          <tr>
+            <td style="padding:32px 32px 0;">
+              <h2 style="margin:0 0 12px; font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size:19px; color:#172650;">
+                Ce que vous pouvez faire dès maintenant
+              </h2>
+              <ul style="padding-left:22px; margin:0; font-size:14px; line-height:1.6; color:#3f4860;">
+                <li style="margin-bottom:6px;">Générer des recettes cadrées sur <strong style="color:#111827;">diabète T2 + HTA</strong> et <strong style="color:#111827;">grossesse + diabète gestationnel</strong>.</li>
+                <li style="margin-bottom:6px;">Recevoir les <strong style="color:#111827;">calculs nutritionnels par portion</strong> (énergie, glucides, fibres, sel, AGS, potassium, folates — Ciqual 2025).</li>
+                <li style="margin-bottom:6px;">Citer les sources avec leur <strong style="color:#111827;">statut documentaire</strong> (vérifiée / consultée / en vérification).</li>
+                <li style="margin-bottom:6px;">Obtenir un <strong style="color:#111827;">refus clair hors périmètre</strong>, pas une improvisation.</li>
+                <li>Personnaliser votre profil et votre <strong style="color:#111827;">identité cabinet</strong> pour les futures fiches PDF brandées.</li>
+              </ul>
+            </td>
+          </tr>
+
+          <!-- Engagement bêta -->
+          <tr>
+            <td style="padding:24px 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff6b7; border-left:4px solid #f7da29; border-radius:6px;">
+                <tr>
+                  <td style="padding:14px 18px; font-size:13.5px; line-height:1.55; color:#3f4860;">
+                    <strong style="color:#172650;">Engagement bêta-testeur.</strong> Bêta gratuite et sans carte demandée. En contrepartie, nous reprendrons contact à <strong>J+7</strong> et <strong>J+14</strong> pour un retour structuré&nbsp;: ce qui marche, ce qui manque, ce qui doit être corrigé. Format léger, par e-mail ou appel court.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Disclaimer -->
+          <tr>
+            <td style="padding:28px 32px 0; font-size:12.5px; line-height:1.55; color:#687083;">
+              <p style="margin:0;">
+                ALIM est un outil d'aide à la formulation. Les sorties produites ne remplacent pas votre jugement clinique. Pas de diagnostic, pas de prescription, pas d'interprétation de bilan biologique à visée médicale (art. L. 4161-1 du Code de la santé publique). Aucune donnée nominative patient ne doit transiter par ALIM&nbsp;: les briefs envoyés doivent rester anonymes (pathologie, profil clinique synthétique, contraintes).
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:28px 32px 28px;">
+              <hr style="border:0; border-top:1px solid #ded8ca; margin:0 0 18px;">
+              <p style="margin:0; font-size:13px; color:#687083; line-height:1.55;">
+                Une question, un blocage&nbsp;? Répondez à cet e-mail, nous lisons chaque réponse.<br>
+                <a href="mailto:alim@holco.co" style="color:#233872;">alim@holco.co</a> · <a href="https://alim.care/" style="color:#233872;">alim.care</a> · <a href="https://alim.care/compte/" style="color:#233872;">Mon compte</a> · <a href="https://holco.co/" style="color:#233872;">HOLCO</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <p style="max-width:600px; margin:18px auto 0; padding:0 12px; font-size:11.5px; color:#9aa3b5; text-align:center; line-height:1.5;">
+          Cet e-mail contient votre clé d'accès personnelle. Ne la transférez à personne.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

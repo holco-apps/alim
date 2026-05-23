@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Fiche PDF ALIM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#233872">
+<link rel="icon" href="/assets/alim-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#233872; --navy-deep:#172650; --gold:#f7da29; --gold-deep:#b5901c;
+    --gold-soft:#fff6b7; --paper:#fdfaf2; --ink:#1a1f14; --ink-soft:#4a5040;
+    --muted:#7a8070; --line:#e2d6bb; --ok:#286c4d; --danger:#9b2f20;
+  }
+  *{box-sizing:border-box}
+  html{background:#e8e2d2}
+  body{
+    margin:0; padding:32px 20px; color:var(--ink);
+    font:14px/1.55 Inter, ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; align-items:center; gap:24px;
+  }
+  .toolbar{
+    width:100%; max-width:980px; display:flex; flex-wrap:wrap; gap:12px;
+    align-items:center; justify-content:space-between; padding:16px 22px;
+    background:#fff; border:1px solid #d8cfb8; border-radius:12px;
+    box-shadow:0 4px 16px -10px rgba(0,0,0,.12);
+  }
+  .toolbar-info{display:flex; flex-direction:column; gap:4px}
+  .toolbar-info b{font:600 14px/1.2 Inter, sans-serif; color:var(--navy-deep)}
+  .toolbar-info span{
+    font:500 11.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--muted); letter-spacing:.08em;
+  }
+  .toolbar-actions{display:flex; gap:8px; flex-wrap:wrap}
+  .tbtn{
+    display:inline-flex; align-items:center; gap:6px; padding:9px 16px;
+    border:1px solid var(--line); border-radius:8px; background:var(--paper);
+    color:var(--navy-deep); font:600 13px/1 Inter, sans-serif;
+    cursor:pointer; text-decoration:none;
+  }
+  .tbtn:hover{background:#fff; border-color:var(--navy)}
+  .tbtn.primary{background:var(--navy); color:#fff; border-color:var(--navy)}
+  .sheet{
+    width:210mm; min-height:297mm; background:var(--paper);
+    box-shadow:0 8px 40px -8px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.06);
+    padding:18mm 16mm 14mm; display:flex; flex-direction:column;
+  }
+  .pdf-header{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding-bottom:14px; border-bottom:1.5px solid var(--gold); margin-bottom:18px;
+  }
+  .cabinet-block{display:flex; align-items:center; gap:14px}
+  .cabinet-logo{
+    width:54px; height:54px; background:linear-gradient(135deg, var(--gold-soft) 0%, var(--gold) 100%);
+    border-radius:12px; display:flex; align-items:center; justify-content:center;
+    font:500 22px/1 "Instrument Serif", Georgia, serif; color:var(--navy-deep);
+  }
+  .cabinet-info h2{
+    margin:0; font:400 20px/1.1 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep); letter-spacing:-.01em;
+  }
+  .cabinet-info p{margin:2px 0 0; font-size:11px; color:var(--ink-soft); line-height:1.4}
+  .header-right{text-align:right}
+  .header-right .ref{
+    font:500 10.5px/1.2 "JetBrains Mono", ui-monospace, monospace;
+    color:var(--muted); letter-spacing:.08em;
+  }
+  .header-right .ref b{color:var(--ink); font-weight:600}
+  .header-right .date{margin-top:4px; font-size:11px; color:var(--ink-soft)}
+  .pdf-title-block{margin-bottom:18px}
+  .pdf-kicker{
+    display:inline-flex; align-items:center; gap:8px;
+    font:600 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep);
+    margin-bottom:8px;
+  }
+  .pdf-kicker::before{content:''; width:14px; height:1.5px; background:var(--gold-deep)}
+  .pdf-title{
+    margin:0; font:400 32px/1.1 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep); letter-spacing:-.015em;
+  }
+  .pdf-subtitle{margin:6px 0 0; color:var(--ink-soft); font-size:13px; font-style:italic}
+  .profile-band{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;
+    padding:12px 14px; background:#fff; border:1px solid var(--line);
+    border-radius:8px; margin-bottom:18px;
+  }
+  .pf{display:flex; flex-direction:column}
+  .pf-lbl{
+    font:600 9.5px/1.2 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:3px;
+  }
+  .pf-val{font:500 12.5px/1.3 Inter, sans-serif; color:var(--ink)}
+  .pdf-body{display:grid; grid-template-columns:1.4fr 1fr; gap:24px; flex:1}
+  .col h3{
+    margin:0 0 8px; font:400 17px/1.2 "Instrument Serif", Georgia, serif;
+    color:var(--navy-deep); padding-bottom:5px; border-bottom:1px solid var(--line);
+  }
+  .col-section{margin-bottom:18px}
+  .ingredients-list,.checks-list,.sources-list,.shopping-list{list-style:none; padding:0; margin:0; display:grid}
+  .ingredients-list{gap:6px}
+  .ingredients-list li{
+    display:grid; grid-template-columns:1fr auto; align-items:baseline; gap:8px;
+    padding:6px 10px; background:#fff; border:1px solid var(--line);
+    border-radius:5px; font-size:12.5px;
+  }
+  .ing-qty{
+    font:600 11.5px/1 "JetBrains Mono", ui-monospace, monospace; color:var(--navy-deep);
+    background:var(--gold-soft); padding:3px 7px; border-radius:4px;
+  }
+  .steps-list{list-style:none; padding:0; margin:0; counter-reset:s; display:grid; gap:10px}
+  .steps-list li{
+    counter-increment:s; position:relative; padding:10px 12px 10px 38px;
+    background:#fff; border:1px solid var(--line); border-radius:6px;
+    font-size:12.5px; line-height:1.55;
+  }
+  .steps-list li::before{
+    content:counter(s); position:absolute; left:10px; top:10px; width:20px; height:20px;
+    background:var(--navy-deep); color:var(--gold); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font:600 11px/1 "JetBrains Mono", ui-monospace, monospace;
+  }
+  .nutri-grid{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+  .nutri-cell{
+    padding:10px 12px; background:#fff; border:1px solid var(--line);
+    border-radius:6px; display:flex; flex-direction:column;
+  }
+  .nutri-cell.hi{background:linear-gradient(135deg, #fffdf3 0%, var(--gold-soft) 100%); border-color:var(--gold)}
+  .nutri-lbl{
+    font:500 10px/1.1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:3px;
+  }
+  .nutri-val{font:500 15px/1.1 "Instrument Serif", Georgia, serif; color:var(--navy-deep)}
+  .nutri-val small{font-size:11px; color:var(--ink-soft); margin-left:3px}
+  .checks-list{gap:5px}
+  .checks-list li{
+    position:relative; padding:7px 10px 7px 28px; background:#fff;
+    border:1px solid var(--line); border-radius:5px; font-size:11.5px; line-height:1.5;
+  }
+  .checks-list li::before{content:'✓'; position:absolute; left:10px; top:7px; color:var(--ok); font-weight:700}
+  .sources-list{gap:5px; font-size:11px}
+  .sources-list li{
+    padding:6px 9px; background:#fff; border-left:2px solid var(--gold);
+    border-radius:0 4px 4px 0; color:var(--ink-soft); line-height:1.45;
+  }
+  .shopping-list{gap:3px; font-size:11.5px}
+  .shopping-list li{display:flex; align-items:center; gap:6px; padding:3px 0}
+  .shopping-list li::before{
+    content:''; width:11px; height:11px; border:1.3px solid var(--muted);
+    border-radius:2px; flex:0 0 auto;
+  }
+  .note-box{
+    padding:10px 12px; background:#fff; border:1px solid var(--line);
+    border-radius:6px; font-size:11.5px; color:var(--ink-soft);
+  }
+  .pdf-footer{margin-top:24px; padding-top:14px; border-top:1px solid var(--line)}
+  .pdf-disclaimer{font-size:9.5px; line-height:1.5; color:var(--muted); font-style:italic; margin:0 0 8px}
+  .pdf-footer-line{display:flex; justify-content:space-between; gap:12px; font-size:9.5px; color:var(--muted)}
+  .alim-watermark{
+    display:inline-flex; align-items:center; gap:5px;
+    font:500 10px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing:.08em;
+  }
+  .wm-dot{display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--gold)}
+  .alim-watermark a{color:var(--navy); text-decoration:none}
+  .error{max-width:760px; background:#fff; border:1px solid #e2b5ad; color:var(--danger); border-radius:10px; padding:18px}
+  @media print{
+    html{background:#fff}
+    body{padding:0; display:block}
+    .toolbar{display:none}
+    .sheet{width:auto; min-height:0; box-shadow:none; padding:14mm 14mm; margin:0}
+    @page{size:A4; margin:0}
+  }
+  @media (max-width:880px){
+    .sheet{width:100%; padding:24px 18px}
+    .pdf-body{grid-template-columns:1fr}
+    .profile-band{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div class="toolbar-info">
+    <b>Fiche recette ALIM</b>
+    <span id="toolbar-status">GÉNÉRATION EN COURS</span>
+  </div>
+  <div class="toolbar-actions">
+    <a class="tbtn" href="/">Retour ALIM</a>
+    <button class="tbtn primary" onclick="window.print()">Imprimer / Sauver en PDF</button>
+  </div>
+</div>
+
+<article class="sheet" id="sheet" hidden>
+  <header class="pdf-header">
+    <div class="cabinet-block">
+      <div class="cabinet-logo" id="cabinet-logo">A</div>
+      <div class="cabinet-info">
+        <h2 id="cabinet-name">Cabinet de nutrition</h2>
+        <p id="cabinet-contact">Fiche générée depuis ALIM · brief patient anonymisé</p>
+        <p id="cabinet-qualif">Diététicien.ne nutritionniste · informations cabinet à personnaliser en V1</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="ref">RÉF&nbsp;: <b id="ref"></b></div>
+      <div class="date" id="date"></div>
+    </div>
+  </header>
+
+  <section class="pdf-title-block">
+    <p class="pdf-kicker">Fiche recette personnalisée</p>
+    <h1 class="pdf-title" id="title"></h1>
+    <p class="pdf-subtitle" id="subtitle"></p>
+  </section>
+
+  <section class="profile-band">
+    <div class="pf"><span class="pf-lbl">Profil</span><span class="pf-val" id="profile"></span></div>
+    <div class="pf"><span class="pf-lbl">Fonction rénale</span><span class="pf-val" id="renal"></span></div>
+    <div class="pf"><span class="pf-lbl">Régime</span><span class="pf-val" id="diet"></span></div>
+    <div class="pf"><span class="pf-lbl">Équipement</span><span class="pf-val" id="equipment"></span></div>
+  </section>
+
+  <div class="pdf-body">
+    <section class="col">
+      <div class="col-section">
+        <h3>Ingrédients</h3>
+        <ul class="ingredients-list" id="ingredients"></ul>
+      </div>
+      <div class="col-section">
+        <h3>Préparation</h3>
+        <ol class="steps-list" id="steps"></ol>
+      </div>
+      <div class="col-section">
+        <h3>Liste de courses</h3>
+        <ul class="shopping-list" id="shopping"></ul>
+      </div>
+    </section>
+    <section class="col">
+      <div class="col-section">
+        <h3>Nutriments par portion</h3>
+        <div class="nutri-grid" id="nutrients"></div>
+      </div>
+      <div class="col-section">
+        <h3>Garde-fous activés</h3>
+        <ul class="checks-list" id="checks"></ul>
+      </div>
+      <div class="col-section">
+        <h3>Conseils et substitutions</h3>
+        <div class="note-box" id="tips"></div>
+      </div>
+      <div class="col-section">
+        <h3>Sources</h3>
+        <ul class="sources-list" id="sources"></ul>
+      </div>
+    </section>
+  </div>
+
+  <footer class="pdf-footer">
+    <p class="pdf-disclaimer" id="disclaimer"></p>
+    <div class="pdf-footer-line">
+      <span class="alim-watermark"><span class="wm-dot"></span>Généré avec <a href="https://alim.care/">ALIM</a> · cadré Ciqual + règles cliniques</span>
+      <span>Page 1 / 1</span>
+    </div>
+  </footer>
+</article>
+
+<div class="error" id="error" hidden></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[c]));
+}
+
+function fmt(value, unit = ""){
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "n/d";
+  return `${String(value).replace(".", ",")}${unit ? " " + unit : ""}`;
+}
+
+function getAllOrDefault(key, fallback){
+  const values = params.getAll(key).filter(Boolean);
+  return values.length ? values : fallback;
+}
+
+function briefFromQuery(){
+  return {
+    pathologies: getAllOrDefault("pathologies", ["diabete_t2", "hta"]),
+    meal_slot: params.get("meal_slot") || "dejeuner",
+    diet_type: params.get("diet_type") || "omnivore",
+    season: params.get("season") || "all",
+    portions: Number(params.get("portions") || 1),
+    equipment: getAllOrDefault("equipment", ["plaque", "four"]),
+    notes: params.get("notes") || ""
+  };
+}
+
+function labelPathologies(pathologies){
+  const labels = {
+    diabete_t2:"Diabète T2", hta:"HTA",
+    grossesse:"Grossesse", diabete_gestationnel:"Diabète gestationnel"
+  };
+  return pathologies.map((p) => labels[p] || p).join(" + ");
+}
+
+function labelDiet(value){
+  return ({
+    omnivore:"Omnivore", vegetarien:"Végétarien", vegan:"Vegan",
+    pescetarien:"Pescetarien", sans_gluten:"Sans gluten", sans_lactose:"Sans lactose"
+  })[value] || value;
+}
+
+function labelEquipment(values){
+  const labels = { plaque:"plaque", four:"four", vapeur:"vapeur", micro_ondes:"micro-ondes", blender:"blender" };
+  return values.map((v) => labels[v] || v).join(" + ");
+}
+
+function refFromSheet(sheet){
+  const raw = `${sheet.title_fr}|${sheet.meal_slot}|${Date.now()}`;
+  let h = 0;
+  for (let i = 0; i < raw.length; i++) h = Math.imul(31, h) + raw.charCodeAt(i) | 0;
+  return `ALIM-${new Date().getFullYear()}-${String(Math.abs(h) % 10000).padStart(4, "0")}`;
+}
+
+function renderList(el, items, render){
+  el.innerHTML = items.map(render).join("");
+}
+
+function render(payload, brief){
+  const sheet = payload.professional_sheet;
+  $("toolbar-status").textContent = "FICHE RÉELLE · DONNÉES API";
+  $("sheet").hidden = false;
+  $("ref").textContent = refFromSheet(sheet);
+  $("date").textContent = `Émise le ${new Intl.DateTimeFormat("fr-FR", { dateStyle:"long" }).format(new Date())}`;
+  $("title").textContent = sheet.title_fr;
+  $("subtitle").textContent = `${sheet.meal_slot_label_fr} · ${sheet.total_time_min} min · ${sheet.difficulty_fr} · ${sheet.portion_g} g`;
+  $("profile").textContent = `Adulte · ${labelPathologies(brief.pathologies)}`;
+  $("renal").textContent = /fonction r[ée]nale conserv[ée]e/i.test(brief.notes) ? "Conservée" : "Non précisée";
+  $("diet").textContent = labelDiet(brief.diet_type);
+  $("equipment").textContent = labelEquipment(brief.equipment);
+
+  renderList($("ingredients"), sheet.ingredients_detailed_fr, (item) => {
+    const qty = item.quantity_g > 0 ? `${fmt(item.quantity_g, "g")}` : "qsp";
+    return `<li><span class="ing-name">${esc(item.name_fr)}</span><span class="ing-qty">${esc(qty)}</span></li>`;
+  });
+  renderList($("steps"), sheet.preparation_steps_fr, (step) => `<li>${esc(step)}</li>`);
+  renderList($("shopping"), sheet.export_blocks.shopping_list_fr, (item) => `<li>${esc(item)}</li>`);
+
+  const panel = sheet.nutrition_panel_per_portion.filter((n) =>
+    ["energy_kcal","protein_g","carb_g","fat_g","fiber_g","sugar_g_total","saturated_fat_g","salt_g"].includes(n.key)
+  );
+  renderList($("nutrients"), panel, (n) => `
+    <div class="nutri-cell ${n.key === "energy_kcal" || n.key === "salt_g" ? "hi" : ""}">
+      <span class="nutri-lbl">${esc(n.label_fr)}</span>
+      <span class="nutri-val"><b>${esc(fmt(n.value))}</b><small>${esc(n.unit)}</small></span>
+    </div>
+  `);
+  renderList($("checks"), sheet.clinical_adaptations_fr, (item) => `<li>${esc(item)}</li>`);
+  $("tips").innerHTML = [
+    ...sheet.export_blocks.serving_tips_fr,
+    ...sheet.export_blocks.substitutions_fr
+  ].map((item) => `<p>${esc(item)}</p>`).join("");
+  renderList($("sources"), payload.sources, (source) => `<li>${esc(source.citation)}</li>`);
+  $("disclaimer").textContent = sheet.export_blocks.practitioner_footer_fr || sheet.quality.disclaimer_fr;
+}
+
+async function main(){
+  const brief = briefFromQuery();
+  try {
+    const response = await fetch("/api/generate", {
+      method:"POST",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify(brief)
+    });
+    const payload = await response.json();
+    if (!response.ok || payload.refused) throw new Error(payload.refused?.reason_fr || "Génération impossible.");
+    render(payload, brief);
+  } catch (error) {
+    $("toolbar-status").textContent = "ERREUR";
+    $("error").hidden = false;
+    $("error").innerHTML = `<b>Impossible de générer la fiche PDF.</b><br>${esc(error.message)}`;
+  }
+}
+
+main();
+</script>
+</body>
+</html>
